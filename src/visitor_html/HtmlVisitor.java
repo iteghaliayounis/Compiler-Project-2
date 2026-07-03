@@ -19,42 +19,38 @@ import symbol_table.SymbolTable.Kind;
 import symbol_table.SymbolTable.Symbol;
 
 /**
- * AstBuilder - يحوّل الـ Parse Tree (من ANTLR) إلى شجرة AST (الكلاسات بـ package ast).
- *
- * - بيرث من product_htmlParserBaseVisitor<AstNode>
- * - بيعمل override لكل method حسب الـ labels يلي بالـ parser
- * - كل method بترجع AstNode (أو null)
- *
  * 🔥 محدّث: مدمج مع Symbol Table بالكامل (كل عقد Jinja تدخل الرموز المناسبة)
  */
 public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
 
     // ====== Symbol Table Integration ======
-    /** مرجع الـ Symbol Table (Singleton) */
+
     private final SymbolTable st = SymbolTable.getInstance();
 
-    /** اسم القالب الحالي — يُضبط من Main قبل visit */
     private String currentTemplateName = "default_template";
 
     public void setCurrentTemplateName(String name) {
         this.currentTemplateName = name;
     }
 
-    /** تسجيل استخدام متغير في رمز القالب الحالي (يستخدم لـ Missing Flask Variable) */
-    private void recordTemplateVariableUsage(String varName) {
+    private void recordTemplateVariableUsage(String varName, int line) {
+        if (st.isFlaskGlobal(varName)) return;
+
+        Symbol existing = st.lookup(varName);
+        if (existing != null) {
+            Kind k = existing.getKind();
+            if (k == Kind.LOOP_VAR || k == Kind.SET_VAR
+                    || k == Kind.MACRO_PARAM || k == Kind.MACRO) {
+                return;
+            }
+        }
+
         Symbol tmplSym = st.lookup(currentTemplateName);
         if (tmplSym != null) {
-            tmplSym.addUsedVariable(varName);
+            tmplSym.addUsedVariable(varName, line);
         }
     }
 
-    /** إدخال متغير عادي إن لم يكن موجوداً + تسجيل استخدامه */
-    private void ensureVariableInserted(String varName, int line) {
-        if (st.lookup(varName) == null) {
-            st.insert(varName, Kind.VARIABLE, "Unknown", null, line);
-        }
-        recordTemplateVariableUsage(varName);
-    }
 
     // ====== Utility: إرجاع line و column من token ======
     private static int[] pos(Token t) {
@@ -78,17 +74,39 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
     // ================================================================
     // ====== Top-level ======
     // ================================================================
-
     @Override
     public AstNode visitProgram(product_htmlParser.ProgramContext ctx) {
         int[] p = pos(ctx);
         TemplateNode template = new TemplateNode(p[0], p[1]);
 
-        // ====== Symbol Table: إدخال رمز القالب الرئيسي ======
-        st.insert(currentTemplateName, Kind.TEMPLATE, "TEMPLATE", null, p[0]);
+        //  NEW: إذا الاسم من الخارج مو الافتراضي (يعني ملف حقيقي)، نحافظ عليه
+        boolean useRealName = !currentTemplateName.equals("default_template")
+                && !currentTemplateName.equals("htmlTest");
+
+        int templateIndex = 0;
 
         for (ParseTree child : ctx.children) {
-            if (child instanceof TerminalNode) continue;  // skip EOF
+            if (child instanceof TerminalNode) continue;
+            if (!(child instanceof ParserRuleContext)) continue;
+            ParserRuleContext prc = (ParserRuleContext) child;
+            int[] cp = pos(prc);
+
+            if (child instanceof product_htmlParser.PrologContext) {
+                templateIndex++;
+                if (!useRealName) currentTemplateName = "base_" + templateIndex;
+                st.insert(currentTemplateName, Kind.TEMPLATE, "TEMPLATE", null, cp[0]);
+
+            } else if (isExtendsBlock(child)) {
+                templateIndex++;
+                if (!useRealName) currentTemplateName = "child_" + templateIndex;
+                st.insert(currentTemplateName, Kind.TEMPLATE, "TEMPLATE", null, cp[0]);
+
+            } else if (templateIndex == 0) {
+                templateIndex++;
+                if (!useRealName) currentTemplateName = "template_" + templateIndex;
+                st.insert(currentTemplateName, Kind.TEMPLATE, "TEMPLATE", null, cp[0]);
+            }
+
             AstNode node = visit(child);
             if (node != null) {
                 template.addChild(node);
@@ -97,6 +115,12 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return template;
     }
 
+    /** فحص هل العنصر هو {% extends "..." %} */
+    private boolean isExtendsBlock(ParseTree child) {
+        if (child instanceof product_htmlParser.PrologContext) return false;
+        String text = child.getText().toLowerCase();
+        return text.contains("extends");
+    }
     @Override
     public AstNode visitProlog(product_htmlParser.PrologContext ctx) {
         int[] p = pos(ctx);
@@ -352,16 +376,17 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String raw = eCtx.JINJA_STRING().getText();
         String template = raw.substring(1, raw.length() - 1);
 
-        // ====== Symbol Table: تسجيل الوراثة ======
+        // سجّل الـ extends على القالب الحالي
         Symbol tmplSym = st.lookup(currentTemplateName);
         if (tmplSym != null) {
             tmplSym.setExtendsTemplate(template);
         }
-        st.insert("extends_" + template, Kind.EXTENDS, "String", template, p[0]);
+
+        // اسم فريد لكل extends (بسطره)
+        st.insert("extends_" + template + "_L" + p[0], Kind.EXTENDS, "String", template, p[0]);
 
         return new ExtendsNode(template, p[0], p[1]);
     }
-
     @Override
     public AstNode visitJinjaBlockStmt(product_htmlParser.JinjaBlockStmtContext ctx) {
         int[] p = pos(ctx);
@@ -369,8 +394,8 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String name = blockCtx.JINJA_ID(0).getText();
         BlockNode node = new BlockNode(name, p[0], p[1]);
 
-        // ====== Symbol Table: فتح scope للبلوك + إدخال رمز BLOCK ======
-        st.allocate("block_" + name);
+        // اسم الـ scope يبيّن لف أي قالب هاد البلوك
+        st.allocate("block_" + name + " (" + currentTemplateName + ")");
         st.insert(name, Kind.BLOCK, "Block", null, p[0]);
 
         for (product_htmlParser.ContentContext c : blockCtx.content()) {
@@ -378,9 +403,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             if (child != null) node.addBodyItem(child);
         }
 
-        // ====== إغلاق scope البلوك ======
         st.free();
-
         return node;
     }
 
@@ -934,18 +957,20 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         ExpressionNode obj = (ExpressionNode) visit(ctx.jinjaPostfix());
         String attr = ctx.JINJA_ID().getText();
 
-        // ====== Symbol Table: تسجيل الخاصية المستخدمة على الكائن ======
         if (obj instanceof AstHtml.VariableNode) {
             String varName = ((AstHtml.VariableNode) obj).getName();
-            Symbol sym = st.lookup(varName);
-            if (sym != null) {
-                sym.addAccessedAttribute(attr);
+
+            if (!st.isFlaskGlobal(varName)) {
+
+                Symbol tmplSym = st.lookup(currentTemplateName);
+                if (tmplSym != null) {
+                    tmplSym.addVariableAttribute(varName, attr);
+                }
             }
         }
 
         return new AttributeAccessNode(obj, attr, p[0], p[1]);
     }
-
     @Override
     public AstNode visitJinjaCall(product_htmlParser.JinjaCallContext ctx) {
         int[] p = pos(ctx);
@@ -1001,12 +1026,10 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         int[] p = pos(ctx);
         String varName = ctx.JINJA_ID().getText();
 
-        // ====== Symbol Table: تسجيل المتغير المستخدم ======
-        ensureVariableInserted(varName, p[0]);
+        recordTemplateVariableUsage(varName, p[0]);
 
         return new VariableNode(varName, p[0], p[1]);
     }
-
     @Override
     public AstNode visitJinjaParen(product_htmlParser.JinjaParenContext ctx) {
         return visit(ctx.jinjaExpression());
@@ -1018,7 +1041,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
     }
 
     // ================================================================
-    // ====== CSS ======
+    //  CSS
     // ================================================================
 
     @Override
@@ -1115,7 +1138,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         }
         return node;
     }
-
     @Override
     public AstNode visitCssJinjaValue(product_htmlParser.CssJinjaValueContext ctx) {
         int[] p = pos(ctx);
@@ -1124,10 +1146,9 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
 
         if (jvCtx.jinjaExpression() != null) {
             expr = (ExpressionNode) visit(jvCtx.jinjaExpression());
-
-            // ====== Symbol Table: تسجيل المتغير المستخدم في CSS ======
-            String varName = jvCtx.jinjaExpression().getText();
-            ensureVariableInserted(varName, p[0]);
+            String exprText = jvCtx.jinjaExpression().getText();
+            String baseVar = exprText.contains(".") ? exprText.split("\\.")[0] : exprText;
+            recordTemplateVariableUsage(baseVar, p[0]);
         }
 
         return new CssJinjaValueNode(expr, p[0], p[1]);

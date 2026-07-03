@@ -1,8 +1,9 @@
 package app;
 
 import AST.Program;
+import Semantic.analyzers.JinjaSemanticAnalyzer;
 import Semantic.analyzers.PythonSemanticAnalyzer;
-import Semantic.checkers.MissingFlaskVariableChecker;
+import Semantic.checkers.flask.MissingFlaskVariableChecker;
 import Semantic.handlers.SemanticErrorHandler;
 import Visitor.PythonVisitor;
 import antlr.ProductLexer;
@@ -58,6 +59,7 @@ public class Main {
     }
 
     // ================= HTML =================
+// ================= HTML =================
     private static void runHtml() {
         try {
             System.out.println("Running HTML Compiler...\n");
@@ -70,10 +72,10 @@ public class Main {
             product_htmlParser parser = new product_htmlParser(tokens);
             product_htmlParser.ProgramContext tree = parser.program();
 
+            // ⬇️⬇️⬇️ هاد السطر الوحيد يلي بتضيفو ⬇️⬇️⬇️
+            symbol_table.SymbolTable.reset();
             HtmlVisitor visitor = new HtmlVisitor();
 
-            // 🚀 جديد: ضبط اسم القالب قبل visit (مهم!)
-            // يُفضّل جلبه من اسم الملف نفسه
             String templateName = fileName;
             if (templateName.contains("/")) {
                 templateName = templateName.substring(templateName.lastIndexOf('/') + 1);
@@ -86,14 +88,29 @@ public class Main {
             AstNode ast = visitor.visit(tree);
 
             symbol_table.SymbolTable jinjaST = symbol_table.SymbolTable.getInstance();
-
-            // 🚀 الآن الجدول لن يكون فارغاً!
             jinjaST.printTable();
-
             System.out.println(ast);
 
+            Semantic.analyzers.JinjaSemanticAnalyzer jinjaAnalyzer =
+                    new Semantic.analyzers.JinjaSemanticAnalyzer();
+
             if (pythonST != null) {
-                System.out.println("\n[Semantic Analysis] Running Flask-Jinja Linking checks...");
+                for (SymbolTable.ScopeEntry scope : pythonST.getAllScopes()) {
+                    for (SymbolTable.Symbol sym : scope.symbols.values()) {
+                        if (sym.getKind() == SymbolTable.Symbol.Kind.TEMPLATE) {
+                            for (String var : sym.getTemplateVariables()) {
+                                jinjaAnalyzer.addFlaskPassedVariable(var);
+                            }
+                        }
+                    }
+                }
+            }
+
+            jinjaAnalyzer.analyze(ast);
+            jinjaAnalyzer.printResults();
+
+            if (pythonST != null) {
+                System.out.println("\n[Semantic Analysis] Running Flask-Jinga Linking checks...");
                 SemanticErrorHandler flaskHandler = new SemanticErrorHandler();
                 MissingFlaskVariableChecker flaskChecker =
                         new MissingFlaskVariableChecker(pythonST, jinjaST, flaskHandler);

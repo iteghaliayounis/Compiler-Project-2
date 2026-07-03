@@ -1,15 +1,28 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
+products = [
+    {
+        "name": "Laptop",
+        "price": 750,
+        "description": "Gaming Laptop"
+    }
+]
+
+
 @app.route("/")
 def products_page():
-    return render_template("products.html", products=products)
+    return render_template(
+        "products.html",
+        products=products
+    )
 
-@app.route("/test")
-def test_page():
-    result = unknown_var + 5
-    return render_template("test.html", result=result)
-@app.route('/profile')
+
+@app.route("/profile")
 def profile():
-    return render_template('profile.html', name=username)
+    result = unknown_variable + 5
+    return render_template(
+        "profile.html",
+        username="Ghalia"
+    )

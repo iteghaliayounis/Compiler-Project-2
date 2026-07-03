@@ -3,8 +3,7 @@ package SymbolTable;
 import java.util.*;
 
 /**
- * Stack-based Symbol Table for Python
- * Operations: insert, lookup, update, delete + scope management (push/pop)
+Symbol Table for Python
  */
 public class SymbolTable {
 
@@ -14,16 +13,15 @@ public class SymbolTable {
 
         private final String name;
         private Kind         kind;
-        private String       type;   // INT, FLOAT, STRING, BOOL, LIST, DICT, FUNCTION, UNKNOWN …
+        private String       type;
         private Object       value;
         private final int    line;
         private int          scopeLevel;
 
 
-        // الحقول الجديدة الخاصة بالـ TEMPLATE
-        private String templateName;           // مثل "products.html"
-        private List<String> templateVariables; // مثل ["products", "product"]
 
+        private String templateName;
+        private List<String> templateVariables;
         public Symbol(String name, Kind kind, String type, Object value, int line) {
             this.name       = name;
             this.kind       = kind;
@@ -33,14 +31,14 @@ public class SymbolTable {
             this.scopeLevel = 0;
             this.templateVariables = new ArrayList<>();
         }
-        // Constructor جديد خاص بالـ TEMPLATE
+
         public Symbol(String name, String templateName, List<String> variables, int line) {
             this(name, Kind.TEMPLATE, "TEMPLATE", null, line);
             this.templateName = templateName;
             this.templateVariables = variables != null ? variables : new ArrayList<>();
         }
 
-        // Getters & Setters الجديدة
+
         public String getTemplateName() { return templateName; }
         public List<String> getTemplateVariables() { return templateVariables; }
 
@@ -62,14 +60,14 @@ public class SymbolTable {
     }
 
     // ─── Scope entry ─────────────────────────────────────────────────────────────
-// غيّر ScopeEntry من private إلى public
+
     public static class ScopeEntry {
         public final String              scopeName;
         public final Map<String, Symbol> symbols = new LinkedHashMap<>();
         ScopeEntry(String name) { this.scopeName = name; }
     }
 
-    // أضف getter
+
     public List<ScopeEntry> getAllScopes() {
         return Collections.unmodifiableList(allScopes);
     }
@@ -87,19 +85,17 @@ public class SymbolTable {
     //  Scope management
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /** allocate – push a new scope on the stack */
+
     public void pushScope(String name) {
         ScopeEntry entry = new ScopeEntry(name);
         stack.push(entry);
         allScopes.add(entry);
     }
 
-    /** free – pop the current scope */
     public void popScope() {
         if (stack.size() > 1) stack.pop();
     }
 
-    // helper: current depth (global = 0)
     private int depth() { return stack.size() - 1; }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -113,16 +109,14 @@ public class SymbolTable {
         return true;
     }
 
-    // convenience overload
+
     public boolean insert(String name, Symbol.Kind kind, String type, Object value, int line) {
         return insert(new Symbol(name, kind, type, value, line));
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  lookup  (searches from innermost scope outward)
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public Symbol lookup(String name) {
-        for (ScopeEntry entry : stack) {          // Deque iteration = top-first
+        for (ScopeEntry entry : stack) {
             Symbol s = entry.symbols.get(name);
             if (s != null) return s;
         }

@@ -14,9 +14,7 @@ import AST.Expressions.CallSuffixes.*;
 import AST.Expressions.Expr.*;
 import AST.GeneratorExpr.ArithExpr;
 import AST.GeneratorExpr.GenExpr;
-import AST.Import.*;
 import AST.ListDictPair.*;
-import AST.Literal.*;
 import AST.Statements.ExprStmt.ExprStmt;
 import AST.Statements.SimpleStmt;
 import AST.Statements.SmallStmt.ReturnStmt;
@@ -30,7 +28,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UndefinedVariableChecker {
+public class PythonSemanticChecker {
 
     private final SymbolTable          symbolTable;
     private final SemanticErrorHandler handler;
@@ -45,8 +43,8 @@ public class UndefinedVariableChecker {
 "global" , "nonlocal"
     ));
 
-    public UndefinedVariableChecker(SymbolTable symbolTable,
-                                    SemanticErrorHandler handler) {
+    public PythonSemanticChecker(SymbolTable symbolTable,
+                                 SemanticErrorHandler handler) {
         this.symbolTable = symbolTable;
         this.handler     = handler;
     }
@@ -91,7 +89,7 @@ public class UndefinedVariableChecker {
         }
         else if (node instanceof DictAtom)     checkNode(((DictAtom) node).dictLiteral);
         else if (node instanceof DictLiteral)  checkDictLiteral((DictLiteral) node);
-        // Literals → لا شي
+
     }
 
     // ── Program ──────────────────────────────────────────────────────────
@@ -143,7 +141,7 @@ public class UndefinedVariableChecker {
 
     // ── CallChainExpr ────────────────────────────────────────────────────
     private void checkCallChain(CallChainExpr node) {
-        // تحقق من الـ base فقط — الـ AttributeAccess هو field access مش variable
+
         checkNode(node.base);
         // تحقق من الـ arguments داخل FunctionCall suffixes
         for (CallSuffix suffix : node.suffixes) {

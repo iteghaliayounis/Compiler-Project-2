@@ -3,41 +3,38 @@ package symbol_table;
 import java.util.*;
 
 /**
- * Stack-based Symbol Table for HTML / Jinja2
- * Operations: insert, lookup, update, delete + scope management (allocate/free)
- *
- * محدّث ليتطابق مع مستوى Python SymbolTable + إضافات احترافية لمرحلة Semantic
+ * Stack-based Symbol Table for HTML / Jinja
+ * يدعم عدّة قوالب بنفس الوقت كل واحد فيه متغيراتو المستقلة
  */
 public class SymbolTable {
     private int scopeCounter = 0;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  Kind Enum — Type Safety بدلاً من String
+    //  Kind Enum
     // ═══════════════════════════════════════════════════════════════════════════
     public enum Kind {
-        VARIABLE,       // {{ x }} — متغير عادي
-        LOOP_VAR,       // {% for x in ... %} — متغير حلقة
-        BLOCK,          // {% block name %} — بلوك Jinja
-        MACRO,          // {% macro name() %} — ماكرو
-        MACRO_PARAM,    // وسائط الماكرو
-        TEMPLATE,       // القالب نفسه
-        EXTENDS,        // {% extends "..." %}
-        INCLUDE,        // {% include "..." %}
-        SET_VAR,        // {% set x = ... %}
-        FILTER,         // {{ x | filter }} — الفلاتر المستخدمة
-        GLOBAL,         // request, session, g, config, url_for — متغيرات Flask العامة
-        ATTRIBUTE,      // obj.attr — وصول خاصية
-        IMPORT          // {% import "..." as x %}
+        VARIABLE, LOOP_VAR, BLOCK, MACRO, MACRO_PARAM,
+        TEMPLATE, EXTENDS, INCLUDE, SET_VAR, FILTER,
+        GLOBAL, ATTRIBUTE, IMPORT
     }
 
-    /** تحويل String إلى Kind (للتوافق مع الكود القديم) */
     private Kind parseKind(String kind) {
         if (kind == null) return Kind.VARIABLE;
-        try {
-            return Kind.valueOf(kind.toUpperCase().replace(" ", "_"));
-        } catch (IllegalArgumentException e) {
-            return Kind.VARIABLE;
-        }
+        try { return Kind.valueOf(kind.toUpperCase().replace(" ", "_")); }
+        catch (IllegalArgumentException e) { return Kind.VARIABLE; }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  متغيرات Flask — بس للفحص، ما بنحطها بالجدول
+    // ═══════════════════════════════════════════════════════════════════════════
+    private static final Set<String> FLASK_GLOBALS = new HashSet<>(Arrays.asList(
+            "request", "session", "g", "config", "url_for",
+            "get_flashed_messages", "range", "dict", "joiner",
+            "namespace", "lipsum", "cycler"
+    ));
+
+    public static boolean isFlaskGlobal(String name) {
+        return FLASK_GLOBALS.contains(name);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -46,66 +43,75 @@ public class SymbolTable {
     public static class Symbol {
         private final String name;
         private       Kind   kind;
-        private       String type;   // "String", "Number", "Bool", "List", "Dict", "Function", "Unknown"
+        private       String type;
         private       Object value;
         private final int    line;
         private       int    scopeLevel;
 
-        // 🚀 حقول القوالب (Templates)
+
         private String extendsTemplate = "None";
-        private List<String> usedVariables     = new ArrayList<>();
+
         private List<String> includedTemplates = new ArrayList<>();
 
-        // 🚀 حقول الماكرو (Macros)
-        private List<String> macroParameters = new ArrayList<>();
 
-        // 🚀 حقول المتغيرات (Variables)
-        private List<String> accessedAttributes = new ArrayList<>();  // مثلاً: product → [name, price, image]
+        private List<String> macroParameters = new ArrayList<>();
+        private List<String> usedVariables = new ArrayList<>();
+
+        //  تتبع سمات المتغيرات: product → [image, name, price, description]
+        private Map<String, List<String>> variableAttributes = new LinkedHashMap<>();
 
         public Symbol(String name, Kind kind, String type, Object value, int line) {
-            this.name       = name;
-            this.kind       = kind;
-            this.type       = type;
-            this.value      = value;
-            this.line       = line;
-            this.scopeLevel = 0;
+            this.name = name; this.kind = kind; this.type = type;
+            this.value = value; this.line = line;
         }
 
-        // ── getters ────────────────────────────────────────────────────────────
-        public String getName()             { return name;             }
-        public Kind   getKind()             { return kind;             }
-        public String getType()             { return type;             }
-        public Object getValue()            { return value;            }
-        public int    getLine()             { return line;             }
-        public int    getScopeLevel()       { return scopeLevel;       }
-        public String getExtendsTemplate()  { return extendsTemplate;  }
-        public List<String> getUsedVariables()     { return usedVariables;     }
-        public List<String> getIncludedTemplates() { return includedTemplates; }
-        public List<String> getMacroParameters()   { return macroParameters;   }
-        public List<String> getAccessedAttributes() { return accessedAttributes; }
+        public String getName()               { return name; }
+        public Kind   getKind()               { return kind; }
+        public String getType()               { return type; }
+        public Object getValue()              { return value; }
+        public int    getLine()               { return line; }
+        public int    getScopeLevel()         { return scopeLevel; }
+        public String getExtendsTemplate()    { return extendsTemplate; }
+        public List<String> getUsedVariables()     { return usedVariables; }
+        public Map<String, List<String>> getVariableAttributes() { return variableAttributes; }
 
-        // ── setters ────────────────────────────────────────────────────────────
-        public void setKind(Kind k)              { kind  = k; }
-        public void setType(String t)            { type  = t; }
+        public void setKind(Kind k)              { kind = k; }
+        public void setType(String t)            { type = t; }
         public void setValue(Object v)           { value = v; }
         public void setScopeLevel(int l)         { scopeLevel = l; }
-        public void setExtendsTemplate(String p) { this.extendsTemplate = p; }
+        public void setExtendsTemplate(String p) { extendsTemplate = p; }
+
+
+        private Map<String, Integer> usedVariableLines = new LinkedHashMap<>();
+
+        public Map<String, Integer> getUsedVariableLines() { return usedVariableLines; }
+        public void addUsedVariable(String varName, int line) {
+            if (!usedVariables.contains(varName)) {
+                usedVariables.add(varName);
+                usedVariableLines.put(varName, line);
+            }
+        }
+
+        public void addUsedVariable(String varName) {
+            addUsedVariable(varName, -1);
+        }
+        public List<String> getIncludedTemplates() { return includedTemplates; }
+
+        public void addIncludedTemplate(String tmpl) {
+            if (!this.includedTemplates.contains(tmpl)) {
+                this.includedTemplates.add(tmpl);
+            }
+        }
+
+        public List<String> getMacroParameters() { return macroParameters; }
+
         public void setMacroParameters(List<String> params) {
             this.macroParameters = params != null ? params : new ArrayList<>();
         }
-
-        // ── adders (مع منع التكرار) ────────────────────────────────────────────
-        public void addUsedVariable(String varName) {
-            if (!this.usedVariables.contains(varName)) this.usedVariables.add(varName);
-        }
-        public void addIncludedTemplate(String template) {
-            if (!this.includedTemplates.contains(template)) this.includedTemplates.add(template);
-        }
-        public void addMacroParameter(String param) {
-            if (!this.macroParameters.contains(param)) this.macroParameters.add(param);
-        }
-        public void addAccessedAttribute(String attr) {
-            if (!this.accessedAttributes.contains(attr)) this.accessedAttributes.add(attr);
+        public void addVariableAttribute(String varName, String attr) {
+            variableAttributes.computeIfAbsent(varName, k -> new ArrayList<>());
+            List<String> attrs = variableAttributes.get(varName);
+            if (!attrs.contains(attr)) attrs.add(attr);
         }
     }
 
@@ -115,13 +121,9 @@ public class SymbolTable {
     public static class ScopeEntry {
         final String scopeName;
         final Map<String, Symbol> symbols = new LinkedHashMap<>();
-
-        ScopeEntry(String name) {
-            this.scopeName = name;
-        }
-
-        public Collection<Symbol> getSymbols() { return symbols.values(); }
-        public String getScopeName()           { return scopeName;       }
+        ScopeEntry(String name) { this.scopeName = name; }
+        public Collection<Symbol> getSymbols()  { return symbols.values(); }
+        public String getScopeName()            { return scopeName; }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -133,10 +135,7 @@ public class SymbolTable {
     public  boolean hasSemanticError = false;
     private static SymbolTable instance;
 
-    private SymbolTable() {
-        allocate("global");
-        insertFlaskGlobals();   // 🚀 إدخال متغيرات Flask العامة تلقائياً
-    }
+    private SymbolTable() { allocate("global"); }
 
     public static SymbolTable getInstance() {
         if (instance == null) instance = new SymbolTable();
@@ -144,28 +143,6 @@ public class SymbolTable {
     }
 
     public static void reset() { instance = null; }
-
-    /** إدخال متغيرات Flask العامة في الـ Global Scope */
-    private void insertFlaskGlobals() {
-        // هذه المتغيرات متاحة دائماً في قوالب Jinja2 ولا يجب اعتبارها Missing
-        String[][] globals = {
-                {"request",                "Dict"},
-                {"session",                "Dict"},
-                {"g",                      "Dict"},
-                {"config",                 "Dict"},
-                {"url_for",                "Function"},
-                {"get_flashed_messages",   "Function"},
-                {"range",                  "Function"},
-                {"dict",                   "Function"},
-                {"joiner",                 "Function"},
-                {"namespace",              "Function"},
-                {"lipsum",                 "Function"},
-                {"cycler",                 "Function"},
-        };
-        for (String[] g : globals) {
-            insert(g[0], Kind.GLOBAL, g[1], null, 0);
-        }
-    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     //  Scope management
@@ -176,25 +153,19 @@ public class SymbolTable {
         allScopes.add(entry);
     }
 
-    public void allocate() {
-        allocate("scope_" + (++scopeCounter));
-    }
+    public void allocate() { allocate("scope_" + (++scopeCounter)); }
 
-    public void free() {
-        if (stack.size() > 1) stack.pop();
-    }
+    public void free() { if (stack.size() > 1) stack.pop(); }
 
     private int depth() { return stack.size() - 1; }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  insert (مع Enum)
+    //  insert
     // ═══════════════════════════════════════════════════════════════════════════
     public boolean insert(String name, Kind kind, String type, Object value, int line) {
         ScopeEntry top = stack.peek();
         if (top.symbols.containsKey(name)) {
-            // إعادة تعريف في نفس الـ scope → تحديث القيمة فقط
-            Symbol s = top.symbols.get(name);
-            s.setValue(value);
+            top.symbols.get(name).setValue(value);
             return false;
         }
         Symbol sym = new Symbol(name, kind, type, value, line);
@@ -203,7 +174,6 @@ public class SymbolTable {
         return true;
     }
 
-    /** Overload مع String kind (للتوافق مع الكود القديم) */
     public boolean insert(String name, String kind, String type, Object value, int line) {
         return insert(name, parseKind(kind), type, value, line);
     }
@@ -217,7 +187,7 @@ public class SymbolTable {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  lookup (في الـ stack الحالي فقط)
+    //  lookup
     // ═══════════════════════════════════════════════════════════════════════════
     public Symbol lookup(String name) {
         for (ScopeEntry entry : stack) {
@@ -227,7 +197,6 @@ public class SymbolTable {
         return null;
     }
 
-    // 🚀 NEW: lookup في كل الـ scopes (حتى المنتهية) — مهم لـ extends/include
     public Symbol lookupInAllScopes(String name) {
         for (ScopeEntry entry : allScopes) {
             Symbol s = entry.symbols.get(name);
@@ -237,7 +206,7 @@ public class SymbolTable {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  update
+    //  update / delete
     // ═══════════════════════════════════════════════════════════════════════════
     public boolean update(String name, Object newValue) {
         Symbol s = lookup(name);
@@ -246,23 +215,9 @@ public class SymbolTable {
         return true;
     }
 
-    // 🚀 NEW: updateType — لـ Type Inference
-    public boolean updateType(String name, String newType) {
-        Symbol s = lookup(name);
-        if (s == null) return false;
-        s.setType(newType);
-        return true;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  delete
-    // ═══════════════════════════════════════════════════════════════════════════
     public boolean delete(String name) {
         for (ScopeEntry entry : stack) {
-            if (entry.symbols.containsKey(name)) {
-                entry.symbols.remove(name);
-                return true;
-            }
+            if (entry.symbols.containsKey(name)) { entry.symbols.remove(name); return true; }
         }
         return false;
     }
@@ -271,74 +226,46 @@ public class SymbolTable {
         return !stack.isEmpty() && stack.peek().symbols.containsKey(name);
     }
 
-    public List<ScopeEntry> getAllScopes() {
-        return Collections.unmodifiableList(allScopes);
-    }
+    public List<ScopeEntry> getAllScopes() { return Collections.unmodifiableList(allScopes); }
 
-    // 🚀 NEW: getAllSymbols — لـ MissingFlaskVariableChecker
     public Collection<Symbol> getAllSymbols() {
         List<Symbol> all = new ArrayList<>();
-        for (ScopeEntry entry : allScopes) {
-            all.addAll(entry.symbols.values());
-        }
+        for (ScopeEntry entry : allScopes) all.addAll(entry.symbols.values());
         return all;
     }
 
-    // 🚀 NEW: getAllUsedVariableNames — كل المتغيرات المستخدمة (ناقص Globals و LoopVars)
-    // هذا هو ما سيتم مقارنته مع متغيرات render_template
+    /**
+     * كل المتغيرات يلي بيحتاجها كل قالب من render_template
+     * (منحذف: Flask globals, loop vars, set vars, macro params)
+     */
     public Set<String> getAllUsedVariableNames() {
         Set<String> used = new LinkedHashSet<>();
-
-        // اجمع كل المتغيرات المسجلة كـ VARIABLE أو من usedVariables
         for (ScopeEntry entry : allScopes) {
             for (Symbol s : entry.symbols.values()) {
-                if (s.getKind() == Kind.VARIABLE) {
-                    used.add(s.getName());
+                if (s.getKind() == Kind.VARIABLE) used.add(s.getName());
+                for (String v : s.getUsedVariables()) {
+                    if (!isFlaskGlobal(v)) used.add(v);
                 }
-                used.addAll(s.getUsedVariables());
             }
         }
 
-        // احذف المتغيرات المعرفة محلياً (LoopVar, SetVar, MacroParam, Global)
-        Set<String> locallyDefined = new HashSet<>();
         for (Symbol s : getAllSymbols()) {
-            if (s.getKind() == Kind.GLOBAL
-                    || s.getKind() == Kind.LOOP_VAR
-                    || s.getKind() == Kind.SET_VAR
-                    || s.getKind() == Kind.MACRO_PARAM
-                    || s.getKind() == Kind.MACRO) {
-                locallyDefined.add(s.getName());
+            if (s.getKind() == Kind.LOOP_VAR || s.getKind() == Kind.SET_VAR
+                    || s.getKind() == Kind.MACRO_PARAM || s.getKind() == Kind.MACRO) {
+                used.remove(s.getName());
             }
         }
-        used.removeAll(locallyDefined);
-
         return used;
     }
 
-    // 🚀 NEW: getTemplateSymbols — كل القوالب المكتشفة
     public List<Symbol> getTemplateSymbols() {
         List<Symbol> templates = new ArrayList<>();
         for (ScopeEntry entry : allScopes) {
             for (Symbol s : entry.symbols.values()) {
-                if (s.getKind() == Kind.TEMPLATE) {
-                    templates.add(s);
-                }
+                if (s.getKind() == Kind.TEMPLATE) templates.add(s);
             }
         }
         return templates;
-    }
-
-    // 🚀 NEW: getSymbolsByKind — symbols حسب النوع
-    public List<Symbol> getSymbolsByKind(Kind kind) {
-        List<Symbol> result = new ArrayList<>();
-        for (ScopeEntry entry : allScopes) {
-            for (Symbol s : entry.symbols.values()) {
-                if (s.getKind() == kind) {
-                    result.add(s);
-                }
-            }
-        }
-        return result;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -346,8 +273,7 @@ public class SymbolTable {
     // ═══════════════════════════════════════════════════════════════════════════
     private String clip(String s, int max) {
         if (s == null) return "—";
-        if (s.length() <= max) return s;
-        return s.substring(0, max - 3) + "...";
+        return s.length() <= max ? s : s.substring(0, max - 3) + "...";
     }
 
     public void printTable() {
@@ -355,10 +281,17 @@ public class SymbolTable {
         System.out.println("  HTML / JINJA SYMBOL TABLE");
         System.out.println("═".repeat(85));
 
-        String header = String.format("  %-20s %-14s %-10s %-20s %-7s %-6s",
+        System.out.printf("  %-20s %-14s %-10s %-20s %-7s %-6s%n",
                 "Name", "Kind", "Type", "Value", "Line", "Scope");
-        System.out.println(header);
         System.out.println("  " + "─".repeat(81));
+
+        Set<String> locallyDefined = new HashSet<>();
+        for (Symbol s : getAllSymbols()) {
+            if (s.getKind() == Kind.LOOP_VAR || s.getKind() == Kind.SET_VAR
+                    || s.getKind() == Kind.MACRO_PARAM || s.getKind() == Kind.MACRO) {
+                locallyDefined.add(s.getName());
+            }
+        }
 
         for (ScopeEntry entry : allScopes) {
             if (entry.symbols.isEmpty()) continue;
@@ -368,29 +301,29 @@ public class SymbolTable {
             for (Symbol s : entry.symbols.values()) {
                 String valStr = s.getValue() == null ? "—" : s.getValue().toString();
 
-                System.out.println(String.format("    %-18s %-14s %-10s %-20s %-7d %-6d",
+                System.out.printf("    %-18s %-14s %-10s %-20s %-7d %-6d%n",
                         clip(s.getName(), 18),
                         s.getKind(),
                         s.getType(),
                         clip(valStr, 20),
                         s.getLine() == -1 ? 0 : s.getLine(),
-                        s.getScopeLevel()));
+                        s.getScopeLevel());
 
-                // معلومات القالب
+
                 if (s.getKind() == Kind.TEMPLATE) {
                     System.out.println("      → extends : " + s.getExtendsTemplate());
-                    System.out.println("      → vars    : " + s.getUsedVariables());
-                    System.out.println("      → includes: " + s.getIncludedTemplates());
-                }
 
-                // معلومات الماكرو
-                if (s.getKind() == Kind.MACRO) {
-                    System.out.println("      → params  : " + s.getMacroParameters());
-                }
+                    List<String> filteredVars = new ArrayList<>();
+                    for (String v : s.getUsedVariables()) {
+                        if (!isFlaskGlobal(v) && !locallyDefined.contains(v)) {
+                            filteredVars.add(v);
+                        }
+                    }
+                    System.out.println("      → vars    : " + (filteredVars.isEmpty() ? "[]" : filteredVars));
 
-                // السمات المستخدمة (Attribute Access)
-                if (!s.getAccessedAttributes().isEmpty()) {
-                    System.out.println("      → attrs   : " + s.getAccessedAttributes());
+                    for (Map.Entry<String, List<String>> attrEntry : s.getVariableAttributes().entrySet()) {
+                        System.out.println("      → " + attrEntry.getKey() + " → " + attrEntry.getValue());
+                    }
                 }
             }
         }

@@ -394,12 +394,15 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
                     currentSection = "finally";
                     currentBody    = finallyBlock;
                 } else if (type == ProductLexer.ID
-                        && currentSection.equals("except")
-                        && currentExcName == null) {
-                    currentExcName = text;
-                    // insert exception variable
-                    symbolTable.insert(currentExcName, Kind.VARIABLE, "EXCEPTION", null,
-                            ((TerminalNode) child).getSymbol().getLine());
+                        && currentSection.equals("except")) {
+                    if (currentExcName == null) {
+                        currentExcName = text;
+                        symbolTable.insert(currentExcName, Kind.VARIABLE, "EXCEPTION", null,
+                                ((TerminalNode) child).getSymbol().getLine());
+                    } else {
+                        symbolTable.insert(text, Kind.VARIABLE, "EXCEPTION", null,
+                                ((TerminalNode) child).getSymbol().getLine());
+                    }
                 }
             } else if (child instanceof ProductParser.StatementContext) {
                 ASTNode n = visit((ProductParser.StatementContext) child);

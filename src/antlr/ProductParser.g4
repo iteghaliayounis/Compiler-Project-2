@@ -186,6 +186,6 @@ flow_stmt
 
 try_stmt
     : TRY COLON NEWLINE INDENT statement+ DEDENT
-      (EXCEPT (ID)? COLON NEWLINE INDENT statement+ DEDENT)*
+      (EXCEPT (ID (AS ID)? )? COLON NEWLINE INDENT statement+ DEDENT)*
       (FINALLY COLON NEWLINE INDENT statement+ DEDENT)?
     ;
