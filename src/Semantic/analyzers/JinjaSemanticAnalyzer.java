@@ -1,27 +1,23 @@
 package Semantic.analyzers;
 
 import AstHtml.AstNode;
-import Semantic.checkers.JinjaSemanticChecker;
+import Semantic.checkers.Jinja.UndefinedVariableChecker;
 import Semantic.handlers.SemanticErrorHandler;
-
 
 public class JinjaSemanticAnalyzer {
 
-    private final SemanticErrorHandler handler;
-    private final JinjaSemanticChecker checker;
+    private final UndefinedVariableChecker checker;
 
-    public JinjaSemanticAnalyzer() {
-        this.handler = new SemanticErrorHandler();
-        this.checker = new JinjaSemanticChecker(handler);
+    public JinjaSemanticAnalyzer(SemanticErrorHandler sharedHandler) {
+        this.checker = new UndefinedVariableChecker(sharedHandler);
     }
 
     public void analyze(AstNode root) {
         System.out.println("\n[Semantic Analysis] Running Jinja checks...");
         checker.check(root);
     }
+
     public void addFlaskPassedVariable(String varName) {
         checker.addFlaskPassedVariable(varName);
     }
-    public void printResults() { handler.printAll(); }
-    public SemanticErrorHandler getHandler() { return handler; }
 }

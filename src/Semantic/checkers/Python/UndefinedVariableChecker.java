@@ -1,4 +1,4 @@
-package Semantic.checkers;
+package Semantic.checkers.Python;
 
 import AST.*;
 import AST.Arg.*;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PythonSemanticChecker {
+public class UndefinedVariableChecker {
 
     private final SymbolTable          symbolTable;
     private final SemanticErrorHandler handler;
@@ -40,11 +40,11 @@ public class PythonSemanticChecker {
             "min", "max", "abs", "round", "open", "next", "iter", "super",
             "object", "Exception", "ValueError", "TypeError", "KeyError",
             "IndexError", "True", "False", "None", "__name__", "__main__",
-"global" , "nonlocal"
+            "global" , "nonlocal"
     ));
 
-    public PythonSemanticChecker(SymbolTable symbolTable,
-                                 SemanticErrorHandler handler) {
+    public UndefinedVariableChecker(SymbolTable symbolTable,
+                                    SemanticErrorHandler handler) {
         this.symbolTable = symbolTable;
         this.handler     = handler;
     }
@@ -81,7 +81,8 @@ public class PythonSemanticChecker {
         else if (node instanceof TargetID) {
             String name = ((TargetID) node).name;
             if (!BUILTINS.contains(name) && symbolTable.lookupInAllScopes(name) == null) {
-                handler.report(new UndefinedVarError(name, node.getLineNumber()));
+
+                handler.report(new UndefinedVarError(name, node.getLineNumber(), "PYTHON"));
             }
         }
         else if (node instanceof TargetCall) {
@@ -103,7 +104,8 @@ public class PythonSemanticChecker {
             if (d.name != null && !d.name.getParts().isEmpty()) {
                 String firstName = d.name.getParts().get(0);
                 if (!BUILTINS.contains(firstName) && symbolTable.lookupInAllScopes(firstName) == null) {
-                    handler.report(new UndefinedVarError(firstName, node.getLineNumber()));
+
+                    handler.report(new UndefinedVarError(firstName, node.getLineNumber(), "PYTHON"));
                 }
             }
             if (d.args != null) checkArgList(d.args);
@@ -152,7 +154,7 @@ public class PythonSemanticChecker {
             if (suffix instanceof IndexAccess) {
                 checkNode(((IndexAccess) suffix).index);
             }
-            // AttributeAccess → تجاهل
+
         }
     }
 
@@ -160,10 +162,8 @@ public class PythonSemanticChecker {
     private void checkIdentifier(Identifier node) {
         String name = node.name;
         if (BUILTINS.contains(name)) return;
-
-        // دور في كل الـ scopes المحفوظة
         if (symbolTable.lookupInAllScopes(name) == null) {
-            handler.report(new UndefinedVarError(name, node.getLineNumber()));
+            handler.report(new UndefinedVarError(name, node.getLineNumber(), "PYTHON"));
         }
     }
 
@@ -180,7 +180,6 @@ public class PythonSemanticChecker {
 
     // ── GenExpr ──────────────────────────────────────────────────────────
     private void checkGenExpr(GenExpr node) {
-        // الـ var هو تعريف داخل الـ generator — لا نتحقق منه
         checkNode(node.iterable);
         checkNode(node.expr);
         if (node.condition != null) checkNode(node.condition);

@@ -48,6 +48,7 @@ public class MissingFlaskVariableChecker {
     // ═══════════════════════════════════════════════════════════════════════
 
     public void check() {
+        int errorsBefore = handler.getErrors().size();
         System.out.println("  [Flask Linker] Starting Missing Flask Variable Check...");
 
         List<PyTemplate> pyTemplates = collectPythonTemplates();
@@ -128,11 +129,12 @@ public class MissingFlaskVariableChecker {
             }
         }
 
-        System.out.println();
-        if (handler.getErrors().isEmpty()) {
+
+        int newErrors = handler.getErrors().size() - errorsBefore;
+        if (newErrors == 0) {
             System.out.println("  [Flask Linker]  All Flask variables are correctly passed!");
         } else {
-            System.out.println("  [Flask Linker]  Found " + handler.getErrors().size() + " missing variable(s).");
+            System.out.println("  [Flask Linker]  Found " + newErrors + " missing variable(s)."); // <- عدلي الطباعة
         }
     }
 

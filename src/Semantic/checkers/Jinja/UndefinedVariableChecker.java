@@ -1,4 +1,4 @@
-package Semantic.checkers;
+package Semantic.checkers.Jinja;
 
 import AstHtml.*;
 
@@ -8,7 +8,7 @@ import Semantic.handlers.SemanticErrorHandler;
 import java.util.*;
 
 
-public class JinjaSemanticChecker {
+public class UndefinedVariableChecker {
 
     // ── Scope Stack مستقل ──────────────────────────────────────────────
     private final Deque<Set<String>> scopeStack = new ArrayDeque<>();
@@ -26,7 +26,7 @@ public class JinjaSemanticChecker {
             "namespace", "lipsum", "cycler"
     ));
 
-    public JinjaSemanticChecker(SemanticErrorHandler handler) {
+    public UndefinedVariableChecker(SemanticErrorHandler handler) {
         this.handler = handler;
         // Global scope يلي فيه Flask globals
         scopeStack.push(new LinkedHashSet<>(FLASK_GLOBALS));
@@ -117,10 +117,10 @@ public class JinjaSemanticChecker {
     private void checkVariable(VariableNode node) {
         String name = node.getName();
         if (!isDefined(name) && !flaskPassedVars.contains(name)) {
-         //   handler.report(new UndefinedVarError(name, node.getLine()));
+
+            handler.report(new UndefinedVarError(name, node.getLine(), "JINJA"));
         }
     }
-
 
     /* ═══════════════════════════════════════════════════════════════════
      *  إدارة الـ Scopes

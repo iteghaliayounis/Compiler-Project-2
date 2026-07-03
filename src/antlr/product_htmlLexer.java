@@ -1,4 +1,4 @@
-// Generated from E:/Compiler/Project Compiler_2/src/antlr/product_htmlLexer.g4 by ANTLR 4.13.2
+// Generated from C:/Compiler/Project Compiler_2/src/antlr/product_htmlLexer.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
