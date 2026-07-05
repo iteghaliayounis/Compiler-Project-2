@@ -1,41 +1,55 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-{% for p in products %}
-
-<div>{{ p.name }}</div>
-
-<div>{{ p.price }}</div>
-
-<div>{{ p.description }}</div>
-
-<div>{{ p.image }}</div>
-
-{% endfor %}
-
-{{ total_products }}
-
-{% endblock %}
-{% extends "base.html" %}
-
-{% block content %}
-
-<h1>{{ username }}</h1>
-
-<p>{{ age }}</p>
-
-{% endblock %}
-<!DOCTYPE html>
+{# ════════════════════════════════════════════════════════════
+   اختبار شامل لـ Type Error في Jinja2
+   نستخدم literals مباشرة (لا نحتاج render_template)
+   ════════════════════════════════════════════════════════════ #}
 
 <html>
-
 <body>
 
-{% block content %}
+{# ── Test 1: for على رقم ── #}
+{# المتوقع: TypeError: 'int' object is not iterable #}
+{% for i in 5 %}
+    <p>{{ i }}</p>
+{% endfor %}
 
-{% endblock %}
+
+{# ── Test 2: جمع int + str ── #}
+{# المتوقع: TypeError: unsupported operand type(s) for +: 'int' and 'str' #}
+<p>{{ 5 + "hello" }}</p>
+
+
+{# ── Test 3: فهرسة رقم ── #}
+{# المتوقع: TypeError: 'int' object is not subscriptable #}
+<p>{{ 10[0] }}</p>
+
+
+{# ── Test 4: طرح str - int ── #}
+{# المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int' #}
+<p>{{ "Sara" - 4 }}</p>
+
+
+{# ── Test 5: مقارنة str < int ── #}
+{# المتوقع: TypeError: '<' not supported between instances of 'str' and 'int' #}
+{% if "Sara" < 4 %}
+    <p>compare</p>
+{% endif %}
+
+
+{# ── Test 6: جمع str + int (الترتيب معكوس) ── #}
+{# المتوقع: TypeError: can only concatenate str (not "int") to str #}
+<p>{{ "Sara" + 4 }}</p>
+
+
+{# ── Test 7: ضرب str * str (SEQUENCE BY NON-INT) ── #}
+{# المتوقع: TypeError: can't multiply sequence by non-int of type 'str' #}
+<p>{{ "a" * "b" }}</p>
+
+
+{# ── Test 8: قسمة int / str ── #}
+{# المتوقع: TypeError: unsupported operand type(s) for /: 'int' and 'str' #}
+<p>{{ 5 / "hello" }}</p>
+
+
 
 </body>
-
 </html>

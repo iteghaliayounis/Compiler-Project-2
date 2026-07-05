@@ -55,7 +55,7 @@ public class Main {
     private static void runProduct() {
         try {
             System.out.println("Running Product Compiler...\n");
-            String path = "app.txt";
+            String path = "pythonTestErorrs.txt";
             CharStream input = CharStreams.fromFileName(path);
             ProductLexer lexer = new ProductLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -79,7 +79,7 @@ public class Main {
     private static void runHtml() {
         try {
             System.out.println("Running HTML Compiler...\n");
-            String fileName = "htmlTest.txt";
+            String fileName = "htmlTestErorrs.txt";
             InputStream is = new FileInputStream(fileName);
             CharStream input = CharStreams.fromStream(is);
             product_htmlLexer lexer = new product_htmlLexer(input);

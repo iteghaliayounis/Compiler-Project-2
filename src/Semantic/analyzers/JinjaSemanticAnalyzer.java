@@ -2,22 +2,58 @@ package Semantic.analyzers;
 
 import AstHtml.AstNode;
 import Semantic.checkers.Jinja.UndefinedVariableChecker;
+import Semantic.checkers.Jinja.TypeErrorChecker;
 import Semantic.handlers.SemanticErrorHandler;
 
+import symbol_table.SymbolTable;
+
+/**
+ * JinjaSemanticAnalyzer — مدير أخطاء Jinja2
+ *
+ * يدير الـ Checkers التالية:
+ *   1. UndefinedVariableChecker  ← غالية ✅ (موجود مسبقاً)
+ *   2. TypeErrorChecker          ← رؤى (جديد)
+ *
+ * ملاحظة: Type Mismatch للجينجا (فلاتر) يتم في طبقة الـ Bridge
+ *         (FilterTypeMismatchChecker) وليس هنا.
+ */
 public class JinjaSemanticAnalyzer {
 
-    private final UndefinedVariableChecker checker;
+    private final UndefinedVariableChecker undefinedChecker;
+    private final TypeErrorChecker         typeErrorChecker;        // ← جديد
 
+    // نحتاج Jinja ST لتمريرها لـ TypeErrorChecker
+    private final SymbolTable jinjaST;
+
+    public JinjaSemanticAnalyzer(SymbolTable jinjaST, SemanticErrorHandler sharedHandler) {
+        this.jinjaST = jinjaST;
+
+        // Existing checker (غالية) — لا يحتاج jinjaST لأنه يدير scopes داخلياً
+        this.undefinedChecker = new UndefinedVariableChecker(sharedHandler);
+
+        // New checker (رؤى) — يحتاج jinjaST للاستعلام عن أنواع المتغيرات
+        this.typeErrorChecker = new TypeErrorChecker(jinjaST, sharedHandler);
+    }
+
+    /**
+     * Constructor قديم محافظ على التوافق الخلفي
+     * (يستخدم SymbolTable.getInstance() داخلياً)
+     */
     public JinjaSemanticAnalyzer(SemanticErrorHandler sharedHandler) {
-        this.checker = new UndefinedVariableChecker(sharedHandler);
+        this(SymbolTable.getInstance(), sharedHandler);
     }
 
     public void analyze(AstNode root) {
         System.out.println("\n[Semantic Analysis] Running Jinja checks...");
-        checker.check(root);
+
+        // 1. Undefined Variable (غالية)
+        undefinedChecker.check(root);
+
+        // 2. Type Error (رؤى) — العمليات على أنواع خاطئة في القوالب
+        typeErrorChecker.check(root);
     }
 
     public void addFlaskPassedVariable(String varName) {
-        checker.addFlaskPassedVariable(varName);
+        undefinedChecker.addFlaskPassedVariable(varName);
     }
 }

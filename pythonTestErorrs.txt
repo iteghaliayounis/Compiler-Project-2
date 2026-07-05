@@ -2,27 +2,49 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-products = [
-    {
-        "name": "Laptop",
-        "price": 750,
-        "description": "Gaming Laptop"
-    }
-]
-
 
 @app.route("/")
-def products_page():
-    return render_template(
-        "products.html",
-        products=products
-    )
+def home():
+    # ════════════════════════════════════════════════════════════
+    # اختبار شامل لـ Type Error في Python
+    # ════════════════════════════════════════════════════════════
+
+    # ── Test 1: التكرار على نوع غير قابل للتكرار ──
+    # المتوقع: TypeError: 'int' object is not iterable
+    x1 = 10
+    for i in x1:
+        print(i)
+
+    # ── Test 2: len() على نوع لا يدعم الطول ──
+    # المتوقع: TypeError: object of type 'int' has no len()
+    x2 = 10
+    print(len(x2))
+
+    # ── Test 3: فهرسة نوع غير قابل للفهرسة ──
+    # المتوقع: TypeError: 'int' object is not subscriptable
+    x3 = 5
+    print(x3[0])
+
+    # ── Test 4: جمع (+) بين أنواع غير متوافقة ──
+    # المتوقع: TypeError: can only concatenate str (not "int") to str
+    x4 = "Sara" + 4
+
+    # ── Test 5: طرح (-) بين أنواع غير متوافقة ──
+    # المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int'
+    x5 = "Sara" - 4
 
 
-@app.route("/profile")
-def profile():
-    result = unknown_variable + 5
-    return render_template(
-        "profile.html",
-        username="Ghalia"
-    )
+    # ── Test 6: مقارنة بين أنواع غير متوافقة ──
+    # المتوقع: TypeError: '<' not supported between instances of 'str' and 'int'
+    x8 = "Sara" < 4
+
+    # ── Test 7: عملية حسابية مع None ──
+    # المتوقع: TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'
+    x9 = None
+    x9_result = x9 + 5
+
+    # ── Test 8: عملية حسابية مع None ──
+      x = "Sara" - "Ali"
+      # TypeError: unsupported operand type(s) for -: 'str' and 'str'
+
+    return render_template("home.html")
