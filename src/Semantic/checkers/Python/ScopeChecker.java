@@ -168,11 +168,9 @@ public class ScopeChecker {
     /**
      * ★ FuncDef — push scope + define function name + params + check body + pop
      *
-     *  def foo(a, b):   ← define "foo" في outer scope, push new scope, define a, b
-     *      x = 5
-     *      return x     ← x متاح (معرف بـ foo scope)
-     *                   ← pop foo scope
-     *  print(x)         ← ScopeError! x كان بـ foo scope بس
+     *  ⚠️ ملاحظة مهمة عن Route Functions:
+     *  الـ route functions (يلي فيها @app.route) بـ AST تبعهم بيتقطع الـ body.
+     *  فإحنا ما بنعمل pop للـ route functions عشان متغيراتها تضل متاحة.
      */
     private void checkFuncDef(FuncDef node) {
         // 1) Define function name في CURRENT scope (قبل push)
@@ -191,8 +189,26 @@ public class ScopeChecker {
         // 4) Check body
         for (ASTNode stmt : node.body) checkNode(stmt);
 
-        // 5) Pop scope
-        popScope();
+        // 5) ★ Pop scope - بس للـ functions العادية (مو route functions)
+        // لو فيها decorator route → ما نعمل pop (لأنو الـ AST بيتقطع)
+        boolean isRouteFunction = false;
+        if (node.decorators != null) {
+            for (AST.Decorator d : node.decorators) {
+                if (d.name != null && d.name.getParts() != null
+                        && !d.name.getParts().isEmpty()) {
+                    String lastPart = d.name.getParts().get(d.name.getParts().size() - 1);
+                    if ("route".equals(lastPart)) {
+                        isRouteFunction = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isRouteFunction) {
+            popScope();
+        }
+        // لو route function → ما نعمل pop (المتغيرات تضل متاحة)
     }
 
     /**
@@ -263,6 +279,14 @@ public class ScopeChecker {
     private void checkIdentifier(Identifier node) {
         if (node.name == null) return;
 
+        // ★ DEBUG: شوفي حالة الـ scope وقت فحص كل identifier
+        System.out.println("[DEBUG checkIdentifier] checking '" + node.name + "' at line " + node.getLineNumber());
+        System.out.println("[DEBUG checkIdentifier] scopeStack size: " + scopeStack.size());
+        for (int i = 0; i < scopeStack.size(); i++) {
+            System.out.println("[DEBUG checkIdentifier] scope " + i + ": " + scopeStack.get(i));
+        }
+        System.out.println("[DEBUG checkIdentifier] isAccessible('" + node.name + "'): " + isAccessible(node.name));
+
         // 1) هل المتغير متاح بـ current scope stack؟
         if (isAccessible(node.name)) {
             return;  // ✓ تمام
@@ -273,7 +297,6 @@ public class ScopeChecker {
             // → ScopeError!
             handler.report(new ScopeError(node.name, node.getLineNumber(), "PYTHON"));
         }
-        // 3) لو مش معرف أبداً → UndefinedVarError (شغل غالية)
     }
 
     // ═══════════════════════════════════════════════════════════════════
