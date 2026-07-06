@@ -40,7 +40,7 @@ public class UndefinedVariableChecker {
             "min", "max", "abs", "round", "open", "next", "iter", "super",
             "object", "Exception", "ValueError", "TypeError", "KeyError",
             "IndexError", "True", "False", "None", "__name__", "__main__",
-            "global" , "nonlocal"
+            "global" , "nonlocal" , "input"
     ));
 
     public UndefinedVariableChecker(SymbolTable symbolTable,

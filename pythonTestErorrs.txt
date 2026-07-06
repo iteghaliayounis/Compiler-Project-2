@@ -2,49 +2,51 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def home():
     # ════════════════════════════════════════════════════════════
-    # اختبار شامل لـ Type Error في Python
+    # 1. أخطاء رؤى (TypeError)
     # ════════════════════════════════════════════════════════════
-
-    # ── Test 1: التكرار على نوع غير قابل للتكرار ──
-    # المتوقع: TypeError: 'int' object is not iterable
     x1 = 10
-    for i in x1:
+    for i in x1:           # TypeError: 'int' object is not iterable
         print(i)
 
-    # ── Test 2: len() على نوع لا يدعم الطول ──
-    # المتوقع: TypeError: object of type 'int' has no len()
     x2 = 10
-    print(len(x2))
+    print(len(x2))         # TypeError: object of type 'int' has no len()
 
-    # ── Test 3: فهرسة نوع غير قابل للفهرسة ──
-    # المتوقع: TypeError: 'int' object is not subscriptable
-    x3 = 5
-    print(x3[0])
-
-    # ── Test 4: جمع (+) بين أنواع غير متوافقة ──
-    # المتوقع: TypeError: can only concatenate str (not "int") to str
-    x4 = "Sara" + 4
-
-    # ── Test 5: طرح (-) بين أنواع غير متوافقة ──
-    # المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int'
-    x5 = "Sara" - 4
+    x4 = "Sara" + 4        # TypeError: can only concatenate str (not "int") to str
+    x5 = "Sara" - 4        # TypeError: unsupported operand type(s) for -: 'str' and 'int'
 
 
-    # ── Test 6: مقارنة بين أنواع غير متوافقة ──
-    # المتوقع: TypeError: '<' not supported between instances of 'str' and 'int'
-    x8 = "Sara" < 4
+    # ════════════════════════════════════════════════════════════
+    # 2. أخطاء رغد (ScopeError)
+    # ════════════════════════════════════════════════════════════
+    def inner_func():
+        secret = 99
 
-    # ── Test 7: عملية حسابية مع None ──
-    # المتوقع: TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'
-    x9 = None
-    x9_result = x9 + 5
+    print(secret)          # UnboundLocalError: local variable 'secret' referenced before assignment
 
-    # ── Test 8: عملية حسابية مع None ──
-      x = "Sara" - "Ali"
-      # TypeError: unsupported operand type(s) for -: 'str' and 'str'
+
+    # ════════════════════════════════════════════════════════════
+    # 3. أخطاء رغد (DivisionByZeroError)
+    # ════════════════════════════════════════════════════════════
+    y = 0
+    z = 10 / y             # ZeroDivisionError: division by zero
+
+    m = 10 % 0             # ZeroDivisionError: integer division or modulo by zero
+
+
+    # ════════════════════════════════════════════════════════════
+    # 4. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives)
+    # ════════════════════════════════════════════════════════════
+
+    # السكوب: i بـ بايثون بتبقى متاحة بعد الـ for
+    for i in range(5):
+        pass
+    print(i)               # ✅ صحيح (ما فيه خطأ)
+
+    # القسمة: قسمة على متغير مش معروف القيمة
+    unknown_val = int("10")
+    result = 5 / unknown_val  # ✅ صحيح (ما فيه خطأ - القيمة UNKNOWN وقت الـ compile)
 
     return render_template("home.html")

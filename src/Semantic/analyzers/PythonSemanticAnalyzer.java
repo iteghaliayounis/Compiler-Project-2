@@ -1,6 +1,8 @@
 package Semantic.analyzers;
 
 import AST.ASTNode;
+import Semantic.checkers.Python.DivisionByZeroChecker;
+import Semantic.checkers.Python.ScopeChecker;
 import Semantic.checkers.Python.UndefinedVariableChecker;
 import Semantic.checkers.Python.TypeErrorChecker;
 //import Semantic.checkers.Python.TypeMismatchChecker;
@@ -20,6 +22,8 @@ public class PythonSemanticAnalyzer {
     private final SymbolTable symbolTable;
     private final UndefinedVariableChecker undefinedChecker;
     private final TypeErrorChecker         typeErrorChecker;        // ← جديد
+    private final ScopeChecker             scopeChecker;
+    private final DivisionByZeroChecker    divisionByZeroChecker;
     //private final TypeMismatchChecker      typeMismatchChecker;     // ← جديد
 
     public PythonSemanticAnalyzer(SymbolTable symbolTable, SemanticErrorHandler sharedHandler) {
@@ -31,6 +35,9 @@ public class PythonSemanticAnalyzer {
         // New checkers — رؤى
         this.typeErrorChecker     = new TypeErrorChecker(symbolTable, sharedHandler);
        // this.typeMismatchChecker  = new TypeMismatchChecker(symbolTable, sharedHandler);
+
+        this.scopeChecker = new ScopeChecker(symbolTable, sharedHandler);
+        this.divisionByZeroChecker = new DivisionByZeroChecker(symbolTable, sharedHandler);
     }
 
     public void analyze(ASTNode root) {
@@ -41,6 +48,9 @@ public class PythonSemanticAnalyzer {
 
         // 2. Type Error (رؤى) — العمليات على أنواع خاطئة
         typeErrorChecker.check(root);
+
+        scopeChecker.check(root);
+        divisionByZeroChecker.check(root);
 
         // 3. Type Mismatch (رؤى) — الإسناد مع type annotation
        // typeMismatchChecker.check(root);

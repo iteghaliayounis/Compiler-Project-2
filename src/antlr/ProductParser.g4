@@ -85,7 +85,7 @@ comparisonExpr
     ;
 
 arithExpr
-    : call_chain ((PLUS | MINUS) call_chain)*
+    : call_chain ((PLUS | MINUS | MUL | DIV | MOD | POW) call_chain)*
     ;
 
 // Call / Attribute / Index

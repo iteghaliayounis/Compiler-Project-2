@@ -15,6 +15,7 @@ public class UndefinedVariableChecker {
     private final SemanticErrorHandler handler;
 
     private final Set<String> flaskPassedVars = new HashSet<>();
+    private final Set<String> allDefinedVars = new HashSet<>();
 
     public void addFlaskPassedVariable(String varName) {
         flaskPassedVars.add(varName);
@@ -43,7 +44,9 @@ public class UndefinedVariableChecker {
     }
 
     private void define(String name) {
+
         scopeStack.peek().add(name);
+        allDefinedVars.add(name);
     }
 
 
@@ -117,6 +120,10 @@ public class UndefinedVariableChecker {
     private void checkVariable(VariableNode node) {
         String name = node.getName();
         if (!isDefined(name) && !flaskPassedVars.contains(name)) {
+
+            if (allDefinedVars.contains(name)) {
+                return;
+            }
 
             handler.report(new UndefinedVarError(name, node.getLine(), "JINJA"));
         }

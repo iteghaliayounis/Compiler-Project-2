@@ -1,6 +1,8 @@
 package Semantic.analyzers;
 
 import AstHtml.AstNode;
+import Semantic.checkers.Jinja.DivisionByZeroChecker;
+import Semantic.checkers.Jinja.ScopeChecker;
 import Semantic.checkers.Jinja.UndefinedVariableChecker;
 import Semantic.checkers.Jinja.TypeErrorChecker;
 import Semantic.handlers.SemanticErrorHandler;
@@ -21,6 +23,8 @@ public class JinjaSemanticAnalyzer {
 
     private final UndefinedVariableChecker undefinedChecker;
     private final TypeErrorChecker         typeErrorChecker;        // ← جديد
+    private final ScopeChecker             scopeChecker;
+    private final DivisionByZeroChecker    divisionByZeroChecker;
 
     // نحتاج Jinja ST لتمريرها لـ TypeErrorChecker
     private final SymbolTable jinjaST;
@@ -33,6 +37,9 @@ public class JinjaSemanticAnalyzer {
 
         // New checker (رؤى) — يحتاج jinjaST للاستعلام عن أنواع المتغيرات
         this.typeErrorChecker = new TypeErrorChecker(jinjaST, sharedHandler);
+
+        this.scopeChecker = new ScopeChecker(jinjaST, sharedHandler);
+        this.divisionByZeroChecker = new DivisionByZeroChecker(jinjaST, sharedHandler);
     }
 
     /**
@@ -51,6 +58,9 @@ public class JinjaSemanticAnalyzer {
 
         // 2. Type Error (رؤى) — العمليات على أنواع خاطئة في القوالب
         typeErrorChecker.check(root);
+
+        scopeChecker.check(root);
+        divisionByZeroChecker.check(root);
     }
 
     public void addFlaskPassedVariable(String varName) {

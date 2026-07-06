@@ -1,55 +1,40 @@
 {# ════════════════════════════════════════════════════════════
-   اختبار شامل لـ Type Error في Jinja2
-   نستخدم literals مباشرة (لا نحتاج render_template)
+   اختبار شامل لـ Type Error و Scope Error و Division By Zero في Jinja2
    ════════════════════════════════════════════════════════════ #}
 
 <html>
 <body>
 
-{# ── Test 1: for على رقم ── #}
-{# المتوقع: TypeError: 'int' object is not iterable #}
-{% for i in 5 %}
+{# ── 1. أخطاء رؤى (TypeError) ── #}
+{% for i in 5 %}          {# TypeError: 'int' object is not iterable #}
     <p>{{ i }}</p>
 {% endfor %}
 
+<p>{{ 5 + "hello" }}</p>  {# TypeError: unsupported operand type(s) for +: 'int' and 'str' #}
 
-{# ── Test 2: جمع int + str ── #}
-{# المتوقع: TypeError: unsupported operand type(s) for +: 'int' and 'str' #}
-<p>{{ 5 + "hello" }}</p>
+<p>{{ 10[0] }}</p>        {# TypeError: 'int' object is not subscriptable #}
 
-
-{# ── Test 3: فهرسة رقم ── #}
-{# المتوقع: TypeError: 'int' object is not subscriptable #}
-<p>{{ 10[0] }}</p>
+<p>{{ "Sara" - 4 }}</p>   {# TypeError: unsupported operand type(s) for -: 'str' and 'int' #}
 
 
-{# ── Test 4: طرح str - int ── #}
-{# المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int' #}
-<p>{{ "Sara" - 4 }}</p>
+{# ── 2. أخطاء رغد (ScopeError) ── #}
+{% for item in [1, 2, 3] %}
+    <p>{{ item }}</p>
+{% endfor %}
+<p>{{ item }}</p>         {# UnboundLocalError: 'item' is not defined outside loop #}
 
 
-{# ── Test 5: مقارنة str < int ── #}
-{# المتوقع: TypeError: '<' not supported between instances of 'str' and 'int' #}
-{% if "Sara" < 4 %}
-    <p>compare</p>
-{% endif %}
+{# ── 3. أخطاء رغد (DivisionByZeroError) ── #}
+<p>{{ 10 / 0 }}</p>       {# ZeroDivisionError: division by zero #}
+<p>{{ 7 % 0 }}</p>        {# ZeroDivisionError: integer division or modulo by zero #}
 
 
-{# ── Test 6: جمع str + int (الترتيب معكوس) ── #}
-{# المتوقع: TypeError: can only concatenate str (not "int") to str #}
-<p>{{ "Sara" + 4 }}</p>
+{# ── 4. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives) ── #}
+<p>{{ 10 / 2 }}</p>       {# ✅ صحيح (قسمة طبيعية) #}
+<p>{{ 5 + 5 }}</p>        {# ✅ صحيح (جمع طبيعي) #}
 
-
-{# ── Test 7: ضرب str * str (SEQUENCE BY NON-INT) ── #}
-{# المتوقع: TypeError: can't multiply sequence by non-int of type 'str' #}
-<p>{{ "a" * "b" }}</p>
-
-
-{# ── Test 8: قسمة int / str ── #}
-{# المتوقع: TypeError: unsupported operand type(s) for /: 'int' and 'str' #}
-<p>{{ 5 / "hello" }}</p>
-
-
+{% set msg = "Hello" %}
+<p>{{ msg }}</p>          {# ✅ صحيح (المتغير معرف بـ set ومستخدم بنفس السكوب) #}
 
 </body>
 </html>

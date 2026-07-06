@@ -1,13 +1,10 @@
-// Generated from C:/Compiler/Project Compiler_2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class ProductParser extends Parser {
@@ -1503,6 +1500,22 @@ public class ProductParser extends Parser {
 		public TerminalNode MINUS(int i) {
 			return getToken(ProductParser.MINUS, i);
 		}
+		public List<TerminalNode> MUL() { return getTokens(ProductParser.MUL); }
+		public TerminalNode MUL(int i) {
+			return getToken(ProductParser.MUL, i);
+		}
+		public List<TerminalNode> DIV() { return getTokens(ProductParser.DIV); }
+		public TerminalNode DIV(int i) {
+			return getToken(ProductParser.DIV, i);
+		}
+		public List<TerminalNode> MOD() { return getTokens(ProductParser.MOD); }
+		public TerminalNode MOD(int i) {
+			return getToken(ProductParser.MOD, i);
+		}
+		public List<TerminalNode> POW() { return getTokens(ProductParser.POW); }
+		public TerminalNode POW(int i) {
+			return getToken(ProductParser.POW, i);
+		}
 		public ArithExprContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1534,12 +1547,12 @@ public class ProductParser extends Parser {
 			setState(206);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==PLUS || _la==MINUS) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 2113929216L) != 0)) {
 				{
 				{
 				setState(202);
 				_la = _input.LA(1);
-				if ( !(_la==PLUS || _la==MINUS) ) {
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 2113929216L) != 0)) ) {
 				_errHandler.recoverInline(this);
 				}
 				else {
@@ -3269,7 +3282,7 @@ public class ProductParser extends Parser {
 		"\u001d\f\u001d\u018d\u0001\u001d\u0001\u001d\u0003\u001d\u0192\b\u001d"+
 		"\u0001\u001d\u0000\u0000\u001e\u0000\u0002\u0004\u0006\b\n\f\u000e\u0010"+
 		"\u0012\u0014\u0016\u0018\u001a\u001c\u001e \"$&(*,.02468:\u0000\u0002"+
-		"\u0002\u0000\u001f$))\u0001\u0000\u0019\u001a\u01b3\u0000@\u0001\u0000"+
+		"\u0002\u0000\u001f$))\u0001\u0000\u0019\u001e\u01b3\u0000@\u0001\u0000"+
 		"\u0000\u0000\u0002e\u0001\u0000\u0000\u0000\u0004g\u0001\u0000\u0000\u0000"+
 		"\u0006v\u0001\u0000\u0000\u0000\b\u0080\u0001\u0000\u0000\u0000\n\u0082"+
 		"\u0001\u0000\u0000\u0000\f\u008c\u0001\u0000\u0000\u0000\u000e\u0091\u0001"+
