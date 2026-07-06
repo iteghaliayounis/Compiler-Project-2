@@ -136,13 +136,6 @@ public class ScopeChecker {
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
-        // ★ DEBUG: شوفي نوع كل node بيمر
-        if (node.getClass().getSimpleName().contains("For")
-                || node.getClass().getSimpleName().contains("Stmt")) {
-            System.out.println("[DEBUG ScopeChecker] Visiting: "
-                    + node.getClass().getName() + " at line " + node.getLineNumber());
-        }
-
         if      (node instanceof Program)         checkProgram((Program) node);
         else if (node instanceof FuncDef)         checkFuncDef((FuncDef) node);
         else if (node instanceof SimpleStmt)      checkNode(((SimpleStmt) node).smallStmt);
@@ -240,8 +233,6 @@ public class ScopeChecker {
         // ★ تعريف متغير الـ loop بـ current scope
         if (node.var != null) {
             define(node.var);
-            System.out.println("[DEBUG ScopeChecker] Defined loop var: " + node.var
-                    + " in scope level " + (scopeStack.size() - 1));
         }
 
         // فحص جسم الـ for
