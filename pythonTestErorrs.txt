@@ -2,23 +2,63 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
-    # ════════════════════════════════════════════════════════════
+    # ==========================================================
+    # اختبار شامل لكل أخطاء Semantic Analysis في Python
+    # ==========================================================
+
+    # ─────────────────────────────────────────────
     # 1. أخطاء رؤى (TypeError)
-    # ════════════════════════════════════════════════════════════
+    # ─────────────────────────────────────────────
+
+    # Test 1: التكرار على نوع غير قابل للتكرار
+    # المتوقع: TypeError: 'int' object is not iterable
     x1 = 10
-    for i in x1:           # TypeError: 'int' object is not iterable
+    for i in x1:
         print(i)
 
+    # Test 2: len() على نوع لا يدعم الطول
+    # المتوقع: TypeError: object of type 'int' has no len()
     x2 = 10
-    print(len(x2))         # TypeError: object of type 'int' has no len()
+    print(len(x2))
 
-    x4 = "Sara" + 4        # TypeError: can only concatenate str (not "int") to str
-    x5 = "Sara" - 4        # TypeError: unsupported operand type(s) for -: 'str' and 'int'
+    # Test 3: فهرسة نوع غير قابل للفهرسة
+    # المتوقع: TypeError: 'int' object is not subscriptable
+    x3 = 5
+    print(x3[0])
 
+    # Test 4: جمع (+) بين أنواع غير متوافقة
+    # المتوقع: TypeError: can only concatenate str (not "int") to str
+    x4 = "Sara" + 4
 
-    # ════════════════════════════════════════════════════════════
+    # Test 5: طرح (-) بين أنواع غير متوافقة
+    # المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int'
+    x5 = "Sara" - 4
+
+    # Test 6: طرح (-) بين نصين
+    # المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'str'
+    x6 = "Sara" - "Ali"
+
+    # Test 7: مقارنة بين أنواع غير متوافقة
+    # المتوقع: TypeError: '<' not supported between instances of 'str' and 'int'
+    x7 = "Sara" < 4
+
+    # Test 8: عملية حسابية مع None
+    # المتوقع: TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'
+    x8 = None
+    x8_result = x8 + 5
+
+    # ─────────────────────────────────────────────
+    # 2. أخطاء رغد (ScopeError)
+    # ─────────────────────────────────────────────
+
+    # Test 9: استخدام متغير غير معرف
+    # المتوقع: NameError أو UnboundLocalError
+    print(secret)
+
+ # ════════════════════════════════════════════════════════════
     # 2. أخطاء رغد (ScopeError)
     # ════════════════════════════════════════════════════════════
 
@@ -49,3 +89,22 @@ def home():
     result = 5 / unknown_val  # ✅ صحيح (ما فيه خطأ - القيمة UNKNOWN وقت الـ compile)
 
     return render_template("home.html")
+
+
+    # ─────────────────────────────────────────────
+    # 5. أخطاء رؤى (TypeMismatchError) - Flask Bridge
+    # ─────────────────────────────────────────────
+
+    # تمرير متغيرات للقالب ليتم فحص الفلاتر
+    age = 22           # int
+    name = "Sara"      # str
+    price = 99.5       # float
+    items = [1, 2, 3]  # list
+
+    return render_template(
+        "htmlTestErrors.html",
+        age=age,
+        name=name,
+        price=price,
+        items=items
+    )

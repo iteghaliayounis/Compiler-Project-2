@@ -26,7 +26,7 @@
         <PerGrammarGenerationSettings>
           <option name="fileName" value="$PROJECT_DIR$/src/antlr/ProductLexer.g4" />
           <option name="autoGen" value="true" />
-          <option name="outputDir" value="C:\Compiler\Compiler-Project-2\src\antlr" />
+          <option name="outputDir" value="C:\Users\ASUS\Desktop\Project 4th\Compiler2\Compiler-Project-2-master\src" />
           <option name="libDir" value="" />
           <option name="encoding" value="" />
           <option name="pkg" value="" />
@@ -36,7 +36,7 @@
         <PerGrammarGenerationSettings>
           <option name="fileName" value="$PROJECT_DIR$/src/antlr/ProductParser.g4" />
           <option name="autoGen" value="true" />
-          <option name="outputDir" value="C:\Compiler\Compiler-Project-2\src\antlr" />
+          <option name="outputDir" value="C:\Users\ASUS\Desktop\Project 4th\Compiler2\Compiler-Project-2-master\src" />
           <option name="libDir" value="" />
           <option name="encoding" value="" />
           <option name="pkg" value="" />

@@ -1,21 +1,84 @@
-{# ════════════════════════════════════════════════════════════
-   اختبار شامل لـ Type Error و Scope Error و Division By Zero في Jinja2
-   ════════════════════════════════════════════════════════════ #}
+{% extends "base.html" %}
+
+<!-- ==========================================================
+     اختبار شامل لكل أخطاء Semantic Analysis في Jinja2
+     ========================================================== -->
 
 <html>
 <body>
 
-{# ── 1. أخطاء رؤى (TypeError) ── #}
-{% for i in 5 %}          {# TypeError: 'int' object is not iterable #}
+<!-- ───────────────────────────────────────────── -->
+<!-- 1. أخطاء رؤى (TypeError) - باستخدام literals -->
+<!-- ───────────────────────────────────────────── -->
+
+<!-- Test 1: for على رقم -->
+<!-- المتوقع: TypeError: 'int' object is not iterable -->
+{% for i in 5 %}
     <p>{{ i }}</p>
 {% endfor %}
 
-<p>{{ 5 + "hello" }}</p>  {# TypeError: unsupported operand type(s) for +: 'int' and 'str' #}
 
-<p>{{ 10[0] }}</p>        {# TypeError: 'int' object is not subscriptable #}
+<!-- Test 2: جمع int + str -->
+<!-- المتوقع: TypeError: unsupported operand type(s) for +: 'int' and 'str' -->
+<p>{{ 5 + "hello" }}</p>
 
-<p>{{ "Sara" - 4 }}</p>   {# TypeError: unsupported operand type(s) for -: 'str' and 'int' #}
 
+<!-- Test 3: فهرسة رقم -->
+<!-- المتوقع: TypeError: 'int' object is not subscriptable -->
+<p>{{ 10[0] }}</p>
+
+
+<!-- Test 4: طرح str - int -->
+<!-- المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int' -->
+<p>{{ "Sara" - 4 }}</p>
+
+
+<!-- Test 5: مقارنة str < int -->
+<!-- المتوقع: TypeError: '<' not supported between instances of 'str' and 'int' -->
+{% if "Sara" < 4 %}
+    <p>compare</p>
+{% endif %}
+
+
+<!-- Test 6: جمع str + int (الترتيب معكوس) -->
+<!-- المتوقع: TypeError: can only concatenate str (not "int") to str -->
+<p>{{ "Sara" + 4 }}</p>
+
+
+<!-- Test 7: ضرب str * str -->
+<!-- المتوقع: TypeError: can't multiply sequence by non-int of type 'str' -->
+<p>{{ "a" * "b" }}</p>
+
+
+<!-- Test 8: قسمة int / str -->
+<!-- المتوقع: TypeError: unsupported operand type(s) for /: 'int' and 'str' -->
+<p>{{ 5 / "hello" }}</p>
+
+
+<!-- ───────────────────────────────────────────── -->
+<!-- 2. أخطاء رؤى (TypeMismatchError) - Flask Bridge -->
+<!-- ───────────────────────────────────────────── -->
+
+<!-- Test 9: filter 'upper' expects str, got int -->
+<!-- المتوقع: TypeError: filter 'upper' expects str, got int -->
+<p>{{ age + "SS" }}</p>
+
+<!-- Test 10: filter 'lower' expects str, got int -->
+<!-- المتوقع: TypeError: filter 'lower' expects str, got int -->
+<p>{{ age | lower }}</p>
+
+<!-- Test 11: filter 'length' expects str/list/dict, got float -->
+<!-- المتوقع: TypeError: filter 'length' expects dict or list or ..., got float -->
+<p>{{ price | length }}</p>
+
+<!-- Test 12: filter 'abs' expects int/float, got str -->
+<!-- المتوقع: TypeError: filter 'abs' expects float or int, got str -->
+<p>{{ name | abs }}</p>
+
+
+<!-- ───────────────────────────────────────────── -->
+<!-- 3. أخطاء رغد (DivisionByZeroError) -->
+<!-- ───────────────────────────────────────────── -->
 
 {# ── 2. أخطاء رغد (ScopeError) ── #}
 {% for item in [1, 2, 3] %}
@@ -35,6 +98,30 @@
 
 {% set msg = "Hello" %}
 <p>{{ msg }}</p>          {# ✅ صحيح (المتغير معرف بـ set ومستخدم بنفس السكوب) #}
+
+</body>
+</html>
+
+
+<!-- ───────────────────────────────────────────── -->
+<!-- 4. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives) -->
+<!-- ───────────────────────────────────────────── -->
+
+<!-- Test 15: ✅ صحيح (قسمة طبيعية) -->
+<p>{{ 10 / 2 }}</p>
+
+<!-- Test 16: ✅ صحيح (جمع طبيعي) -->
+<p>{{ 5 + 5 }}</p>
+
+<!-- Test 17: ✅ صحيح (المتغير name معرف كـ str و upper يتوقع str) -->
+<p>{{ name | upper }}</p>
+
+<!-- Test 18: ✅ صحيح (المتغير items معرف كـ list و length يقبل list) -->
+<p>{{ items | length }}</p>
+
+<!-- Test 19: ✅ صحيح (المتغير msg معرف بـ set ومستخدم بنفس السكوب) -->
+{% set msg = "Hello" %}
+<p>{{ msg }}</p>
 
 </body>
 </html>

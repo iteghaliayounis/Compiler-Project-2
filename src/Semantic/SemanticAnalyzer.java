@@ -4,8 +4,8 @@ import AST.ASTNode;
 // لا نستخدم as في الجافا، نكتب الاسم الكامل للكلاس مباشرة عند الحاجة لتجنب التعارض
 import Semantic.analyzers.PythonSemanticAnalyzer;
 import Semantic.analyzers.JinjaSemanticAnalyzer;
+import Semantic.checkers.flask.FilterTypeMismatchChecker;
 import Semantic.checkers.flask.MissingFlaskVariableChecker;
-//import Semantic.checkers.flask.FilterTypeMismatchChecker;       // ← جديد (رؤى)
 import Semantic.handlers.SemanticErrorHandler;
 import SymbolTable.SymbolTable;
 
@@ -17,7 +17,9 @@ public class SemanticAnalyzer {
     private final PythonSemanticAnalyzer pythonAnalyzer;
     private final JinjaSemanticAnalyzer jinjaAnalyzer;
 
-    private MissingFlaskVariableChecker  flaskLinker;          // غالية ✅
+    private MissingFlaskVariableChecker  flaskLinker;// غالية ✅
+    private FilterTypeMismatchChecker filterTypeChecker;    // 🆕 جديد
+
     //private FilterTypeMismatchChecker    filterTypeChecker;    // رؤى ← جديد
 
     public SemanticAnalyzer(SymbolTable pythonST, symbol_table.SymbolTable jinjaST) {
@@ -32,8 +34,7 @@ public class SemanticAnalyzer {
         // 3. ننشئ الرابط بين الفلاسك والجينجا (إذا الجداول جاهزة)
         if (pythonST != null && jinjaST != null) {
             this.flaskLinker       = new MissingFlaskVariableChecker(pythonST, jinjaST, handler);
-            // 🆕 جديد: إنشاء FilterTypeMismatchChecker
-         //   this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
+           this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
         }
     }
 
@@ -72,9 +73,9 @@ public class SemanticAnalyzer {
         // 4. 🆕 تشغيل فحص الـ Bridge — Filter Type Mismatch (رؤى)
         //    يجب أن يأتي بعد MissingFlaskVariableChecker
         //    لأنه يحتاج الأنواع المنسوخة من Python ST
-//        if (filterTypeChecker != null && jinjaRoot != null) {
-//            filterTypeChecker.check(jinjaRoot);
-//        }
+        if (filterTypeChecker != null && jinjaRoot != null) {
+            filterTypeChecker.check(jinjaRoot);
+        }
 
         // 5. طباعة النتائج النهائية مرة واحدة فقط
         handler.printAll();
