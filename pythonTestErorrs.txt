@@ -54,30 +54,34 @@ def home():
     # 2. أخطاء رغد (ScopeError)
     # ─────────────────────────────────────────────
 
-    # Test 9: استخدام متغير غير معرف
-    # المتوقع: NameError أو UnboundLocalError
+    # Test 9: استخدام متغير غير معرف إطلاقاً (NameError)
+    # المتوقع: NameError: name 'secret' is not defined
     print(secret)
 
- # ════════════════════════════════════════════════════════════
-    # 2. أخطاء رغد (ScopeError)
-    # ════════════════════════════════════════════════════════════
+    # Test 10: متغير معرف داخل دالة ومستخدم خارجها (ScopeError)
+    # المتوقع: UnboundLocalError أو NameError
+    def calculate():
+        internal_var = 100
+        return internal_var
 
+    print(internal_var)  # ← خطأ Scope! internal_var معرفة داخل calculate فقط
 
-    print(secret)          # UnboundLocalError: local variable 'secret' referenced before assignment
-
-
-    # ════════════════════════════════════════════════════════════
+    # ─────────────────────────────────────────────
     # 3. أخطاء رغد (DivisionByZeroError)
-    # ════════════════════════════════════════════════════════════
+    # ─────────────────────────────────────────────
+
+    # Test 11: قسمة على صفر مباشرة
+    # المتوقع: ZeroDivisionError: division by zero
     y = 0
-    z = 10 / y             # ZeroDivisionError: division by zero
+    z = 10 / y
 
-    m = 10 % 0             # ZeroDivisionError: integer division or modulo by zero
+    # Test 12: modulo على صفر
+    # المتوقع: ZeroDivisionError: integer division or modulo by zero
+    m = 10 % 0
 
-
-    # ════════════════════════════════════════════════════════════
+    # ─────────────────────────────────────────────
     # 4. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives)
-    # ════════════════════════════════════════════════════════════
+    # ─────────────────────────────────────────────
 
     # السكوب: i بـ بايثون بتبقى متاحة بعد الـ for
     for i in range(5):
@@ -86,10 +90,7 @@ def home():
 
     # القسمة: قسمة على متغير مش معروف القيمة
     unknown_val = int("10")
-    result = 5 / unknown_val  # ✅ صحيح (ما فيه خطأ - القيمة UNKNOWN وقت الـ compile)
-
-    return render_template("home.html")
-
+    result = 5 / unknown_val  # ✅ صحيح (القيمة UNKNOWN وقت الـ compile)
 
     # ─────────────────────────────────────────────
     # 5. أخطاء رؤى (TypeMismatchError) - Flask Bridge
