@@ -130,9 +130,10 @@ expr_stmt
     : target (ASSIGN expr)?
     ;
 
+
 target
-    : ID    #TargetID
-    | call_chain    #TargetCall
+    : ID LPAR arg_list? RPAR (call_suffix)*    #TargetCall
+    | ID                                        #TargetID
     ;
 
 // Arguments

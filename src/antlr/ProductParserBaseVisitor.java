@@ -1,4 +1,4 @@
-// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from D:/combiler-2/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
@@ -256,14 +256,14 @@ public class ProductParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTargetID(ProductParser.TargetIDContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTargetCall(ProductParser.TargetCallContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTargetCall(ProductParser.TargetCallContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTargetID(ProductParser.TargetIDContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

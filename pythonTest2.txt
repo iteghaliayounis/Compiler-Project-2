@@ -1,0 +1,39 @@
+def greet(name, msg):
+    print(name, msg)
+
+
+greet("Ali", "Hi", "!")
+greet("Ali")
+greet("Ali", "Hi")
+
+
+x = 5
+x()
+
+name = "Ali"
+name()
+
+
+def foo():
+    print(x)
+    x = 5
+
+foo()
+
+def bar(flag):
+    if flag:
+        return 1
+    return "hi"
+
+def safe(flag):
+    if flag:
+        return 1
+    return 2
+
+def single():
+    return 5
+
+def maybe(flag):
+    if flag:
+        return 5
+    return None

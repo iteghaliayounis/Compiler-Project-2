@@ -327,7 +327,31 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitTargetCall(ProductParser.TargetCallContext ctx) {
-        return new TargetCall(visit(ctx.call_chain()), ctx.getStart().getLine());
+        // بناء call_chain يدوياً من ID + LPAR arg_list? RPAR + suffixes
+        String name = ctx.ID().getText();
+        int line = ctx.getStart().getLine();
+
+        // إنشاء Identifier
+        Identifier base = new Identifier(name, line);
+
+        // إنشاء ArgList (إن وجد)
+        ArgList args = ctx.arg_list() != null ? (ArgList) visit(ctx.arg_list()) : null;
+
+        // إنشاء FunctionCall suffix
+        FunctionCall funcCall = new FunctionCall(args, line);
+
+        // إنشاء list of suffixes
+        List<CallSuffix> suffixes = new ArrayList<>();
+        suffixes.add(funcCall);
+
+        // suffixes الإضافية (لو موجودة)
+        if (ctx.call_suffix() != null) {
+            for (ProductParser.Call_suffixContext cs : ctx.call_suffix()) {
+                suffixes.add((CallSuffix) visit(cs));
+            }
+        }
+
+        return new TargetCall(new CallChainExpr(base, suffixes, line), line);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
