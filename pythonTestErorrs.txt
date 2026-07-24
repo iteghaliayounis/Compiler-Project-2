@@ -80,21 +80,60 @@ def home():
     m = 10 % 0
 
     # ─────────────────────────────────────────────
-    # 4. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives)
+    # 4. أخطاء راما (WrongArguments, InvalidFunctionCall, UseBeforeAssignment)
+    # ─────────────────────────────────────────────
+
+    # Test 13: Wrong Arguments Count (استدعاء دالة بعدد وسائط خاطئ)
+    # المتوقع: TypeError: greet() takes 2 positional arguments but 3 were given
+    def greet(name, msg):
+        print(name, msg)
+
+    greet("Ali", "Hi", "!")   # ← خطأ! 3 وسائط بدل 2
+    # greet("Ali")            # (معلق لتجنب تعارض العدد الناقص مع الفحص)
+    greet("Ali", "Hi")        # ✅ صحيح (2 وسائط)
+
+    # Test 14: Invalid Function Call (استدعاء غير قابل للاستدعاء)
+    # المتوقع: TypeError: 'int' object is not callable
+    callable_var = 5
+    callable_var()            # ← خطأ! int ليس قابل للاستدعاء
+
+    str_var = "Ali"
+    str_var()                 # ← خطأ! str ليس قابل للاستدعاء
+
+    # Test 15: Use Before Assignment (استخدام قبل الإسناد)
+    # المتوقع: UnboundLocalError: local variable 'val' referenced before assignment
+    def use_before_assign():
+        print(val)            # ← خطأ! استخدام قبل الإسناد
+        val = 5
+    use_before_assign()
+
+    # Test 16: Return Type Mismatch (Bonus)
+    # المتوقع: TypeError: return type expected int, got str
+    def bar(flag):
+        if flag:
+            return 1
+        return "hi"           # ← خطأ! الدالة ترجع int في طريق و str في طريق آخر
+
+    def safe(flag):
+        if flag:
+            return 1
+        return 2              # ✅ صحيح (كلاهما int)
+
+    # ─────────────────────────────────────────────
+    # 5. حالات صحيحة (لازم ما تطلع أي خطأ - للتأكد من عدم الـ False Positives)
     # ─────────────────────────────────────────────
 
     # السكوب: i بـ بايثون بتبقى متاحة بعد الـ for
-    # تم استبدال pass بـ x = 1 لتفادي خطأ البارسر
     for i in range(5):
         x = 1
-    print(i)               # ✅ صحيح (ما فيه خطأ)
+    print(i)                  # ✅ صحيح (ما فيه خطأ)
 
     # القسمة: قسمة على متغير مش معروف القيمة
     unknown_val = int("10")
-    result = 5 / unknown_val  # ✅ صحيح (القيمة UNKNOWN وقت الـ compile)
+    result = 5 / unknown_val   # ✅ صحيح (القيمة UNKNOWN وقت الـ compile)
 
     # ─────────────────────────────────────────────
-    # 5. أخطاء رؤى (TypeMismatchError) - Flask Bridge
+    # 6. أخطاء رؤى (TypeMismatchError) - Flask Bridge
     # ─────────────────────────────────────────────
 
     # تمرير متغيرات للقالب ليتم فحص الفلاتر
