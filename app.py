@@ -33,7 +33,7 @@ products = [
     ]
 
 
-app = Flask(__name__)
+app = Flask(name)
 
 @app.route("/")
 def products_page():
@@ -85,6 +85,5 @@ def delete_product(pid):
     return redirect(url_for("products_page"))
 
 # تشغيل السيرفر
-if __name__ == "__main__":
+if name == "main":
     app.run(debug=True)
-

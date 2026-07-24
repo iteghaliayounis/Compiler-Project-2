@@ -1,4 +1,4 @@
-// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from D:/combiler-2/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -235,19 +235,19 @@ public interface ProductParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpr_stmt(ProductParser.Expr_stmtContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code TargetID}
-	 * labeled alternative in {@link ProductParser#target}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTargetID(ProductParser.TargetIDContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code TargetCall}
 	 * labeled alternative in {@link ProductParser#target}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTargetCall(ProductParser.TargetCallContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code TargetID}
+	 * labeled alternative in {@link ProductParser#target}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTargetID(ProductParser.TargetIDContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ProductParser#arg_list}.
 	 * @param ctx the parse tree

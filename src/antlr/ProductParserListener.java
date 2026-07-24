@@ -1,4 +1,4 @@
-// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from D:/combiler-2/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -388,18 +388,6 @@ public interface ProductParserListener extends ParseTreeListener {
 	 */
 	void exitExpr_stmt(ProductParser.Expr_stmtContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code TargetID}
-	 * labeled alternative in {@link ProductParser#target}.
-	 * @param ctx the parse tree
-	 */
-	void enterTargetID(ProductParser.TargetIDContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code TargetID}
-	 * labeled alternative in {@link ProductParser#target}.
-	 * @param ctx the parse tree
-	 */
-	void exitTargetID(ProductParser.TargetIDContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code TargetCall}
 	 * labeled alternative in {@link ProductParser#target}.
 	 * @param ctx the parse tree
@@ -411,6 +399,18 @@ public interface ProductParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTargetCall(ProductParser.TargetCallContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code TargetID}
+	 * labeled alternative in {@link ProductParser#target}.
+	 * @param ctx the parse tree
+	 */
+	void enterTargetID(ProductParser.TargetIDContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code TargetID}
+	 * labeled alternative in {@link ProductParser#target}.
+	 * @param ctx the parse tree
+	 */
+	void exitTargetID(ProductParser.TargetIDContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ProductParser#arg_list}.
 	 * @param ctx the parse tree
