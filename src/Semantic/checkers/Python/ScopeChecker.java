@@ -280,12 +280,12 @@ public class ScopeChecker {
         if (node.name == null) return;
 
         // ★ DEBUG: شوفي حالة الـ scope وقت فحص كل identifier
-        System.out.println("[DEBUG checkIdentifier] checking '" + node.name + "' at line " + node.getLineNumber());
-        System.out.println("[DEBUG checkIdentifier] scopeStack size: " + scopeStack.size());
+     //   System.out.println("[DEBUG checkIdentifier] checking '" + node.name + "' at line " + node.getLineNumber());
+       // System.out.println("[DEBUG checkIdentifier] scopeStack size: " + scopeStack.size());
         for (int i = 0; i < scopeStack.size(); i++) {
-            System.out.println("[DEBUG checkIdentifier] scope " + i + ": " + scopeStack.get(i));
+           // System.out.println("[DEBUG checkIdentifier] scope " + i + ": " + scopeStack.get(i));
         }
-        System.out.println("[DEBUG checkIdentifier] isAccessible('" + node.name + "'): " + isAccessible(node.name));
+        //System.out.println("[DEBUG checkIdentifier] isAccessible('" + node.name + "'): " + isAccessible(node.name));
 
         // 1) هل المتغير متاح بـ current scope stack؟
         if (isAccessible(node.name)) {
