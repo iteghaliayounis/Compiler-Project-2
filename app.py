@@ -33,21 +33,18 @@ products = [
     ]
 
 
-app = Flask(name)
+app = Flask(__name__)
 
 @app.route("/")
 def products_page():
-    return render_template("products.html", products=products)
+    return render_template("index.html", products=products)
 
 @app.route("/product/<int:pid>")
 def product_detail(pid):
     product = next((p for p in products if p.get("id") == pid), None)
     if product is None:
         abort(404)
-    return render_template(
-        "product_detail.html",
-        product=product,
-    )
+    return render_template("product_details.html", product=product)
 
 @app.route("/add", methods=["GET", "POST"])
 def add_product():
@@ -81,9 +78,13 @@ def add_product():
 @app.route("/delete/<int:pid>", methods=["POST"])
 def delete_product(pid):
     global products
-    products = [p for p in products if p.get("id") != pid]
+    new_products = []
+    for p in products:
+        if p.get("id") != pid:
+            new_products.append(p)
+    products = new_products
     return redirect(url_for("products_page"))
 
 # تشغيل السيرفر
-if name == "main":
+if __name__ == "__main__":
     app.run(debug=True)

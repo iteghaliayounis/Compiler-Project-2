@@ -60,6 +60,9 @@ small_stmt
     : return_stmt   #ReturnStmt
     | expr_stmt   #ExprStmt
     | raise_stmt  #RaiseStmt
+    | break_stmt       #BreakStmt
+    | continue_stmt    #ContinueStmt
+    | pass_stmt        #PassStmt
     ;
 
 // Return / Raise
@@ -71,7 +74,17 @@ return_stmt
 raise_stmt
     : RAISE expr?
     ;
+break_stmt
+    : BREAK
+    ;
 
+continue_stmt
+    : CONTINUE
+    ;
+
+pass_stmt
+    : PASS
+    ;
 // Expressions
 
 expr
@@ -132,7 +145,7 @@ expr_stmt
 
 
 target
-    : ID LPAR arg_list? RPAR (call_suffix)*    #TargetCall
+    : ID (call_suffix)+                         #TargetCall
     | ID                                        #TargetID
     ;
 

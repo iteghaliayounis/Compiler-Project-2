@@ -1,4 +1,4 @@
-// Generated from C:/Compiler/Project Compiler_2/src/antlr/product_htmlParser.g4 by ANTLR 4.13.2
+// Generated from src/antlr/product_htmlParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -552,6 +552,26 @@ public interface product_htmlParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitJinjaAttr(product_htmlParser.JinjaAttrContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link product_htmlParser#jinjaCallArgList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJinjaCallArgList(product_htmlParser.JinjaCallArgListContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code JinjaKwArg}
+	 * labeled alternative in {@link product_htmlParser#jinjaCallArg}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJinjaKwArg(product_htmlParser.JinjaKwArgContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code JinjaPosArg}
+	 * labeled alternative in {@link product_htmlParser#jinjaCallArg}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJinjaPosArg(product_htmlParser.JinjaPosArgContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link product_htmlParser#jinjaSlice}.
 	 * @param ctx the parse tree

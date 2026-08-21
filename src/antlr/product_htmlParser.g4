@@ -1,249 +1,3 @@
-//parser grammar product_htmlParser;
-//
-//options { tokenVocab=product_htmlLexer; }
-//
-//program
-//   : (start)* EOF
-//   ;
-//start
-//    : prolog       #ProgramProlog
-//    | extendsStmt  #ProgramExtends
-//    | blockStmt    #ProgramBlock
-//    | htmlElement  #ProgramHtml
-//    | jinja_expr   #ProgramJinja
-//    ;
-//
-//prolog
-//    : DOCTYPE
-//    ;
-//
-//textNode
-//    : TEXT
-//    ;
-//
-//// -----------------------------
-//extendsStmt
-//    : JINJA_STMT_OPEN JINJA_EXTENDS JINJA_STRING JINJA_STMT_CLOSE
-//    ;
-//
-//blockStmt
-//    : blockStart textNode? blockContent blockEnd
-//    ;
-//
-//blockStart
-//    : JINJA_STMT_OPEN JINJA_BLOCK JINJA_ID JINJA_STMT_CLOSE
-//    ;
-//
-//
-//
-//blockContent
-//    : blockItem*
-//    ;
-//
-//blockItem
-//    : divElement        #DivContent
-//    | aTag              #ATagContent
-//    | imgTag            #ImgContent
-//    | formElement       #FormContent
-//    | inputElement      #InputContent
-//    | textareaElement   #TextareaContent
-//    | buttonElement     #ButtonContent
-//    | labelElement      #LabelContent
-//    | jinja_expr        #JinjaExprContent
-//    | forStmt           #ForContent
-//    | h2Element         #H2Content
-//    | pElement          #PContent
-//    | blockStmt         #BlockStmtContent
-//    | textNode          #TextContent
-//    | ATTR_NAME         #AttrNameContent
-//    ;
-//
-//blockEnd
-//    : JINJA_STMT_OPEN JINJA_ENDBLOCK JINJA_STMT_CLOSE
-//    ;
-//
-//
-//// -----------------------------
-//htmlElement
-//    : LT HTML_HTML htmlRule* GT htmlContent LT SLASH HTML_HTML GT
-//    ;
-//
-//htmlContent
-//    : ( headElement
-//      | bodyElement
-//      | textNode
-//      | jinja_expr
-//      | blockStmt
-//      )*
-//    ;
-//
-//headElement
-//    : LT HTML_HEAD htmlRule* GT headContent LT SLASH HTML_HEAD GT
-//    ;
-//
-//headContent
-//    : headItem*
-//    ;
-//
-//headItem
-//    : metaElement     #MetaHeadContent
-//    | titleElement    #TitleHeadContent
-//    | styleElement    #StyleHeadContent
-//    | textNode        #TextHeadContent
-//    | jinja_expr      #JinjaHeadContent
-//    | blockStmt       #BlockHeadContent
-//    ;
-//bodyElement
-//    : LT HTML_BODY  attribute* GT blockContent LT SLASH HTML_BODY GT
-//    ;
-//
-//
-//// -----------------------------
-//htmlRule
-//   :  styleAttribute
-//   |  attribute
-//   ;
-//attribute
-//    : ATTR_NAME EQUALS (STRING | jinja_expr  )
-//    ;
-//styleAttribute
-//    : CSS_STYLE propertyList CSS_CLOSE_STYLE
-//
-//    ;
-//divElement
-//    : LT HTML_DIV htmlRule* GT blockContent LT SLASH HTML_DIV GT
-//
-//    ;
-//imgTag
-//    : LT HTML_IMG htmlRule* GT (LT SLASH HTML_IMG GT)?
-//    ;
-//
-//aTag
-//    : LT HTML_A htmlRule* GT aContent LT SLASH HTML_A GT
-//    ;
-//aContent
-//    : aItem*
-//    ;
-//
-//aItem
-//    : textNode        #TextAContent
-//    | jinja_expr      #JinjaAContent
-//    | divElement      #DivAContent
-//    | aTag            #NestedAContent
-//    | imgTag          #ImgAContent
-//    | ATTR_NAME       #AttrNameAContent
-//    ;
-//
-//
-//formElement
-//    : LT HTML_FORM htmlRule* GT blockContent LT SLASH HTML_FORM GT
-//    ;
-//
-//inputElement
-//    : LT HTML_INPUT htmlRule* GT
-//    ;
-//
-//textareaElement
-//    : LT HTML_TEXTAREA htmlRule* GT blockContent LT SLASH HTML_TEXTAREA GT
-//    ;
-//
-//buttonElement
-//    : LT HTML_BUTTON htmlRule* GT blockContent LT SLASH HTML_BUTTON GT
-//    ;
-//
-//labelElement
-//    : OPEN_LABEL textNode? CLOSE_LABEL
-//    ;
-//
-//titleElement
-//    : LT HTML_TITLE GT (blockStmt | jinja_expr | textNode)* LT SLASH HTML_TITLE GT
-//    ;
-//
-//metaElement
-//    : LT HTML_META htmlRule* GT
-//    ;
-//
-//
-//// -----------------------------
-//
-//forStmt
-//    : JINJA_STMT_OPEN JINJA_FOR jinjaInner JINJA_IN jinjaInner JINJA_STMT_CLOSE
-//      blockContent
-//      JINJA_STMT_OPEN JINJA_ENDFOR JINJA_STMT_CLOSE
-//    ;
-//
-//jinja_expr
-//    : JINJA_EXPR_OPEN jinjaInner? JINJA_EXPR_CLOSE
-//    ;
-//
-//jinjaInner
-//    : JINJA_ID ( JINJA_DOT JINJA_ID )*
-//    ;
-//
-//h2Element
-//    : LT HTML_H2 htmlRule* GT blockContent LT SLASH HTML_H2 GT
-//    ;
-//
-//pElement
-//    : LT HTML_P htmlRule* GT blockContent LT SLASH HTML_P GT
-//    ;
-//
-//// -----------------------------
-//
-//styleElement
-//    : STYLE_OPEN cssBlock STYLE_CLOSE ;
-//cssBlock
-//    : cssRule+ ;
-//cssRule
-//    : selector LCURL_CSS propertyList RCURL_CSS;
-//
-//propertyList
-//    : (cssProperty SEMI_CSS)+ ;
-//selector
-//    : CSS_UNIVERSAL_SELECTOR    #SelectorUniversal
-//    | CSS_BODY                  #SelectorBody
-//    | CSS_CONTAINER             #SelectorContainer
-//    | CSS_HEADER                #SelectorHeader
-//    | CSS_BTN                   #SelectorBtn
-//    | CSS_BTN_SECONDARY         #SelectorBtnSecondary ;
-//
-//cssProperty
-//    : cssPropertyName COLON_CSS cssValue+ ;
-//
-//cssPropertyName
-//    : CSS_MARGIN               #CssPropertyMargin
-//    | CSS_PADDING              #CssPropertyPadding
-//    | CSS_BOX_SIZING           #CssPropertyBoxSizing
-//    | CSS_DISPLAY              #CssPropertyDisplay
-//    | CSS_JUSTIFY_CONTENT      #CssPropertyJustifyContent
-//    | CSS_MAX_WIDTH            #CssPropertyMaxWidth
-//    | CSS_BORDER_RADIUS        #CssPropertyBorderRadius
-//    | CSS_TEXT_DECORATION      #CssPropertyTextDecoration
-//    | CSS_COLOR                #CssPropertyColor
-//    | CSS_BACKGROUND           #CssPropertyBackground
-//    | CSS_BORDER               #CssPropertyBorder
-//    | CSS_FONT_FAMILY          #CssPropertyFontFamily
-//    | CSS_MARGIN_BOTTOM        #CssPropertyMarginBottom
-//    | CSS_GAP                  #CssPropertyGap
-//    | CSS_GRID                 #CssPropertyGrid
-//    | CSS_WIDTH                #CssPropertyWidth
-//    | CSS_BOX_SHADOW           #CssPropertyBoxShadow
-//    | CSS_VALUE                #CssPropertyValue;
-//
-//cssValue
-//    : CSS_FLEX                  #CssValueFlex
-//    | CSS_SPACE_BETWEEN         #CssValueSpaceBetween
-//    | CSS_AUTO                  #CssValueAuto
-//    | CSS_NONE                  #CssValueNone
-//    | CSS_WHITE                 #CssValueWhite
-//    | CSS_BORDER_BOX            #CssValueBorderBox
-//    | COMMA_CSS                 #CssValueComma
-//    | CSS_RGBA                  #CssValueRgba
-//    | CSS_FUNCTION              #CssValueFunction
-//    | CSS_VALUE                 #CssValueKeyword
-//    | CSS_NUMBER                #CssValueNumber
-//    | CSS_DECIMAL               #CssValueDecimal
-//    ;
 
 parser grammar product_htmlParser;
 
@@ -338,7 +92,7 @@ normalAttribute
 attributeValue
     : TAG_STRING           #AttrStringValue
     | jinja_var            #AttrJinjaVarValue
-    | jinja_block          #AttrJinjaBlockValue
+    | jinja_block           #AttrJinjaBlockValue
     ;
 
 // ============================================================
@@ -526,9 +280,16 @@ jinjaPostfix
     : jinjaPrimary                                                      #JinjaPostfixBase
     | jinjaPostfix JINJA_LBRACKET jinjaSlice JINJA_RBRACKET             #JinjaIndex
     | jinjaPostfix JINJA_DOT JINJA_ID                                   #JinjaAttr
-    | jinjaPostfix JINJA_LPAR jinjaExpressionList? JINJA_RPAR           #JinjaCall
+    | jinjaPostfix JINJA_LPAR jinjaCallArgList? JINJA_RPAR           #JinjaCall
+    ;
+jinjaCallArgList
+    : jinjaCallArg (JINJA_COMMA jinjaCallArg)*
     ;
 
+jinjaCallArg
+    : JINJA_ID JINJA_ASSIGN jinjaExpression    #JinjaKwArg
+    | jinjaExpression                           #JinjaPosArg
+    ;
 // يدعم الوصول بالفهرس والـ slicing: arr[0], arr[1:5], arr[:n], arr[::2]
 jinjaSlice
     : jinjaExpression? (JINJA_COLON jinjaExpression?)*
@@ -657,9 +418,6 @@ cssFunctionArgList
     ;
 
 cssFunctionArg
-    : ( cssValue
-        | CSS_PLUS | CSS_MINUS | CSS_STAR | CSS_SLASH
-        | CSS_LBRACKET | CSS_RBRACKET | CSS_LPAREN | CSS_RPAREN
-        | CSS_STRING | CSS_HASH
-      )+
+    : cssValue
+    | ( CSS_PLUS | CSS_MINUS | CSS_STAR | CSS_SLASH | CSS_LBRACKET | CSS_RBRACKET )+
     ;

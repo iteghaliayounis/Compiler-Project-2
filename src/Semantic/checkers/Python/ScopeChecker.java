@@ -76,7 +76,7 @@ public class ScopeChecker {
             "object", "Exception", "ValueError", "TypeError", "KeyError",
             "IndexError", "True", "False", "None", "__name__", "__main__",
             "global", "nonlocal", "input", "Flask", "render_template",
-            "request", "session", "redirect", "url_for"
+            "request", "session", "redirect", "url_for", "abort"
     ));
 
     public ScopeChecker(SymbolTable symbolTable, SemanticErrorHandler handler) {

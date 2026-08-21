@@ -1,0 +1,1363 @@
+{
+  "type": "Program",
+  "line": 1,
+  "elements": [
+    {
+      "type": "FromImportStmt",
+      "line": 1,
+      "module": "flask",
+      "identifiers": [
+        "Flask",
+        "render_template",
+        "request",
+        "redirect",
+        "url_for",
+        "abort"
+      ]
+    },
+    {
+      "type": "SimpleStmt",
+      "line": 4,
+      "smallStmt": {
+        "type": "ExprStmt",
+        "line": 4,
+        "target": {
+          "type": "TargetID",
+          "line": 4,
+          "name": "products"
+        },
+        "value": {
+          "type": "CallChainExpr",
+          "line": 4,
+          "base": {
+            "type": "ListAtom",
+            "line": 4,
+            "listLiteral": {
+              "type": "ListLiteral",
+              "line": 4,
+              "elements": [
+                {
+                  "type": "CallChainExpr",
+                  "line": 5,
+                  "base": {
+                    "type": "DictAtom",
+                    "line": 5,
+                    "dictLiteral": {
+                      "type": "DictLiteral",
+                      "line": 5,
+                      "pairs": [
+                        {
+                          "type": "Pair",
+                          "line": 6,
+                          "key": "\"id\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 6,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 6,
+                              "value": 1
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 7,
+                          "key": "\"name\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 7,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 7,
+                              "value": "Laptop"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 8,
+                          "key": "\"price\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 8,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 8,
+                              "value": 750
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 9,
+                          "key": "\"image\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 9,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 9,
+                              "value": "laptop.jpg"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 10,
+                          "key": "\"description\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 10,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 10,
+                              "value": "High performance laptop."
+                            },
+                            "suffixes": []
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "suffixes": []
+                },
+                {
+                  "type": "CallChainExpr",
+                  "line": 12,
+                  "base": {
+                    "type": "DictAtom",
+                    "line": 12,
+                    "dictLiteral": {
+                      "type": "DictLiteral",
+                      "line": 12,
+                      "pairs": [
+                        {
+                          "type": "Pair",
+                          "line": 13,
+                          "key": "\"id\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 13,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 13,
+                              "value": 2
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 14,
+                          "key": "\"name\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 14,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 14,
+                              "value": "Dress"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 15,
+                          "key": "\"price\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 15,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 15,
+                              "value": 20
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 16,
+                          "key": "\"image\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 16,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 16,
+                              "value": "dress.jpg"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 17,
+                          "key": "\"description\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 17,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 17,
+                              "value": "Dress Baby Red."
+                            },
+                            "suffixes": []
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "suffixes": []
+                },
+                {
+                  "type": "CallChainExpr",
+                  "line": 19,
+                  "base": {
+                    "type": "DictAtom",
+                    "line": 19,
+                    "dictLiteral": {
+                      "type": "DictLiteral",
+                      "line": 19,
+                      "pairs": [
+                        {
+                          "type": "Pair",
+                          "line": 20,
+                          "key": "\"id\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 20,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 20,
+                              "value": 3
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 21,
+                          "key": "\"name\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 21,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 21,
+                              "value": "phone"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 22,
+                          "key": "\"price\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 22,
+                            "base": {
+                              "type": "IntegerLiteral",
+                              "line": 22,
+                              "value": 4590
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 23,
+                          "key": "\"image\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 23,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 23,
+                              "value": "phone.jpg"
+                            },
+                            "suffixes": []
+                          }
+                        },
+                        {
+                          "type": "Pair",
+                          "line": 24,
+                          "key": "\"description\"",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 24,
+                            "base": {
+                              "type": "StringLiteral",
+                              "line": 24,
+                              "value": "fpon Baby Red."
+                            },
+                            "suffixes": []
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "suffixes": []
+                }
+              ]
+            }
+          },
+          "suffixes": []
+        }
+      }
+    },
+    {
+      "type": "SimpleStmt",
+      "line": 28,
+      "smallStmt": {
+        "type": "ExprStmt",
+        "line": 28,
+        "target": {
+          "type": "TargetID",
+          "line": 28,
+          "name": "app"
+        },
+        "value": {
+          "type": "CallChainExpr",
+          "line": 28,
+          "base": {
+            "type": "Identifier",
+            "line": 28,
+            "name": "Flask"
+          },
+          "suffixes": [
+            {
+              "type": "FunctionCall",
+              "line": 28,
+              "args": {
+                "type": "ArgList",
+                "line": 28,
+                "args": [
+                  {
+                    "type": "ExprArg",
+                    "line": 28,
+                    "expr": {
+                      "type": "CallChainExpr",
+                      "line": 28,
+                      "base": {
+                        "type": "Identifier",
+                        "line": 28,
+                        "name": "__name__"
+                      },
+                      "suffixes": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "FuncDef",
+      "line": 30,
+      "name": "products_page",
+      "parameters": {
+        "type": "Parameters",
+        "line": 30,
+        "names": []
+      },
+      "decorators": [
+        {
+          "type": "Decorator",
+          "line": 30,
+          "name": {
+            "type": "ModuleName",
+            "line": 30,
+            "name": [
+              "app",
+              "route"
+            ]
+          },
+          "args": {
+            "type": "ArgList",
+            "line": 30,
+            "args": [
+              {
+                "type": "ExprArg",
+                "line": 30,
+                "expr": {
+                  "type": "CallChainExpr",
+                  "line": 30,
+                  "base": {
+                    "type": "StringLiteral",
+                    "line": 30,
+                    "value": "/"
+                  },
+                  "suffixes": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "SimpleStmt",
+          "line": 32,
+          "smallStmt": {
+            "type": "ReturnStmt",
+            "line": 32,
+            "value": {
+              "type": "CallChainExpr",
+              "line": 32,
+              "base": {
+                "type": "Identifier",
+                "line": 32,
+                "name": "render_template"
+              },
+              "suffixes": [
+                {
+                  "type": "FunctionCall",
+                  "line": 32,
+                  "args": {
+                    "type": "ArgList",
+                    "line": 32,
+                    "args": [
+                      {
+                        "type": "ExprArg",
+                        "line": 32,
+                        "expr": {
+                          "type": "CallChainExpr",
+                          "line": 32,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 32,
+                            "value": "index.html"
+                          },
+                          "suffixes": []
+                        }
+                      },
+                      {
+                        "type": "AssignArg",
+                        "line": 32,
+                        "name": "products",
+                        "value": {
+                          "type": "CallChainExpr",
+                          "line": 32,
+                          "base": {
+                            "type": "Identifier",
+                            "line": 32,
+                            "name": "products"
+                          },
+                          "suffixes": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FuncDef",
+      "line": 34,
+      "name": "product_detail",
+      "parameters": {
+        "type": "Parameters",
+        "line": 35,
+        "names": [
+          "pid"
+        ]
+      },
+      "decorators": [
+        {
+          "type": "Decorator",
+          "line": 34,
+          "name": {
+            "type": "ModuleName",
+            "line": 34,
+            "name": [
+              "app",
+              "route"
+            ]
+          },
+          "args": {
+            "type": "ArgList",
+            "line": 34,
+            "args": [
+              {
+                "type": "ExprArg",
+                "line": 34,
+                "expr": {
+                  "type": "CallChainExpr",
+                  "line": 34,
+                  "base": {
+                    "type": "StringLiteral",
+                    "line": 34,
+                    "value": "/product/<int:pid>"
+                  },
+                  "suffixes": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "SimpleStmt",
+          "line": 36,
+          "smallStmt": {
+            "type": "ExprStmt",
+            "line": 36,
+            "target": {
+              "type": "TargetID",
+              "line": 36,
+              "name": "product"
+            },
+            "value": {
+              "type": "CallChainExpr",
+              "line": 36,
+              "base": {
+                "type": "Identifier",
+                "line": 36,
+                "name": "next"
+              },
+              "suffixes": [
+                {
+                  "type": "FunctionCall",
+                  "line": 36,
+                  "args": {
+                    "type": "ArgList",
+                    "line": 36,
+                    "args": [
+                      {
+                        "type": "ExprArg",
+                        "line": 36,
+                        "expr": {
+                          "type": "GeneratorExpr",
+                          "line": 36,
+                          "genExpr": {
+                            "type": "GenExpr",
+                            "line": 36,
+                            "expr": {
+                              "type": "CallChainExpr",
+                              "line": 36,
+                              "base": {
+                                "type": "Identifier",
+                                "line": 36,
+                                "name": "p"
+                              },
+                              "suffixes": []
+                            },
+                            "var": "p",
+                            "iterable": {
+                              "type": "CallChainExpr",
+                              "line": 36,
+                              "base": {
+                                "type": "Identifier",
+                                "line": 36,
+                                "name": "products"
+                              },
+                              "suffixes": []
+                            },
+                            "condition": {
+                              "type": "ComparisonExpr",
+                              "line": 36,
+                              "first": {
+                                "type": "CallChainExpr",
+                                "line": 36,
+                                "base": {
+                                  "type": "Identifier",
+                                  "line": 36,
+                                  "name": "p"
+                                },
+                                "suffixes": [
+                                  {
+                                    "type": "AttributeAccess",
+                                    "line": 36,
+                                    "attribute": "get"
+                                  },
+                                  {
+                                    "type": "FunctionCall",
+                                    "line": 36,
+                                    "args": {
+                                      "type": "ArgList",
+                                      "line": 36,
+                                      "args": [
+                                        {
+                                          "type": "ExprArg",
+                                          "line": 36,
+                                          "expr": {
+                                            "type": "CallChainExpr",
+                                            "line": 36,
+                                            "base": {
+                                              "type": "StringLiteral",
+                                              "line": 36,
+                                              "value": "id"
+                                            },
+                                            "suffixes": []
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              "operators": [
+                                "=="
+                              ],
+                              "rest": [
+                                {
+                                  "type": "CallChainExpr",
+                                  "line": 36,
+                                  "base": {
+                                    "type": "Identifier",
+                                    "line": 36,
+                                    "name": "pid"
+                                  },
+                                  "suffixes": []
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExprArg",
+                        "line": 36,
+                        "expr": {
+                          "type": "CallChainExpr",
+                          "line": 36,
+                          "base": {
+                            "type": "NoneLiteral",
+                            "line": 36
+                          },
+                          "suffixes": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "IfStmt",
+          "line": 37,
+          "condition": {
+            "type": "ComparisonExpr",
+            "line": 37,
+            "first": {
+              "type": "CallChainExpr",
+              "line": 37,
+              "base": {
+                "type": "Identifier",
+                "line": 37,
+                "name": "product"
+              },
+              "suffixes": []
+            },
+            "operators": [
+              "is"
+            ],
+            "rest": [
+              {
+                "type": "CallChainExpr",
+                "line": 37,
+                "base": {
+                  "type": "NoneLiteral",
+                  "line": 37
+                },
+                "suffixes": []
+              }
+            ]
+          },
+          "body": [
+            {
+              "type": "SimpleStmt",
+              "line": 38,
+              "smallStmt": {
+                "type": "ExprStmt",
+                "line": 38,
+                "target": {
+                  "type": "TargetCall",
+                  "line": 38,
+                  "callChain": {
+                    "type": "CallChainExpr",
+                    "line": 38,
+                    "base": {
+                      "type": "Identifier",
+                      "line": 38,
+                      "name": "abort"
+                    },
+                    "suffixes": [
+                      {
+                        "type": "FunctionCall",
+                        "line": 38,
+                        "args": {
+                          "type": "ArgList",
+                          "line": 38,
+                          "args": [
+                            {
+                              "type": "ExprArg",
+                              "line": 38,
+                              "expr": {
+                                "type": "CallChainExpr",
+                                "line": 38,
+                                "base": {
+                                  "type": "IntegerLiteral",
+                                  "line": 38,
+                                  "value": 404
+                                },
+                                "suffixes": []
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "value": null
+              }
+            }
+          ]
+        },
+        {
+          "type": "SimpleStmt",
+          "line": 39,
+          "smallStmt": {
+            "type": "ReturnStmt",
+            "line": 39,
+            "value": {
+              "type": "CallChainExpr",
+              "line": 39,
+              "base": {
+                "type": "Identifier",
+                "line": 39,
+                "name": "render_template"
+              },
+              "suffixes": [
+                {
+                  "type": "FunctionCall",
+                  "line": 39,
+                  "args": {
+                    "type": "ArgList",
+                    "line": 39,
+                    "args": [
+                      {
+                        "type": "ExprArg",
+                        "line": 39,
+                        "expr": {
+                          "type": "CallChainExpr",
+                          "line": 39,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 39,
+                            "value": "product_details.html"
+                          },
+                          "suffixes": []
+                        }
+                      },
+                      {
+                        "type": "AssignArg",
+                        "line": 39,
+                        "name": "product",
+                        "value": {
+                          "type": "CallChainExpr",
+                          "line": 39,
+                          "base": {
+                            "type": "Identifier",
+                            "line": 39,
+                            "name": "product"
+                          },
+                          "suffixes": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FuncDef",
+      "line": 41,
+      "name": "add_product",
+      "parameters": {
+        "type": "Parameters",
+        "line": 41,
+        "names": []
+      },
+      "decorators": [
+        {
+          "type": "Decorator",
+          "line": 41,
+          "name": {
+            "type": "ModuleName",
+            "line": 41,
+            "name": [
+              "app",
+              "route"
+            ]
+          },
+          "args": {
+            "type": "ArgList",
+            "line": 41,
+            "args": [
+              {
+                "type": "ExprArg",
+                "line": 41,
+                "expr": {
+                  "type": "CallChainExpr",
+                  "line": 41,
+                  "base": {
+                    "type": "StringLiteral",
+                    "line": 41,
+                    "value": "/add"
+                  },
+                  "suffixes": []
+                }
+              },
+              {
+                "type": "AssignArg",
+                "line": 41,
+                "name": "methods",
+                "value": {
+                  "type": "CallChainExpr",
+                  "line": 41,
+                  "base": {
+                    "type": "ListAtom",
+                    "line": 41,
+                    "listLiteral": {
+                      "type": "ListLiteral",
+                      "line": 41,
+                      "elements": [
+                        {
+                          "type": "CallChainExpr",
+                          "line": 41,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 41,
+                            "value": "GET"
+                          },
+                          "suffixes": []
+                        },
+                        {
+                          "type": "CallChainExpr",
+                          "line": 41,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 41,
+                            "value": "POST"
+                          },
+                          "suffixes": []
+                        }
+                      ]
+                    }
+                  },
+                  "suffixes": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "SimpleStmt",
+          "line": 43,
+          "smallStmt": {
+            "type": "ReturnStmt",
+            "line": 43,
+            "value": {
+              "type": "CallChainExpr",
+              "line": 43,
+              "base": {
+                "type": "Identifier",
+                "line": 43,
+                "name": "render_template"
+              },
+              "suffixes": [
+                {
+                  "type": "FunctionCall",
+                  "line": 43,
+                  "args": {
+                    "type": "ArgList",
+                    "line": 43,
+                    "args": [
+                      {
+                        "type": "ExprArg",
+                        "line": 43,
+                        "expr": {
+                          "type": "CallChainExpr",
+                          "line": 43,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 43,
+                            "value": "add_product.html"
+                          },
+                          "suffixes": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FuncDef",
+      "line": 45,
+      "name": "delete_product",
+      "parameters": {
+        "type": "Parameters",
+        "line": 46,
+        "names": [
+          "pid"
+        ]
+      },
+      "decorators": [
+        {
+          "type": "Decorator",
+          "line": 45,
+          "name": {
+            "type": "ModuleName",
+            "line": 45,
+            "name": [
+              "app",
+              "route"
+            ]
+          },
+          "args": {
+            "type": "ArgList",
+            "line": 45,
+            "args": [
+              {
+                "type": "ExprArg",
+                "line": 45,
+                "expr": {
+                  "type": "CallChainExpr",
+                  "line": 45,
+                  "base": {
+                    "type": "StringLiteral",
+                    "line": 45,
+                    "value": "/delete/<int:pid>"
+                  },
+                  "suffixes": []
+                }
+              },
+              {
+                "type": "AssignArg",
+                "line": 45,
+                "name": "methods",
+                "value": {
+                  "type": "CallChainExpr",
+                  "line": 45,
+                  "base": {
+                    "type": "ListAtom",
+                    "line": 45,
+                    "listLiteral": {
+                      "type": "ListLiteral",
+                      "line": 45,
+                      "elements": [
+                        {
+                          "type": "CallChainExpr",
+                          "line": 45,
+                          "base": {
+                            "type": "StringLiteral",
+                            "line": 45,
+                            "value": "POST"
+                          },
+                          "suffixes": []
+                        }
+                      ]
+                    }
+                  },
+                  "suffixes": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "ForStmt",
+          "line": 47,
+          "var": "p",
+          "iterable": {
+            "type": "CallChainExpr",
+            "line": 47,
+            "base": {
+              "type": "Identifier",
+              "line": 47,
+              "name": "products"
+            },
+            "suffixes": []
+          },
+          "body": [
+            {
+              "type": "IfStmt",
+              "line": 48,
+              "condition": {
+                "type": "ComparisonExpr",
+                "line": 48,
+                "first": {
+                  "type": "CallChainExpr",
+                  "line": 48,
+                  "base": {
+                    "type": "Identifier",
+                    "line": 48,
+                    "name": "p"
+                  },
+                  "suffixes": [
+                    {
+                      "type": "AttributeAccess",
+                      "line": 48,
+                      "attribute": "get"
+                    },
+                    {
+                      "type": "FunctionCall",
+                      "line": 48,
+                      "args": {
+                        "type": "ArgList",
+                        "line": 48,
+                        "args": [
+                          {
+                            "type": "ExprArg",
+                            "line": 48,
+                            "expr": {
+                              "type": "CallChainExpr",
+                              "line": 48,
+                              "base": {
+                                "type": "StringLiteral",
+                                "line": 48,
+                                "value": "id"
+                              },
+                              "suffixes": []
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "operators": [
+                  "=="
+                ],
+                "rest": [
+                  {
+                    "type": "CallChainExpr",
+                    "line": 48,
+                    "base": {
+                      "type": "Identifier",
+                      "line": 48,
+                      "name": "pid"
+                    },
+                    "suffixes": []
+                  }
+                ]
+              },
+              "body": [
+                {
+                  "type": "SimpleStmt",
+                  "line": 49,
+                  "smallStmt": {
+                    "type": "ExprStmt",
+                    "line": 49,
+                    "target": {
+                      "type": "TargetCall",
+                      "line": 49,
+                      "callChain": {
+                        "type": "CallChainExpr",
+                        "line": 49,
+                        "base": {
+                          "type": "Identifier",
+                          "line": 49,
+                          "name": "products"
+                        },
+                        "suffixes": [
+                          {
+                            "type": "AttributeAccess",
+                            "line": 49,
+                            "attribute": "remove"
+                          },
+                          {
+                            "type": "FunctionCall",
+                            "line": 49,
+                            "args": {
+                              "type": "ArgList",
+                              "line": 49,
+                              "args": [
+                                {
+                                  "type": "ExprArg",
+                                  "line": 49,
+                                  "expr": {
+                                    "type": "CallChainExpr",
+                                    "line": 49,
+                                    "base": {
+                                      "type": "Identifier",
+                                      "line": 49,
+                                      "name": "p"
+                                    },
+                                    "suffixes": []
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "value": null
+                  }
+                },
+                {
+                  "type": "SimpleStmt",
+                  "line": 50,
+                  "smallStmt": {
+                    "type": "ReturnStmt",
+                    "line": 50,
+                    "value": {
+                      "type": "CallChainExpr",
+                      "line": 50,
+                      "base": {
+                        "type": "Identifier",
+                        "line": 50,
+                        "name": "redirect"
+                      },
+                      "suffixes": [
+                        {
+                          "type": "FunctionCall",
+                          "line": 50,
+                          "args": {
+                            "type": "ArgList",
+                            "line": 50,
+                            "args": [
+                              {
+                                "type": "ExprArg",
+                                "line": 50,
+                                "expr": {
+                                  "type": "CallChainExpr",
+                                  "line": 50,
+                                  "base": {
+                                    "type": "Identifier",
+                                    "line": 50,
+                                    "name": "url_for"
+                                  },
+                                  "suffixes": [
+                                    {
+                                      "type": "FunctionCall",
+                                      "line": 50,
+                                      "args": {
+                                        "type": "ArgList",
+                                        "line": 50,
+                                        "args": [
+                                          {
+                                            "type": "ExprArg",
+                                            "line": 50,
+                                            "expr": {
+                                              "type": "CallChainExpr",
+                                              "line": 50,
+                                              "base": {
+                                                "type": "StringLiteral",
+                                                "line": 50,
+                                                "value": "products_page"
+                                              },
+                                              "suffixes": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SimpleStmt",
+          "line": 51,
+          "smallStmt": {
+            "type": "ReturnStmt",
+            "line": 51,
+            "value": {
+              "type": "CallChainExpr",
+              "line": 51,
+              "base": {
+                "type": "Identifier",
+                "line": 51,
+                "name": "redirect"
+              },
+              "suffixes": [
+                {
+                  "type": "FunctionCall",
+                  "line": 51,
+                  "args": {
+                    "type": "ArgList",
+                    "line": 51,
+                    "args": [
+                      {
+                        "type": "ExprArg",
+                        "line": 51,
+                        "expr": {
+                          "type": "CallChainExpr",
+                          "line": 51,
+                          "base": {
+                            "type": "Identifier",
+                            "line": 51,
+                            "name": "url_for"
+                          },
+                          "suffixes": [
+                            {
+                              "type": "FunctionCall",
+                              "line": 51,
+                              "args": {
+                                "type": "ArgList",
+                                "line": 51,
+                                "args": [
+                                  {
+                                    "type": "ExprArg",
+                                    "line": 51,
+                                    "expr": {
+                                      "type": "CallChainExpr",
+                                      "line": 51,
+                                      "base": {
+                                        "type": "StringLiteral",
+                                        "line": 51,
+                                        "value": "products_page"
+                                      },
+                                      "suffixes": []
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "IfStmt",
+      "line": 53,
+      "condition": {
+        "type": "ComparisonExpr",
+        "line": 53,
+        "first": {
+          "type": "CallChainExpr",
+          "line": 53,
+          "base": {
+            "type": "Identifier",
+            "line": 53,
+            "name": "__name__"
+          },
+          "suffixes": []
+        },
+        "operators": [
+          "=="
+        ],
+        "rest": [
+          {
+            "type": "CallChainExpr",
+            "line": 53,
+            "base": {
+              "type": "StringLiteral",
+              "line": 53,
+              "value": "__main__"
+            },
+            "suffixes": []
+          }
+        ]
+      },
+      "body": [
+        {
+          "type": "SimpleStmt",
+          "line": 54,
+          "smallStmt": {
+            "type": "ExprStmt",
+            "line": 54,
+            "target": {
+              "type": "TargetCall",
+              "line": 54,
+              "callChain": {
+                "type": "CallChainExpr",
+                "line": 54,
+                "base": {
+                  "type": "Identifier",
+                  "line": 54,
+                  "name": "app"
+                },
+                "suffixes": [
+                  {
+                    "type": "AttributeAccess",
+                    "line": 54,
+                    "attribute": "run"
+                  },
+                  {
+                    "type": "FunctionCall",
+                    "line": 54,
+                    "args": {
+                      "type": "ArgList",
+                      "line": 54,
+                      "args": [
+                        {
+                          "type": "AssignArg",
+                          "line": 54,
+                          "name": "debug",
+                          "value": {
+                            "type": "CallChainExpr",
+                            "line": 54,
+                            "base": {
+                              "type": "BoolLiteral",
+                              "line": 54,
+                              "value": true
+                            },
+                            "suffixes": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "value": null
+          }
+        }
+      ]
+    }
+  ]
+}

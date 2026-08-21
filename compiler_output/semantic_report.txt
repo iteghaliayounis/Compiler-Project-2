@@ -1,0 +1,3 @@
+===== Semantic Analysis Report =====
+
+لا يوجد أخطاء دلالية.

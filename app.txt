@@ -33,11 +33,11 @@ products = [
     ]
 
 
-app = Flask(name)
+app = Flask(__name__)
 
 @app.route("/")
 def products_page():
-    return render_template("products.html", products=products)
+    return render_template("index.html", products=products)
 
 @app.route("/product/<int:pid>")
 def product_detail(pid):
@@ -80,10 +80,13 @@ def add_product():
 # 🚨 Route حذف المنتج
 @app.route("/delete/<int:pid>", methods=["POST"])
 def delete_product(pid):
-    global products
-    products = [p for p in products if p.get("id") != pid]
+    # شلنا global products لأننا مش بنسند قيمة جديدة لـ products
+    for p in products:
+        if p.get("id") == pid:
+            products.remove(p)
+            break
     return redirect(url_for("products_page"))
 
 # تشغيل السيرفر
-if name == "main":
+if __name__ == "__main__":
     app.run(debug=True)

@@ -4,6 +4,7 @@ package visitor_html;
 import AstHtml.AstNode;
 import AstHtml.TemplateNode;
 import AstHtml.*;
+import antlr.product_htmlLexer;
 import antlr.product_htmlParser;
 import antlr.product_htmlParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -351,6 +352,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return null;
     }
 
+
     // ================================================================
     // ====== Jinja Variables ({{ ... }}) ======
     // ================================================================
@@ -413,39 +415,64 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         product_htmlParser.JinjaIfContext ifCtx = ctx.jinjaIf();
         IfNode node = new IfNode(p[0], p[1]);
 
-        List<product_htmlParser.JinjaExpressionContext> conds = ifCtx.jinjaExpression();
-        List<product_htmlParser.ContentContext> contents = ifCtx.content();
-        boolean hasElse = ifCtx.JINJA_ELSE() != null;
+        ExpressionNode currentCond = null;
+        List<AstNode> currentBody = new ArrayList<>();
+        String currentSection = null; // "if" | "elif" | "else"
+        int branchIndex = 0;
 
-        int numConds = conds.size();
-        for (int i = 0; i < numConds; i++) {
-            // ====== Symbol Table: فتح scope لكل فرع if/elif ======
-            st.allocate("if_branch_" + p[0] + "_" + i);
+        for (int i = 0; i < ifCtx.getChildCount(); i++) {
+            ParseTree child = ifCtx.getChild(i);
 
-            ExpressionNode cond = (ExpressionNode) visit(conds.get(i));
-            List<AstNode> body = new ArrayList<>();
-            if (i < contents.size()) {
-                AstNode n = visit(contents.get(i));
-                if (n != null) body.add(n);
+            if (child instanceof TerminalNode) {
+                int type = ((TerminalNode) child).getSymbol().getType();
+
+                if (type == product_htmlLexer.JINJA_IF) {
+                    currentSection = "if";
+
+                } else if (type == product_htmlLexer.JINJA_ELIF) {
+                    // أقفلي الفرع السابق (if أو elif) قبل ما نبلش elif جديد
+                    closeBranch(node, currentSection, currentCond, currentBody, p[0], branchIndex);
+                    if ("if".equals(currentSection) || "elif".equals(currentSection)) branchIndex++;
+                    currentBody = new ArrayList<>();
+                    currentCond = null;
+                    currentSection = "elif";
+
+                } else if (type == product_htmlLexer.JINJA_ELSE) {
+                    closeBranch(node, currentSection, currentCond, currentBody, p[0], branchIndex);
+                    if ("if".equals(currentSection) || "elif".equals(currentSection)) branchIndex++;
+                    currentBody = new ArrayList<>();
+                    currentCond = null;
+                    currentSection = "else";
+
+                } else if (type == product_htmlLexer.JINJA_ENDIF) {
+                    closeBranch(node, currentSection, currentCond, currentBody, p[0], branchIndex);
+                }
+
+            } else if (child instanceof product_htmlParser.JinjaExpressionContext) {
+                currentCond = (ExpressionNode) visit(child);
+
+            } else if (child instanceof product_htmlParser.ContentContext) {
+                AstNode n = visit(child);
+                if (n != null) currentBody.add(n);
             }
-            node.addBranch(cond, body);
-
-            st.free();
-        }
-
-        if (hasElse && contents.size() > numConds) {
-            // ====== Symbol Table: فتح scope للـ else ======
-            st.allocate("else_branch_" + p[0]);
-
-            List<AstNode> elseBody = new ArrayList<>();
-            AstNode n = visit(contents.get(numConds));
-            if (n != null) elseBody.add(n);
-            node.setElseBody(elseBody);
-
-            st.free();
         }
 
         return node;
+    }
+
+    /** يقفل الفرع الحالي (if/elif → addBranch، else → setElseBody) قبل ما نبلش الفرع الجاي. */
+    private void closeBranch(IfNode node, String section, ExpressionNode cond,
+                             List<AstNode> body, int line, int branchIndex) {
+        if ("else".equals(section)) {
+            st.allocate("else_branch_" + line);
+            node.setElseBody(body);
+            st.free();
+        } else if ("if".equals(section) || "elif".equals(section)) {
+            st.allocate("if_branch_" + line + "_" + branchIndex);
+            node.addBranch(cond, body);
+            st.free();
+        }
+        // section == null → أول مرة، ما في شي نقفله
     }
 
     @Override
@@ -976,12 +1003,28 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         int[] p = pos(ctx);
         ExpressionNode callee = (ExpressionNode) visit(ctx.jinjaPostfix());
         CallNode call = new CallNode(callee, p[0], p[1]);
-        if (ctx.jinjaExpressionList() != null) {
-            for (product_htmlParser.JinjaExpressionContext exprCtx :
-                    ctx.jinjaExpressionList().jinjaExpression()) {
-                call.addArgument((ExpressionNode) visit(exprCtx));
+
+        if (ctx.jinjaCallArgList() != null) {
+            for (product_htmlParser.JinjaCallArgContext argCtx :
+                    ctx.jinjaCallArgList().jinjaCallArg()) {
+
+                if (argCtx instanceof product_htmlParser.JinjaKwArgContext) {
+                    // وسيط مسمى: name=value
+                    product_htmlParser.JinjaKwArgContext kw =
+                            (product_htmlParser.JinjaKwArgContext) argCtx;
+                    String argName = kw.JINJA_ID().getText();
+                    ExpressionNode argValue = (ExpressionNode) visit(kw.jinjaExpression());
+                    call.addNamedArgument(argName, argValue);
+
+                } else if (argCtx instanceof product_htmlParser.JinjaPosArgContext) {
+                    // وسيط عادي (positional)
+                    product_htmlParser.JinjaPosArgContext posArg =
+                            (product_htmlParser.JinjaPosArgContext) argCtx;
+                    call.addArgument((ExpressionNode) visit(posArg.jinjaExpression()));
+                }
             }
         }
+
         return call;
     }
 
@@ -1130,7 +1173,8 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         if (funcCtx.cssFunctionArgList() != null) {
             for (product_htmlParser.CssFunctionArgContext argCtx :
                     funcCtx.cssFunctionArgList().cssFunctionArg()) {
-                for (product_htmlParser.CssValueContext vCtx : argCtx.cssValue()) {
+                product_htmlParser.CssValueContext vCtx = argCtx.cssValue();
+                if (vCtx != null) {
                     AstNode v = visit(vCtx);
                     if (v instanceof CssValueNode) node.addArgument((CssValueNode) v);
                 }

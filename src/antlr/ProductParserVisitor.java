@@ -1,4 +1,4 @@
-// Generated from D:/combiler-2/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -117,6 +117,27 @@ public interface ProductParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRaiseStmt(ProductParser.RaiseStmtContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code BreakStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBreakStmt(ProductParser.BreakStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ContinueStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContinueStmt(ProductParser.ContinueStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code PassStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPassStmt(ProductParser.PassStmtContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ProductParser#return_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -128,6 +149,24 @@ public interface ProductParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitRaise_stmt(ProductParser.Raise_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProductParser#break_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBreak_stmt(ProductParser.Break_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProductParser#continue_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContinue_stmt(ProductParser.Continue_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ProductParser#pass_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPass_stmt(ProductParser.Pass_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code GeneratorExpr}
 	 * labeled alternative in {@link ProductParser#expr}.

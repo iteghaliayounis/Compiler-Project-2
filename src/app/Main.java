@@ -1,11 +1,10 @@
 package app;
-
+import antlr.ProductParser;
+import antlr.ProductLexer;
 import AST.Program;
 import Semantic.SemanticAnalyzer; // استدعاء الأوركيستريتور الجديد
 import Visitor.PythonVisitor;
 import AstHtml.AstNode;
-import antlr.ProductLexer;
-import antlr.ProductParser;
 import antlr.product_htmlLexer;
 import antlr.product_htmlParser;
 import org.antlr.v4.runtime.CharStream;

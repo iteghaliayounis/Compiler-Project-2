@@ -1,0 +1,15 @@
+===== Python Generator Log =====
+[EXTRACT] المتغير 'products' من سطر 4 — القيمة: [{id=1, name=Laptop, price=750, image=laptop.jpg, description=High performanc...
+[EXTRACT] المتغير 'app' من سطر 28 — القيمة: null
+[ROUTE] 'products_page' → /
+[ROUTE] 'product_detail' → /product/<int:pid>
+[ROUTE] 'add_product' → /add
+[ROUTE] 'delete_product' → /delete/<int:pid>
+[CONTEXT] القالب 'index.html' ← context واحد ثابت
+[DETECT] المتغير 'product' مشتق من عنصر واحد بقائمة 'products'
+[CONTEXT] القالب 'product_details.html' ← تم توليد 3 نسخة (واحدة لكل product)
+[CONTEXT] القالب 'add_product.html' ← context واحد ثابت
+[DONE] تم استخراج 2 متغير عام و3 قالب مرتبط بـ render_template.
+
+===== Jinja Renderer Log =====
+

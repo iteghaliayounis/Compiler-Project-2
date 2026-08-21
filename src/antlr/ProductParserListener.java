@@ -1,4 +1,4 @@
-// Generated from D:/combiler-2/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
+// Generated from C:/Compiler/Compiler-Project-2/src/antlr/ProductParser.g4 by ANTLR 4.13.2
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -188,6 +188,42 @@ public interface ProductParserListener extends ParseTreeListener {
 	 */
 	void exitRaiseStmt(ProductParser.RaiseStmtContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code BreakStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterBreakStmt(ProductParser.BreakStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code BreakStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitBreakStmt(ProductParser.BreakStmtContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ContinueStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterContinueStmt(ProductParser.ContinueStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ContinueStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitContinueStmt(ProductParser.ContinueStmtContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code PassStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterPassStmt(ProductParser.PassStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code PassStmt}
+	 * labeled alternative in {@link ProductParser#small_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitPassStmt(ProductParser.PassStmtContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ProductParser#return_stmt}.
 	 * @param ctx the parse tree
 	 */
@@ -207,6 +243,36 @@ public interface ProductParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitRaise_stmt(ProductParser.Raise_stmtContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProductParser#break_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterBreak_stmt(ProductParser.Break_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProductParser#break_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitBreak_stmt(ProductParser.Break_stmtContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProductParser#continue_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterContinue_stmt(ProductParser.Continue_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProductParser#continue_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitContinue_stmt(ProductParser.Continue_stmtContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ProductParser#pass_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterPass_stmt(ProductParser.Pass_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ProductParser#pass_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitPass_stmt(ProductParser.Pass_stmtContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code GeneratorExpr}
 	 * labeled alternative in {@link ProductParser#expr}.

@@ -1,178 +1,3 @@
-//lexer grammar product_htmlLexer;
-//
-//
-//LT              : '<' ;
-//GT              : '>' ;
-//SLASH           : '/' ;
-//EQUALS          : '=' ;
-//COMMA           : ',' ;
-//DOT             : '.' ;
-//SEMI            : ';' ;
-//LPAR            : '(' ;
-//RPAR            : ')' ;
-//LCURL           : '{' ;
-//RCURL           : '}' ;
-//COLON           : ':' ;
-//
-//
-//DOCTYPE
-//    : '<' '!' 'DOCTYPE' ~'>'* '>' ;
-//HTML_COMMENT
-//    : '<' '!' '--' .*? '--' '>' -> skip ;
-//
-//
-//HTML_DIV    : 'div' ;
-//HTML_HTML   : 'html' ;
-//HTML_HEAD   : 'head' ;
-//HTML_TITLE  : 'title' ;
-//HTML_META   : 'meta' ;
-//HTML_IMG    : 'img' ;
-//HTML_BODY   : 'body' ;
-//HTML_FORM   : 'form' ;
-//HTML_INPUT     : 'input' ;
-//HTML_TEXTAREA  : 'textarea' ;
-//HTML_BUTTON    : 'button' ;
-//HTML_H2     : 'h2' ;
-//HTML_P      : 'p' ;
-//HTML_A      : 'a' ;
-//OPEN_LABEL    : '<label>' -> pushMode(TAG_CONTENT_MODE) ;
-//CSS_STYLE        : 'style="'  -> pushMode(CSS_MODE);
-//
-//STYLE_OPEN  : '<style>'      -> pushMode(CSS_MODE);
-//
-//
-//ATTR_NAME
-//    : [a-zA-Z_:] [a-zA-Z0-9_$:-]* ;
-//STRING
-//    : '"' (~["\\] | '\\' .)* '"'
-//    | '\'' (~['\\] | '\\' .)* '\''
-//    ;
-//
-//WS : [ \t\r\n]+ -> skip ;
-//
-//// Jinja tokens
-//JINJA_STMT_OPEN    : '{%' -> pushMode(JINJA) ;
-//JINJA_EXPR_OPEN    : '{{' -> pushMode(JINJA) ;
-//
-//// mode TAG_CONTENT_MODE;
-//mode TAG_CONTENT_MODE;
-//TEXT
-//    : (~[<{] | '<' ~'/')+
-//    ;
-//
-//CLOSE_LABEL   : '</label>'-> popMode;
-//
-//
-//// mode JINJA
-//mode JINJA;
-//
-//JINJA_STMT_CLOSE : '%}' -> popMode ;
-//JINJA_EXPR_CLOSE : '}}' -> popMode ;
-//
-//// keywords
-//JINJA_BLOCK     : 'block' ;
-//JINJA_ENDBLOCK  : 'endblock' ;
-//JINJA_EXTENDS   : 'extends' ;
-//JINJA_IF        : 'if' ;
-//JINJA_IN        : 'in' ;
-//JINJA_ELSE      : 'else' ;
-//JINJA_ELIF      : 'elif' ;
-//JINJA_FOR       : 'for' ;
-//JINJA_ENDFOR    : 'endfor' ;
-//JINJA_RAW       : 'raw' ;
-//JINJA_ENDRAW    : 'endraw' ;
-//
-//// operators
-//JINJA_DOT : '.' ;
-//JINJA_COMMA : ',' ;
-//JINJA_COLON : ':' ;
-//JINJA_LPAR : '(' ;
-//JINJA_RPAR : ')' ;
-//JINJA_EQ : '==' ;
-//JINJA_NEQ : '!=' ;
-//
-//JINJA_STRING
-//    : '"' (~["\\] | '\\' .)* '"'
-//    | '\'' (~['\\] | '\\' .)* '\''
-//    ;
-//
-//JINJA_NUMBER
-//    : [0-9]+ ('.' [0-9]+)? ;
-//
-//JINJA_ID
-//    : [a-zA-Z_][a-zA-Z0-9_]* ;
-//
-//JINJA_WS : [ \t\r\n]+ -> skip ;
-//
-//JINJA_OTHER : . ;
-//
-//
-//mode CSS_MODE;
-//CSS_CLOSE_STYLE : '"' -> popMode;
-//STYLE_CLOSE : '</style>' -> popMode;
-//
-//LCURL_CSS  : '{' ;
-//RCURL_CSS  : '}' ;
-//COLON_CSS  : ':' ;
-//SEMI_CSS   : ';' ;
-//COMMA_CSS  : ',' ;
-//// selectors
-//CSS_UNIVERSAL_SELECTOR : '*' ;
-//CSS_BODY       : 'body' ;
-//CSS_CONTAINER  : '.container' ;
-//CSS_HEADER     : '.header' ;
-//CSS_BTN_SECONDARY : '.btn.secondary' ;
-//CSS_BTN        : '.btn' ;
-//
-//// property names
-//CSS_MARGIN            : 'margin' ;
-//CSS_PADDING           : 'padding' ;
-//CSS_BOX_SIZING        : 'box-sizing' ;
-//CSS_DISPLAY           : 'display' ;
-//CSS_JUSTIFY_CONTENT   : 'justify-content' ;
-//CSS_MAX_WIDTH         : 'max-width' ;
-//CSS_BORDER_RADIUS     : 'border-radius' ;
-//CSS_TEXT_DECORATION   : 'text-decoration' ;
-//CSS_COLOR             : 'color' ;
-//CSS_BACKGROUND        : 'background' ;
-//CSS_BORDER            : 'border' ;
-//CSS_FONT_FAMILY       : 'font-family';
-//CSS_MARGIN_BOTTOM     : 'margin-bottom';
-//CSS_GAP               : 'gap';
-//CSS_GRID              : 'grid-template-columns' ;
-//CSS_WIDTH             :'width';
-//CSS_BOX_SHADOW        :'box-shadow';
-//
-//// property values keywords
-//CSS_FLEX           : 'flex' ;
-//CSS_SPACE_BETWEEN  : 'space-between' ;
-//CSS_AUTO           : 'auto' ;
-//CSS_NONE           : 'none' ;
-//CSS_WHITE          : 'white' ;
-//CSS_BORDER_BOX     : 'border-box' ;
-//CSS_RGBA
-//    : 'rgba' '('
-//      CSS_NUMBER ',' CSS_NUMBER ',' CSS_NUMBER ',' CSS_DECIMAL
-//      ')' ;
-//CSS_DECIMAL
-//    : [0-9]+ '.' [0-9]+
-//    ;
-//CSS_NUMBER
-//    :[0-9]+
-//    ;
-//CSS_FUNCTION
-//    : [a-zA-Z_-]+ '(' ( ~[()] | '(' .*? ')' )* ')'
-//    ;
-//CSS_VALUE
-//    :  [0-9]+ ('px'|'fr')? ( [ \t]+ [0-9]+ ('px')? )?
-//    | [0-9]+ ('px')? [ \t]+ ('solid'|'dashed'|'dotted') [ \t]+ '#' [0-9a-fA-F]+
-//    | '#' [0-9a-fA-F]+
-//    | '\'' (~['\\])* '\'' (',' [ \t]* '\'' (~['\\])* '\'')*
-//    | [a-zA-Z_-]+ (',' [ \t]* [a-zA-Z_-]+)*
-//    | [a-zA-Z0-9#.%\-]+
-//    ;
-//
-//CSS_WS : [ \t\r\n]+ -> skip ;
 
 lexer grammar product_htmlLexer;
 
@@ -267,8 +92,8 @@ TAG_EQUAL
     ;
 
 TAG_STRING
-    : '"' (~["\r\n] | '\\' .)* '"'
-    | '\'' (~['\r\n] | '\\' .)* '\''
+    : '"' (~["{\r\n] | '\\' .)* '"'
+    | '\'' (~['{\r\n] | '\\' .)* '\''
     ;
 
 TAG_WS
@@ -282,6 +107,14 @@ TAG_JINJA_VAR_OPEN
 
 TAG_JINJA_BLOCK_OPEN
     : '{%' -> type(JINJA_BLOCK_OPEN), pushMode(JINJA_MODE)
+    ;
+
+TAG_ATTR_JINJA_VAR_OPEN
+    : '"' '{' '{' -> type(JINJA_VAR_OPEN), pushMode(JINJA_MODE)
+    ;
+
+TAG_ATTR_JINJA_BLOCK_OPEN
+    : '"' '{' '%' -> type(JINJA_BLOCK_OPEN), pushMode(JINJA_MODE)
     ;
 
 TAG_JINJA_COMMENT
@@ -300,11 +133,11 @@ TAG_STYLE_ATTR_OPEN
 mode JINJA_MODE;
 
 JINJA_VAR_CLOSE
-    : '}}' -> popMode
+    : '}}' '"'? -> popMode
     ;
 
 JINJA_BLOCK_CLOSE
-    : '%}' -> popMode
+    : '%}' '"'? -> popMode
     ;
 
 // الكلمات المفتاحية لـ Jinja2

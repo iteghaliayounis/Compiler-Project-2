@@ -2,6 +2,7 @@ package Semantic.checkers.Python;
 
 import AST.ASTNode;
 import AST.Expressions.Atom.Identifier;
+import AST.Expressions.CallSuffixes.AttributeAccess;
 import AST.Expressions.CallSuffixes.CallChainExpr;
 import AST.Expressions.CallSuffixes.CallSuffix;
 import AST.Expressions.CallSuffixes.FunctionCall;
@@ -59,12 +60,22 @@ public class InvalidFunctionCallChecker {
 
         Symbol.Kind kind = symbol.getKind();
 
+        // لو المتغير عادي (مش دالة)
         if (kind == Symbol.Kind.VARIABLE) {
-            for (CallSuffix suffix : suffixes) {
+            for (int i = 0; i < suffixes.size(); i++) {
+                CallSuffix suffix = suffixes.get(i);
+
+                // يلي جاي استدعاء دالة؟
                 if (suffix instanceof FunctionCall) {
-                    String pythonType = normalizeType(symbol.getType());
-                    handler.report(new InvalidFunctionCallError(pythonType,
-                            suffix.getLineNumber(), SOURCE));
+                    // ★ التعديل هنا: نتأكد إنه ما فيش نقطة (AttributeAccess) قبل الأقواس
+                    boolean isMethodCall = (i > 0 && suffixes.get(i - 1) instanceof AttributeAccess);
+
+                    // لو ما فيش نقطة قبل الأقواس، فالمتغير عم يستدعى كأنه دالة (زي products())
+                    if (!isMethodCall) {
+                        String pythonType = normalizeType(symbol.getType());
+                        handler.report(new InvalidFunctionCallError(pythonType,
+                                suffix.getLineNumber(), SOURCE));
+                    }
                 }
             }
         }

@@ -113,8 +113,6 @@ SCRIPT_TEXT=111
 '{%'=9
 '/>'=11
 'style="'=20
-'}}'=21
-'%}'=22
 'extends'=23
 'include'=24
 'import'=25

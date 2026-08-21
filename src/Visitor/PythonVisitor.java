@@ -274,6 +274,22 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new RaiseStmt(expr, ctx.getStart().getLine());
     }
 
+    @Override
+    public ASTNode visitBreakStmt(ProductParser.BreakStmtContext ctx) {
+        // لو ما عندكن كلاس BreakStmt بالـ AST، ممكن ترجعي null أو أي عقدة بسيطة
+        return null;
+    }
+
+    @Override
+    public ASTNode visitContinueStmt(ProductParser.ContinueStmtContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitPassStmt(ProductParser.PassStmtContext ctx) {
+        return null;
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     //  expr_stmt  ── detect assignments and insert/update symbol table
     // ═══════════════════════════════════════════════════════════════════════
@@ -327,30 +343,28 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitTargetCall(ProductParser.TargetCallContext ctx) {
-        // بناء call_chain يدوياً من ID + LPAR arg_list? RPAR + suffixes
+        // 1. قراءة اسم المتغير (ID) ورقم السطر
         String name = ctx.ID().getText();
         int line = ctx.getStart().getLine();
 
-        // إنشاء Identifier
+        // 2. إنشاء الـ Base (Identifier)
         Identifier base = new Identifier(name, line);
 
-        // إنشاء ArgList (إن وجد)
-        ArgList args = ctx.arg_list() != null ? (ArgList) visit(ctx.arg_list()) : null;
-
-        // إنشاء FunctionCall suffix
-        FunctionCall funcCall = new FunctionCall(args, line);
-
-        // إنشاء list of suffixes
+        // 3. إنشاء قائمة الـ Suffixes
         List<CallSuffix> suffixes = new ArrayList<>();
-        suffixes.add(funcCall);
 
-        // suffixes الإضافية (لو موجودة)
+        // 4. مرور على كل call_suffix (سواء كانت نقطة . أو أقواس ())
+        //    الـ Visitor تلقائياً رح يبني الـ FunctionCall أو AttributeAccess ويرجعهن
         if (ctx.call_suffix() != null) {
             for (ProductParser.Call_suffixContext cs : ctx.call_suffix()) {
-                suffixes.add((CallSuffix) visit(cs));
+                ASTNode visitedNode = visit(cs);
+                if (visitedNode instanceof CallSuffix) {
+                    suffixes.add((CallSuffix) visitedNode);
+                }
             }
         }
 
+        // 5. بناء الـ CallChainExpr ووضعه داخل TargetCall
         return new TargetCall(new CallChainExpr(base, suffixes, line), line);
     }
 
