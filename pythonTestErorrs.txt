@@ -142,6 +142,76 @@ def home():
     price = 99.5       # float
     items = [1, 2, 3]  # list
 
+        # ─────────────────────────────────────────────
+        # 7. أخطاء شهد Invalid Attribute Access (AttributeError)
+        # ─────────────────────────────────────────────
+
+        # Test 17: استدعاء method غير موجودة على str
+        # المتوقع: AttributeError: 'str' object has no attribute 'push'
+        attr_x1 = "hello"
+        attr_x1.push("!")
+
+        # Test 18: استدعاء method نصية على int
+        # المتوقع: AttributeError: 'int' object has no attribute 'upper'
+        attr_y1 = 5
+        attr_y1.upper()
+
+        # Test 19: استدعاء method على None
+        # المتوقع: AttributeError: 'NoneType' object has no attribute 'upper'
+        attr_z1 = None
+        attr_z1.upper()
+
+        # Test 20: استدعاء method خاطئة على list (الصح append مو add)
+        # المتوقع: AttributeError: 'list' object has no attribute 'add'
+        attr_lst1 = [1, 2, 3]
+        attr_lst1.add(4)
+
+        # ─────────────────────────────────────────────
+        # 8. شهد: حالات صحيحة لنفس الـ Checker (يجب ألا تطلع أي AttributeError)
+        # ─────────────────────────────────────────────
+
+        # Test 21: استدعاء method صحيحة على str
+        ok_str1 = "hello"
+        ok_str1.upper()
+
+        # Test 22: استدعاء method صحيحة على list
+        ok_list1 = [1, 2, 3]
+        ok_list1.append(4)
+
+        # Test 23: استدعاء method صحيحة على dict
+        ok_dict1 = {"a": 1}
+        ok_dict1.get("a")
+
+        # Test 24: chaining صحيح (str → str → method نصية أخرى)
+        ok_chain1 = "hello"
+        ok_chain1.strip().upper()
+
+        # Test 25: attribute access على نوع غير معروف وقت الـ compile (لازم ما يطلع خطأ)
+        ok_unknown1 = int("10")
+        ok_unknown1.bit_length()
+
+            # Test 26: attribute access جوا شرط if
+            attr_cond = "hi"
+            if attr_cond.foo():
+                pass
+
+            # Test 27: attribute access كـ argument لدالة تانية
+            attr_arg = 5
+            print(attr_arg.bar())
+
+            # Test 28: attribute access على نتيجة استدعاء دالة (يجب ألا يطلع خطأ - UNKNOWN)
+            unknown_result = greet("a", "b")
+            unknown_result.whatever()
+
+            # Test 29: attribute صحيحة داخل return statement جوا دالة
+            def get_upper(s):
+                return s.upper()   # ✅ لازم يعدي بدون خطأ لو s من نوع str معروف
+
+            # Test 30: attribute access متسلسل بعد method ما بترجع str (false negative متوقع ومقبول)
+            attr_chain2 = [1, 2, 3]
+            attr_chain2.append(4).sort()   # نظريًا append بترجع None فعليًا، بس نحن ما بنتتبعها فبتعدي بصمت (سلوك متوقع ومقصود حسب فلسفة "False Positive أسوأ")
+
+
     return render_template(
         "htmlTestErrors.html",
         age=age,

@@ -9,6 +9,7 @@ import Semantic.checkers.Python.WrongArgumentsChecker;
 import Semantic.checkers.Python.InvalidFunctionCallChecker;
 import Semantic.checkers.Python.UseBeforeAssignmentChecker;
 import Semantic.checkers.Python.ReturnTypeMismatchChecker;
+import Semantic.checkers.Python.InvalidAttributeAccessChecker; // ← استيراد الـ Checker الجديد
 //import Semantic.checkers.Python.TypeMismatchChecker;
 import Semantic.handlers.SemanticErrorHandler;
 import SymbolTable.SymbolTable;
@@ -18,19 +19,21 @@ import SymbolTable.SymbolTable;
  *
  * يدير الـ Checkers التالية:
  *   1. UndefinedVariableChecker       ← غالية ✅
- *   2. TypeErrorChecker               ← رؤى
- *   3. TypeMismatchChecker            ← رؤى (معطل مؤقتاً)
- *   4. ScopeChecker                   ← رغد
- *   5. DivisionByZeroChecker          ← رغد
- *   6. WrongArgumentsChecker          ← راما
- *   7. InvalidFunctionCallChecker     ← راما
- *   8. UseBeforeAssignmentChecker     ← راما
- *   9. ReturnTypeMismatchChecker      ← راما (جديد)
+ *   2. InvalidAttributeAccessChecker  ← جديد (احتياطي)
+ *   3. TypeErrorChecker               ← رؤى
+ *   4. TypeMismatchChecker            ← رؤى (معطل مؤقتاً)
+ *   5. ScopeChecker                   ← رغد
+ *   6. DivisionByZeroChecker          ← رغد
+ *   7. WrongArgumentsChecker          ← راما
+ *   8. InvalidFunctionCallChecker     ← راما
+ *   9. UseBeforeAssignmentChecker     ← راما
+ *  10. ReturnTypeMismatchChecker      ← راما
  */
 public class PythonSemanticAnalyzer {
 
     private final SymbolTable symbolTable;
     private final UndefinedVariableChecker undefinedChecker;
+    private final InvalidAttributeAccessChecker invalidAttributeAccessChecker; // ← تعريف الحقل
     private final TypeErrorChecker         typeErrorChecker;
     private final ScopeChecker             scopeChecker;
     private final DivisionByZeroChecker    divisionByZeroChecker;
@@ -41,7 +44,7 @@ public class PythonSemanticAnalyzer {
     private final InvalidFunctionCallChecker invalidFunctionCallChecker;
     private final UseBeforeAssignmentChecker useBeforeAssignmentChecker;
 
-    // ← جديد: راما
+    // ← راما
     private final ReturnTypeMismatchChecker returnTypeMismatchChecker;
 
     public PythonSemanticAnalyzer(SymbolTable symbolTable, SemanticErrorHandler sharedHandler) {
@@ -49,6 +52,9 @@ public class PythonSemanticAnalyzer {
 
         // Existing checkers
         this.undefinedChecker = new UndefinedVariableChecker(symbolTable, sharedHandler);
+
+        // ← تهيئة الـ Checker الجديد
+        this.invalidAttributeAccessChecker = new InvalidAttributeAccessChecker(symbolTable, sharedHandler);
 
         // رؤى
         this.typeErrorChecker     = new TypeErrorChecker(symbolTable, sharedHandler);
@@ -63,7 +69,7 @@ public class PythonSemanticAnalyzer {
         this.invalidFunctionCallChecker = new InvalidFunctionCallChecker(symbolTable, sharedHandler);
         this.useBeforeAssignmentChecker = new UseBeforeAssignmentChecker(symbolTable, sharedHandler);
 
-        // ← جديد: راما
+        // ← راما
         this.returnTypeMismatchChecker = new ReturnTypeMismatchChecker(symbolTable, sharedHandler);
     }
 
@@ -73,29 +79,32 @@ public class PythonSemanticAnalyzer {
         // 1. Undefined Variable (غالية)
         undefinedChecker.check(root);
 
-        // 2. Type Error (رؤى)
+        // 2. Invalid Attribute Access (بعد الـ Undefined Variable مباشرة)
+        invalidAttributeAccessChecker.check(root);
+
+        // 3. Type Error (رؤى)
         typeErrorChecker.check(root);
 
-        // 3. Scope Error (رغد)
+        // 4. Scope Error (رغد)
         scopeChecker.check(root);
 
-        // 4. Division By Zero (رغد)
+        // 5. Division By Zero (رغد)
         divisionByZeroChecker.check(root);
 
-        // 5. Type Mismatch (رؤى) — معطل مؤقتاً
+        // 6. Type Mismatch (رؤى) — معطل مؤقتاً
         // typeMismatchChecker.check(root);
 
         // راما ─────────────────────────────────────────────
-        // 6. Wrong Arguments Count
+        // 7. Wrong Arguments Count
         wrongArgumentsChecker.check(root);
 
-        // 7. Invalid Function Call
+        // 8. Invalid Function Call
         invalidFunctionCallChecker.check(root);
 
-        // 8. Use Before Assignment
+        // 9. Use Before Assignment
         useBeforeAssignmentChecker.check(root);
 
-        // 9. Return Type Mismatch ← جديد
+        // 10. Return Type Mismatch
         returnTypeMismatchChecker.check(root);
         // ─────────────────────────────────────────────────────────
     }
