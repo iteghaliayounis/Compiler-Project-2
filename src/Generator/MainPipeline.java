@@ -16,9 +16,15 @@ import AstHtml.TemplateNode;
 import visitor_html.HtmlVisitor;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +43,13 @@ public class MainPipeline {
     private static final Path COMPILER_OUTPUT_DIR = Path.of("compiler_output");
 
     public static void main(String[] args) {
+        runPipelineOnce();
+        watchForChanges();
+    }
+
+    // ★ جديد: نفس منطق main() القديم بالكامل، بس بشكل دالة قابلة لإعادة الاستدعاء
+    // (مرة أول تشغيل، ومرة كل ما الـ WatchService يكتشف تعديل بملفات input/)
+    private static void runPipelineOnce() {
         try {
             System.out.println("🚀 Starting Compiler Pipeline...");
 
@@ -194,6 +207,48 @@ public class MainPipeline {
         } catch (Exception e) {
             System.err.println("❌ Pipeline Error: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // ★ جديد: مراقبة input/ و input/templates/ — أي تعديل/إضافة/حذف بيعيد التوليد تلقائيًا
+    // بدون ما نحتاج نعمل Run يدوي من جديد. Ctrl+C لإيقاف المراقبة.
+    private static void watchForChanges() {
+        try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+            INPUT_DIR.register(watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_MODIFY,
+                    StandardWatchEventKinds.ENTRY_DELETE);
+            TEMPLATES_DIR.register(watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_MODIFY,
+                    StandardWatchEventKinds.ENTRY_DELETE);
+
+            System.out.println("\n👀 Watching 'input/' for changes... (Ctrl+C to stop)");
+
+            while (true) {
+                WatchKey key = watchService.take(); // بيوقف هون لحد ما يصير تعديل
+                List<WatchEvent<?>> events = new ArrayList<>(key.pollEvents());
+                key.reset();
+
+                // ★ debounce: بعض المحررات بتطلق كذا حدث لنفس الحفظة الوحدة (مثلاً كتابة بملف مؤقت
+                // وبعدين rename) — منستنى شوي ومنجمع أي أحداث إضافية قبل ما نعيد التوليد مرة وحدة بس
+                Thread.sleep(300);
+                WatchKey extraKey;
+                while ((extraKey = watchService.poll()) != null) {
+                    events.addAll(extraKey.pollEvents());
+                    extraKey.reset();
+                }
+
+                if (!events.isEmpty()) {
+                    System.out.println("\n♻️  تعديل انكتشف بملفات input/ — إعادة توليد...");
+                    runPipelineOnce();
+                    System.out.println("👀 Watching 'input/' for changes... (Ctrl+C to stop)");
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            System.err.println("❌ Watch Error: " + e.getMessage());
         }
     }
 
