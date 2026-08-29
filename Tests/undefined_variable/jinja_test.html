@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Jinja Undefined Variable Test</title>
+</head>
+
+<body>
+
+<h1>Jinja Undefined Variable Test</h1>
+
+# TEST 1
+<p>{{ username }}</p>
+
+
+# TEST 2
+<p>{{ price + tax }}</p>
+
+
+# TEST 3
+{% if is_admin %}
+<p>Administrator</p>
+{% endif %}
+
+
+# TEST 4
+{% for product in products %}
+<p>{{ product }}</p>
+{% endfor %}
+
+
+# TEST 5
+<p>{{ data }}</p>
+
+
+# TEST 6
+<p>{{ "Hello " ~ display_name }}</p>
+
+
+# TEST 7
+<p>{{ country }}</p>
+<p>{{ city }}</p>
+<p>{{ email }}</p>
+
+
+# TEST 8
+<p>{{ user.name }}</p>
+
+
+# TEST 9
+{% if user_active %}
+<p>User is active</p>
+{% endif %}
+
+
+# TEST 10
+<p>{{ first_value * second_value }}</p>
+
+</body>
+</html>

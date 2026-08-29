@@ -11,7 +11,7 @@ import java.io.InputStream;
 
 public class HtmlTest {
     public static void main(String[] args) throws Exception {
-        String fileName = "test.html";
+        String fileName = "base.html";
         InputStream is = new FileInputStream(fileName);
 
         CharStream input = CharStreams.fromStream(is);

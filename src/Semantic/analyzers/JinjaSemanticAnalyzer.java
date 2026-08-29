@@ -6,7 +6,7 @@ import Semantic.checkers.Jinja.ScopeChecker;
 import Semantic.checkers.Jinja.UndefinedVariableChecker;
 import Semantic.checkers.Jinja.TypeErrorChecker;
 import Semantic.handlers.SemanticErrorHandler;
-
+import java.util.Set;
 import symbol_table.SymbolTable;
 
 /**
@@ -65,5 +65,16 @@ public class JinjaSemanticAnalyzer {
 
     public void addFlaskPassedVariable(String varName) {
         undefinedChecker.addFlaskPassedVariable(varName);
+    }
+    public void addFlaskMissingVariables(Set<String> varNames) {
+        if (varNames == null) {
+            return;
+        }
+
+        for (String varName : varNames) {
+            if (varName != null && !varName.isEmpty()) {
+                undefinedChecker.addFlaskMissingVariable(varName);
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@ package app;
 import antlr.ProductParser;
 import antlr.ProductLexer;
 import AST.Program;
-import Semantic.SemanticAnalyzer; // استدعاء الأوركيستريتور الجديد
+import Semantic.SemanticAnalyzer;
 import Visitor.PythonVisitor;
 import AstHtml.AstNode;
 import antlr.product_htmlLexer;
@@ -54,7 +54,7 @@ public class Main {
     private static void runProduct() {
         try {
             System.out.println("Running Product Compiler...\n");
-            String path = "pythonTestErorrs.txt";
+            String path = "Tests/undefined_variable/python_test.py";
             CharStream input = CharStreams.fromFileName(path);
             ProductLexer lexer = new ProductLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -78,7 +78,8 @@ public class Main {
     private static void runHtml() {
         try {
             System.out.println("Running HTML Compiler...\n");
-            String fileName = "htmlTestErorrs.txt";
+           // String fileName = "Tests/missing_flask_variable/ templates/base.html";
+            String fileName = "Tests/undefined_variable/jinja_test.html";
             InputStream is = new FileInputStream(fileName);
             CharStream input = CharStreams.fromStream(is);
             product_htmlLexer lexer = new product_htmlLexer(input);

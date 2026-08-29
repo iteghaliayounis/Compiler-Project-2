@@ -12,7 +12,7 @@ public class MissingFlaskVariableChecker {
     private final SymbolTable pythonST;
     private final symbol_table.SymbolTable jinjaST;
     private final SemanticErrorHandler handler;
-
+    private final Set<String> missingFlaskVariables = new HashSet<>();
     public MissingFlaskVariableChecker(
             SymbolTable pythonST,
             symbol_table.SymbolTable jinjaST,
@@ -48,6 +48,7 @@ public class MissingFlaskVariableChecker {
     // ═══════════════════════════════════════════════════════════════════════
 
     public void check() {
+        missingFlaskVariables.clear();
         int errorsBefore = handler.getErrors().size();
         System.out.println("  [Flask Linker] Starting Missing Flask Variable Check...");
 
@@ -69,66 +70,19 @@ public class MissingFlaskVariableChecker {
         }
         System.out.println();
 
-        Set<Integer> usedPy = new HashSet<>();
-        Set<Integer> usedJinja = new HashSet<>();
+        // ── ربط Python Template مع Jinja Template بالاسم مباشرة ──
+        for (PyTemplate py : pyTemplates) {
 
-        // ── المرحلة 1: ربط بالمتغيرات (دقة عالية) ──
-        for (int i = 0; i < pyTemplates.size(); i++) {
-            if (usedPy.contains(i)) continue;
-            PyTemplate py = pyTemplates.get(i);
+            for (JinjaTpl jinja : jinjaTemplates) {
 
-            int bestMatch = -1;
-            int bestScore = -1;
-
-            for (int j = 0; j < jinjaTemplates.size(); j++) {
-                if (usedJinja.contains(j)) continue;
-                int score = matchScore(py.passedVars, jinjaTemplates.get(j).usedVars);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMatch = j;
-                }
-            }
-
-            if (bestMatch >= 0 && bestScore > 0) {
-                linkAndCompare(py, jinjaTemplates.get(bestMatch));
-                usedPy.add(i);
-                usedJinja.add(bestMatch);
-            }
-        }
-
-        // ── المرحلة 2: ربط الفاضية مع الفاضية بس ──
-        List<PyTemplate> remPy = new ArrayList<>();
-        List<JinjaTpl> remJinja = new ArrayList<>();
-        List<JinjaTpl> orphanJinja = new ArrayList<>();
-
-        for (int i = 0; i < pyTemplates.size(); i++) {
-            if (!usedPy.contains(i)) remPy.add(pyTemplates.get(i));
-        }
-        for (int j = 0; j < jinjaTemplates.size(); j++) {
-            if (!usedJinja.contains(j)) {
-                if (jinjaTemplates.get(j).usedVars.isEmpty()) {
-                    remJinja.add(jinjaTemplates.get(j));
-                } else {
-                    orphanJinja.add(jinjaTemplates.get(j));
+                // py.name مثل: profile.html
+                // jinja.name قد يكون: profile أو profile.html
+                if (sameTemplateName(py.name, jinja.name)) {
+                    linkAndCompare(py, jinja);
+                    break;
                 }
             }
         }
-
-        int limit = Math.min(remPy.size(), remJinja.size());
-        for (int i = 0; i < limit; i++) {
-            linkAndCompare(remPy.get(i), remJinja.get(i));
-        }
-
-
-        for (JinjaTpl orphan : orphanJinja) {
-            System.out.println("  [Flask Linker] ⚠ Orphan template '" + orphan.name
-                    + "' uses variables but no Python render_template passes them!");
-            for (String usedVar : orphan.usedVars) {
-                int line = orphan.usedVarLines.getOrDefault(usedVar, -1);
-                handler.report(new MissingFlaskVarError(usedVar, orphan.name, line));
-            }
-        }
-
 
         int newErrors = handler.getErrors().size() - errorsBefore;
         if (newErrors == 0) {
@@ -158,9 +112,12 @@ public class MissingFlaskVariableChecker {
         List<JinjaTpl> list = new ArrayList<>();
         for (symbol_table.SymbolTable.ScopeEntry scope : jinjaST.getAllScopes()) {
             for (symbol_table.SymbolTable.Symbol sym : scope.getSymbols()) {
-                if (sym.getKind() == symbol_table.SymbolTable.Kind.TEMPLATE
-                        && !"None".equals(sym.getExtendsTemplate())) {
-                    list.add(new JinjaTpl(sym.getName(), sym.getUsedVariables(), sym.getUsedVariableLines()));
+                if (sym.getKind() == symbol_table.SymbolTable.Kind.TEMPLATE) {
+                    list.add(new JinjaTpl(
+                            sym.getName(),
+                            sym.getUsedVariables(),
+                            sym.getUsedVariableLines()
+                    ));
                 }
             }
         }
@@ -180,18 +137,31 @@ public class MissingFlaskVariableChecker {
 
         return found > 0 ? found : -1;
     }
+    private boolean sameTemplateName(String pyName, String jinjaName) {
 
+        if (pyName == null || jinjaName == null) {
+            return false;
+        }
+
+        // إزالة امتداد .html من الاسم إن وجد
+        String pyBase = pyName.replaceAll("\\.html$", "");
+        String jinjaBase = jinjaName.replaceAll("\\.html$", "");
+
+        return pyBase.equals(jinjaBase);
+    }
     private void linkAndCompare(PyTemplate py, JinjaTpl jinja) {
         System.out.println("  [Flask Linker] Linking: " + py.name + " ↔ " + jinja.name);
 
         for (String usedVar : jinja.usedVars) {
             if (!py.passedVars.contains(usedVar)) {
+                missingFlaskVariables.add(usedVar);
                 int line = jinja.usedVarLines.getOrDefault(usedVar, -1);
                 handler.report(new MissingFlaskVarError(usedVar, py.name, line));
             } else {
                 propagateTypeAndValue(usedVar);
             }
         }
+
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -219,5 +189,8 @@ public class MissingFlaskVariableChecker {
                 }
             }
         }
+    }
+    public Set<String> getMissingFlaskVariables() {
+        return Collections.unmodifiableSet(missingFlaskVariables);
     }
 }

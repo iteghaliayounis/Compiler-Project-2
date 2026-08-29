@@ -62,6 +62,9 @@ public class SemanticAnalyzer {
         //    بدون هذا، سترى Jinja ST كل المتغيرات كـ "Unknown"
         if (flaskLinker != null) {
             flaskLinker.check();
+            jinjaAnalyzer.addFlaskMissingVariables(
+                    flaskLinker.getMissingFlaskVariables()
+            );
         }
 
         // 3. تشغيل فحص الجينجا (Undefined + TypeError)
