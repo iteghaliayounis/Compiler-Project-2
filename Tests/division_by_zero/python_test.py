@@ -4,7 +4,6 @@ app = Flask(__name__)
 
 
 # TEST 1 — قسمة مباشرة على صفر (literal)
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/direct-div")
@@ -15,7 +14,6 @@ def direct_div():
 
 
 # TEST 2 — modulo مباشر على صفر (literal)
-# متوقع: ZeroDivisionError: integer division or modulo by zero
 
 
 @app.route("/direct-mod")
@@ -26,7 +24,6 @@ def direct_mod():
 
 
 # TEST 3 — Constant Propagation: متغير قيمته صفر ثم قسمة عليه
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/const-div")
@@ -38,7 +35,6 @@ def const_div():
 
 
 # TEST 4 — Constant Propagation مع modulo
-# متوقع: ZeroDivisionError: integer division or modulo by zero
 
 
 @app.route("/const-mod")
@@ -49,7 +45,7 @@ def const_mod():
 
 
 
-# TEST 5 — يجب ألا يبلّغ: القاسم قيمته غير صفرية معروفة
+# TEST 5 —  القاسم قيمته غير صفرية معروفة
 
 
 @app.route("/safe-const")
@@ -60,7 +56,7 @@ def safe_const():
 
 
 
-# TEST 6 — يجب ألا يبلّغ: القاسم متغير مجهول القيمة وقت الـ compile (UNKNOWN)
+# TEST 6 —  القاسم متغير مجهول القيمةـ 
 
 
 @app.route("/unknown-divisor")
@@ -70,7 +66,7 @@ def unknown_divisor():
 
 
 
-# TEST 7 — يجب ألا يبلّغ: إعادة تعيين المتغير قبل الاستخدام (constant propagation يحدّث القيمة)
+# TEST 7 
 
 
 @app.route("/reassigned")
@@ -83,7 +79,6 @@ def reassigned():
 
 
 # TEST 8 — قسمة على صفر داخل if
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/inside-if")
@@ -97,7 +92,6 @@ def inside_if():
 
 
 # TEST 9 — قسمة على صفر داخل for
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/inside-for")
@@ -110,7 +104,6 @@ def inside_for():
 
 
 # TEST 10 — قسمة على صفر داخل try/except
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/inside-try")
@@ -124,7 +117,6 @@ def inside_try():
 
 
 # TEST 11 — سلسلة قسمة متتالية تنتهي بصفر (a / b / c)
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/chained")
@@ -134,10 +126,7 @@ def chained():
 
 
 
-# TEST 12 — يجب ألا يبلّغ: متغير بنفس الاسم بدالة أخرى قيمته صفر، ما لازم يسرّب لهاد الدالة
-# (كل دالة عندها knownConstants مستقلة عن الدوال التانية)
-
-
+# TEST 12 
 @app.route("/leak-a")
 def leak_a():
     z = 0
