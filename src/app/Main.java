@@ -54,7 +54,7 @@ public class Main {
     private static void runProduct() {
         try {
             System.out.println("Running Product Compiler...\n");
-            String path = "Tests/undefined_variable/python_test.py";
+            String path = "Tests/type error/python.txt";
             CharStream input = CharStreams.fromFileName(path);
             ProductLexer lexer = new ProductLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -79,7 +79,7 @@ public class Main {
         try {
             System.out.println("Running HTML Compiler...\n");
            // String fileName = "Tests/missing_flask_variable/ templates/base.html";
-            String fileName = "Tests/undefined_variable/jinja_test.html";
+            String fileName = "Tests/type error/html.txt";
             InputStream is = new FileInputStream(fileName);
             CharStream input = CharStreams.fromStream(is);
             product_htmlLexer lexer = new product_htmlLexer(input);
