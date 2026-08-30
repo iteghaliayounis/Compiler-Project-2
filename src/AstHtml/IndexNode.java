@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * وصول بالفهرس: array[index]
- */
+
 public class IndexNode extends ExpressionNode {
 
     private final ExpressionNode array;

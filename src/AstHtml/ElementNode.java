@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * عنصر HTML حاوي (مع تاغ فتح وإغلاق): <div>...</div>
- */
+
 public class ElementNode extends HtmlNode {
 
     private final String tagName;

@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * قيمة عددية CSS مع وحدة اختيارية.
- * مثال: 10, 10px, 1.5em, 100%, 45deg, 1fr
- */
+
 public class CssNumberValueNode extends CssValueNode {
 
     private final String rawValue;

@@ -1,0 +1,8 @@
+{% set age = 25 %}
+{{ age() }}
+
+{% set username = "Ali" %}
+{{ username() }}
+
+{% macro greet(name) %}Hi {{ name }}{% endmacro %}
+{{ greet("Ali") }}

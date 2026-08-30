@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * <script> ... JavaScript ... </script>
- * المحتوى يخزن كـ raw text بدون parsing.
- */
+
 public class ScriptElementNode extends HtmlNode {
 
     private final String rawContent;

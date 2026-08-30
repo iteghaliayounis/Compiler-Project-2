@@ -3,10 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * قاعدة CSS كاملة:
- *   selector, selector { declaration; declaration; }
- */
+
 public class CssRuleSetNode extends CssNode {
 
     private final List<CssSelectorNode> selectors = new ArrayList<>();

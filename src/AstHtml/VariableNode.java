@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * متغير (identifier reference).
- */
+
 public class VariableNode extends ExpressionNode {
 
     private final String name;

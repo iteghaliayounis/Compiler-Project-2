@@ -6,34 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * الشخص 2 — Jinja Generator (القلب الرئيسي)
- *
- * يمشي على شجرة AstHtml (نفس شجرة HtmlVisitor بدون أي تعديل عليها) ويستبدل:
- *   {{ var }}          → القيمة الحقيقية من الـ Context Data
- *   {% for x in y %}   → تكرار فعلي للعناصر
- *   {% if cond %}      → تقييم الشرط واختيار الفرع الصحيح
- * وينتج بالنهاية HTML نهائي جاهز.
- *
- * الاستخدام:
- *   JinjaRenderer renderer = new JinjaRenderer();
- *   String html = renderer.render(templateRoot, contextData);
- *
- * ملاحظة: implements AstVisitor<Object> مش <String> لأنه عقد التعابير
- * (VariableNode, BinaryOpNode...) لازم ترجع قيمة حقيقية (رقم/نص/قائمة)
- * مو نص جاهز، عشان نقدر نستخدمها بمقارنات {% if %} وحسابات. عقد الـ HTML
- * (ElementNode, TextNode...) بترجع String (نص الـ HTML الناتج) ملفوف كـ Object.
- */
+
 public class JinjaRenderer implements AstVisitor<Object> {
 
     private Environment env;
 
-    // ★ جديد: خريطة الـ routes القادمة من PythonContextGenerator.getRoutes()
     private Map<String, String> routes = new java.util.HashMap<>();
-    // ★ جديد: خريطة "endpoint" أو "endpoint:argValue" → اسم ملف الـ output الحقيقي
-    // (مبنية بـ MainPipeline قبل أي رندرة، عشان url_for يشير لاسم الملف الصحيح مش لمسار Flask الخام)
+
     private Map<String, String> endpointFileMap = new java.util.HashMap<>();
-    // ★ جديد: سجل تحذيرات مرحلة الـ Jinja rendering
+
     private final List<String> log = new ArrayList<>();
 
     public void setRoutes(Map<String, String> routes) {
@@ -45,16 +26,10 @@ public class JinjaRenderer implements AstVisitor<Object> {
     }
 
     public List<String> getLog() { return log; }
-
-    /** نقطة الدخول الرئيسية. */
     public String render(TemplateNode root, Map<String, Object> context) {
         this.env = Environment.root(context);
         return stringify(root.accept(this));
     }
-
-    // ====================================================================
-    //  Top-level / Statements
-    // ====================================================================
 
     @Override
     public Object visit(TemplateNode node) {
@@ -69,7 +44,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
     @Override
     public Object visit(JinjaVarOutputNode node) {
         Object value = evalExpr(node.getExpression());
-        // Autoescape افتراضي (متل Jinja2/Flask) — أمان أساسي ضد HTML injection
+
         return escapeHtml(stringify(value));
     }
 
@@ -132,7 +107,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
 
     @Override
     public Object visit(BlockNode node) {
-        // بدون دعم توريث قوالب (extends) — منعرض جسم الـ block متل ما هو
+
         return renderChildren(node.getBody());
     }
 
@@ -149,7 +124,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
         return JinjaFilters.apply(node.getFilterName(), bodyText, args);
     }
 
-    // ── ميزات متقدمة مش مستخدمة بقوالب مشروعنا (index/add/edit) — دعم بسيط بدون كسر التوليد ──
+
     @Override
     public Object visit(ExtendsNode node) { return ""; }
     @Override
@@ -161,10 +136,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
     @Override
     public Object visit(MacroNode node) { return ""; }
 
-    // ====================================================================
     //  HTML
-    // ====================================================================
-
     @Override
     public Object visit(ElementNode node) {
         StringBuilder sb = new StringBuilder();
@@ -214,9 +186,6 @@ public class JinjaRenderer implements AstVisitor<Object> {
         return node.toString();
     }
 
-    // ====================================================================
-    //  Expressions — بترجع قيمة حقيقية (Object) مو نص HTML
-    // ====================================================================
 
     @Override
     public Object visit(NumberLiteral node) { return node.getValue(); }
@@ -246,7 +215,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
         if (obj instanceof Map) {
             return ((Map<?, ?>) obj).get(attr);
         }
-        return null; // كائن مش Map (زي كائن Python حقيقي) — خارج نطاق مشروعنا الحالي
+        return null;
     }
 
     @Override
@@ -300,7 +269,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
                 return result;
             }
 
-            // ★ جديد: دعم url_for فعليًا
+
             if ("url_for".equals(name)) {
                 return resolveUrlFor(node);
             }
@@ -308,7 +277,6 @@ public class JinjaRenderer implements AstVisitor<Object> {
         return null;
     }
 
-    // ★ تابع جديد كامل
     private String resolveUrlFor(CallNode node) {
         List<ExpressionNode> posArgs = node.getArguments();
         if (posArgs.isEmpty()) {
@@ -319,7 +287,6 @@ public class JinjaRenderer implements AstVisitor<Object> {
         Object endpointVal = evalExpr(posArgs.get(0));
         String endpoint = endpointVal == null ? null : endpointVal.toString();
 
-        // ── حالة خاصة: url_for('static', filename='images/x.jpg') ──
         if ("static".equals(endpoint)) {
             Object filenameVal = null;
             for (Map.Entry<String, ExpressionNode> e : node.getNamedArguments().entrySet()) {
@@ -330,7 +297,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
             return "static/" + stringify(filenameVal);
         }
 
-        // ── جديد: أول شي نجرب نلاقي اسم ملف الـ output الحقيقي لهاد الـ endpoint ──
+
         Map<String, ExpressionNode> namedArgsForFile = node.getNamedArguments();
         if (namedArgsForFile.isEmpty()) {
             String direct = endpointFileMap.get(endpoint);
@@ -343,7 +310,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
             }
         }
 
-        // ── حالة عادية (fallback): endpoint موجود بجدول الـ routes ──
+
         String pattern = routes.get(endpoint);
         if (pattern == null) {
             log.add("[WARNING] url_for: endpoint غير معروف: '" + endpoint + "' (سطر " + node.getLine() + ")");
@@ -421,9 +388,8 @@ public class JinjaRenderer implements AstVisitor<Object> {
         return cond ? evalExpr(node.getValue()) : evalExpr(node.getAlternative());
     }
 
-    // ====================================================================
+
     //  CSS
-    // ====================================================================
 
     @Override
     public Object visit(CssRuleSetNode node) {
@@ -499,10 +465,8 @@ public class JinjaRenderer implements AstVisitor<Object> {
         return stringify(evalExpr(node.getExpression()));
     }
 
-    // ====================================================================
-    //  Helpers
-    // ====================================================================
 
+    //  Helpers
     private Object renderChildren(List<AstNode> nodes) {
         StringBuilder sb = new StringBuilder();
         for (AstNode n : nodes) {
@@ -551,7 +515,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
             if (targets.size() >= 2) env.define(targets.get(1), entry.getValue());
             return;
         }
-        // حالة عامة: أول target ياخد العنصر كامل، الباقي null (كافي لقوالبنا الحالية)
+
         if (!targets.isEmpty()) env.define(targets.get(0), item);
     }
 
@@ -608,7 +572,7 @@ public class JinjaRenderer implements AstVisitor<Object> {
             case '%': result = y != 0 ? x % y : 0; break;
             default: result = 0;
         }
-        // رجّعي عدد صحيح إذا الطرفين أعداد صحيحة وناتج بدون كسور
+
         if (isWhole(a) && isWhole(b) && result == Math.floor(result)) return (long) result;
         return result;
     }

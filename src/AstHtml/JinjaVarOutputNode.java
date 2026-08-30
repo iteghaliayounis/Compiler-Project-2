@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * {{ expression }}
- */
+
 public class JinjaVarOutputNode extends StatementNode {
 
     private final ExpressionNode expression;

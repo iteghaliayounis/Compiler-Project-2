@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% filter upper %} ... {% endfilter %}
- */
+
 public class FilterBlockNode extends StatementNode {
 
     private final String filterName;

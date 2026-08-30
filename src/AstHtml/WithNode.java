@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% with x = 1, y = 2 %} ... {% endwith %}
- */
+
 public class WithNode extends StatementNode {
 
     public static class Assignment {

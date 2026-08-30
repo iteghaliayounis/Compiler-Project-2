@@ -3,14 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * خاصية HTML (attribute): name="value" أو name='value' أو name (boolean)
- *
- * القيمة ممكن تكون:
- *   - String (TAG_STRING)
- *   - Jinja expression ({{ }} داخل القيمة)
- *   - null (boolean attribute مثل disabled, checked)
- */
+
 public class AttributeNode extends AstNode {
 
     private final String name;
@@ -18,7 +11,7 @@ public class AttributeNode extends AstNode {
     private final ExpressionNode jinjaValue;
     private final boolean isBoolean;
 
-    // Constructor للـ string value
+
     public AttributeNode(String name, String stringValue, int line, int column) {
         super(line, column);
         this.name = name;
@@ -27,7 +20,7 @@ public class AttributeNode extends AstNode {
         this.isBoolean = false;
     }
 
-    // Constructor للـ jinja value
+
     public AttributeNode(String name, ExpressionNode jinjaValue, int line, int column) {
         super(line, column);
         this.name = name;
@@ -36,7 +29,7 @@ public class AttributeNode extends AstNode {
         this.isBoolean = false;
     }
 
-    // Constructor للـ boolean attribute
+
     public AttributeNode(String name, int line, int column) {
         super(line, column);
         this.name = name;

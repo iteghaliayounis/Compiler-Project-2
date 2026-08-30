@@ -22,23 +22,28 @@ public class SemanticAnalyzer {
     private FilterTypeMismatchChecker filterTypeChecker;
     private InvalidAttributeAccessChecker invalidAttributeAccessChecker;
 
-
     public SemanticAnalyzer(SymbolTable pythonST, symbol_table.SymbolTable jinjaST) {
         this.handler = new SemanticErrorHandler();
 
         this.pythonAnalyzer = new PythonSemanticAnalyzer(pythonST, handler);
-        this.jinjaAnalyzer  = new JinjaSemanticAnalyzer(jinjaST, handler);
+        this.jinjaAnalyzer  = new JinjaSemanticAnalyzer(jinjaST, pythonST, handler);
 
         if (pythonST != null && jinjaST != null) {
             this.flaskLinker       = new MissingFlaskVariableChecker(pythonST, jinjaST, handler);
+
+            this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
+
            this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
            this.invalidAttributeAccessChecker = new InvalidAttributeAccessChecker(pythonST, jinjaST, handler);
+
         }
     }
+
 
     public void addFlaskPassedVariable(String varName) {
         jinjaAnalyzer.addFlaskPassedVariable(varName);
     }
+
 
     public void runAnalysis(ASTNode pythonRoot, AstHtml.AstNode jinjaRoot) {
         System.out.println("\n==========================================================");
@@ -57,17 +62,21 @@ public class SemanticAnalyzer {
             );
         }
 
+
         if (jinjaRoot != null) {
             jinjaAnalyzer.analyze(jinjaRoot);
         }
+
 
         if (filterTypeChecker != null && jinjaRoot != null) {
             filterTypeChecker.check(jinjaRoot);
         }
 
+
         if (invalidAttributeAccessChecker != null && jinjaRoot != null) {
             invalidAttributeAccessChecker.check(jinjaRoot);
         }
+
 
         handler.printAll();
 

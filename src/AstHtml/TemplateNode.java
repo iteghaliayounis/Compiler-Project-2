@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * جذر شجرة الـ AST. يمثّل ملف القالب الكامل.
- */
+
 public class TemplateNode extends AstNode {
 
     private final List<AstNode> children = new ArrayList<>();

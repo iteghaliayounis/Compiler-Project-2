@@ -2,12 +2,12 @@ package SymbolTable;
 
 import java.util.*;
 
-/**
-Symbol Table for Python
- */
+
+// Python
+
 public class SymbolTable {
 
-    // ─── Symbol ──────────────────────────────────────────────────────────────────
+
     public static class Symbol {
         public enum Kind { VARIABLE, FUNCTION, ROUTE_FUNCTION, PARAMETER, IMPORT ,TEMPLATE }
 
@@ -45,7 +45,7 @@ public class SymbolTable {
         public void setTemplateVariables(List<String> vars) {
             this.templateVariables = vars != null ? vars : new ArrayList<>();
         }
-        // ── getters / setters ────────────────────────────────────────────────────
+
         public String getName()  { return name;  }
         public Kind   getKind()  { return kind;  }
         public String getType()  { return type;  }
@@ -59,7 +59,7 @@ public class SymbolTable {
         public void setScopeLevel(int l) { scopeLevel = l; }
     }
 
-    // ─── Scope entry ─────────────────────────────────────────────────────────────
+
 
     public static class ScopeEntry {
         public final String              scopeName;
@@ -71,20 +71,18 @@ public class SymbolTable {
     public List<ScopeEntry> getAllScopes() {
         return Collections.unmodifiableList(allScopes);
     }
-    // ─── Stack ───────────────────────────────────────────────────────────────────
+    //  Stack
     private final Deque<ScopeEntry> stack = new ArrayDeque<>();
     // keep a flat snapshot of every scope ever opened (for printing)
     private final List<ScopeEntry>  allScopes = new ArrayList<>();
 
-    // ─── Constructor ─────────────────────────────────────────────────────────────
+
     public SymbolTable() {
         pushScope("global");
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Scope management
-    // ═══════════════════════════════════════════════════════════════════════════
 
+    //  Scope management
 
     public void pushScope(String name) {
         ScopeEntry entry = new ScopeEntry(name);
@@ -98,9 +96,7 @@ public class SymbolTable {
 
     private int depth() { return stack.size() - 1; }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  insert
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public boolean insert(Symbol symbol) {
         ScopeEntry top = stack.peek();
         if (top.symbols.containsKey(symbol.getName())) return false; // already declared
@@ -122,7 +118,7 @@ public class SymbolTable {
         }
         return null;
     }
-    // بتدور في كل الـ scopes المحفوظة مش بس الـ stack الحالي
+
     public Symbol lookupInAllScopes(String name) {
         for (ScopeEntry entry : allScopes) {
             Symbol s = entry.symbols.get(name);
@@ -130,9 +126,7 @@ public class SymbolTable {
         }
         return null;
     }
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  update
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public boolean update(String name, Object newValue) {
         Symbol s = lookup(name);
         if (s == null) return false;
@@ -147,9 +141,7 @@ public class SymbolTable {
         return true;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  delete  (only in the innermost scope where it was declared)
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public boolean delete(String name) {
         for (ScopeEntry entry : stack) {
             if (entry.symbols.containsKey(name)) {
@@ -160,9 +152,7 @@ public class SymbolTable {
         return false;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  containsLocal – check only the current (top) scope
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public boolean containsLocal(String name) {
         return !stack.isEmpty() && stack.peek().symbols.containsKey(name);
     }
@@ -171,9 +161,7 @@ public class SymbolTable {
         if (s.length() <= max) return s;
         return s.substring(0, max - 3) + "...";
     }
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  printSymbolTable
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public void printSymbolTable() {
 
         System.out.println("\n" + "═".repeat(85));
@@ -185,7 +173,6 @@ public class SymbolTable {
         System.out.println(header);
         System.out.println("  " + "─".repeat(81));
 
-        // ── FIX: iterate scopes correctly ──
         for (ScopeEntry entry : allScopes) {
 
             if (entry.symbols.isEmpty()) continue;

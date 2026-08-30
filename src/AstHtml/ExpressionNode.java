@@ -1,12 +1,9 @@
 package AstHtml;
 
-/**
- * قاعدة مجردة لكل التعابير (expressions) في Jinja.
- * أي شيء يُنتج قيمة.
- */
+
 public abstract class ExpressionNode extends AstNode {
 
-    private String inferredType;  // النوع المستنتج بعد type checking
+    private String inferredType;
 
     protected ExpressionNode(int line, int column) {
         super(line, column);

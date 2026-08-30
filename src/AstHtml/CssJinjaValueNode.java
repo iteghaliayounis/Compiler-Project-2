@@ -2,10 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * قيمة CSS عبارة عن تعبير Jinja.
- * مثال:  color: {{ theme.color }};
- */
+
 public class CssJinjaValueNode extends CssValueNode {
 
     private final ExpressionNode expression;

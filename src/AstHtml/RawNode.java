@@ -3,9 +3,6 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% raw %} ... {% endraw %}
- */
 public class RawNode extends StatementNode {
 
     private final List<AstNode> body = new ArrayList<>();

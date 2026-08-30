@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * عملية أحادية: OP expr  (مثل: -a, not a)
- */
+
 public class UnaryOpNode extends ExpressionNode {
 
     public enum Operator {

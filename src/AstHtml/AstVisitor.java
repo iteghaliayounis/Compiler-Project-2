@@ -1,17 +1,9 @@
 package AstHtml;
 
-/**
- * واجهة الـ Visitor لشجرة الـ AST.
- *
- * كل تحليل (semantic, codegen, linter) بيعمل implements لهاد الـ interface.
- *
- * <T> هو نوع القيمة المرجعة:
- *   - Void للـ semantic analysis
- *   - String للـ code generation
- */
+
 public interface AstVisitor<T> {
 
-    // ====== Top-level ======
+
     T visit(TemplateNode node);
 
     // ====== Statements ======

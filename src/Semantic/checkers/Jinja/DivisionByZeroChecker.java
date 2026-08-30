@@ -51,6 +51,17 @@ public class DivisionByZeroChecker {
             for (CssNode css : ((StyleElementNode) node).getStatements()) checkNode(css);
         }
         // CSS nodes
+        // ★ تصحيح: بدون هاد الحالتين، الفحص ما كان يوصل أبداً من StyleElementNode
+        // لأي CssJinjaValueNode حقيقي جوا declaration (لازم يعدي عبر الطبقتين هدول)
+        else if (node instanceof CssRuleSetNode) {
+            for (CssDeclarationNode decl : ((CssRuleSetNode) node).getDeclarations()) checkNode(decl);
+        }
+        else if (node instanceof CssDeclarationNode) {
+            for (CssValueNode v : ((CssDeclarationNode) node).getValues()) checkNode(v);
+        }
+        else if (node instanceof CssFunctionValueNode) {
+            for (CssValueNode arg : ((CssFunctionValueNode) node).getArguments()) checkNode(arg);
+        }
         else if (node instanceof CssJinjaValueNode) {
             checkNode(((CssJinjaValueNode) node).getExpression());
         }

@@ -35,7 +35,44 @@ import SymbolTable.SymbolTable;
 
 import java.util.*;
 
+<<<<<<< HEAD
 
+=======
+/**
+ * ScopeChecker (Python) — يفحص أخطاء Scope
+ *
+ * ⚠️ المنهجية:
+ *   الـ Checker يدير scopes بنفسه أثناء traversal (مو يعتمد على SymbolTable).
+ *   لما يدخل FuncDef → push scope + define params
+ *   لما يخرج من FuncDef → pop scope
+ *   لما يلاقي assignment → define المتغير في current scope
+ *   لما يلاقي Identifier usage → يتأكد إنو موجود بـ current scope stack
+ *
+ *   لو المتغير مش متاح بـ current scope stack → ما منبلّغ إشي من هون (منترك
+ *   المجال لتشيكرز تانية مختصة، شوفي الملاحظة تحت).
+ *
+ * ⚠️ ملاحظة عن Python:
+ *   Python عندها function-level scoping (مو block-level):
+ *     - المتغيرات بـ if/for/while بتضل متاحة بعد البلوك
+ *     - بس FuncDef بتنشئ scope جديد
+ *   فإحنا بن push/pop بس مع FuncDef.
+ *
+ * ★ تصحيح (كان فيه bug اكتشفته غالية): الفحص القديم كان فيه خطوة تانية بعد
+ *   isAccessible — لو المتغير "معرّف بمكان ما" (allDefinedVars عالمي بيتراكم
+ *   عبر كل دوال الملف من غير ما ينمسح) كان يطلّع ScopeError (UnboundLocalError).
+ *   المشكلة: أي متغير محلي بأي دالة، حتى لو بعيدة تمامًا ومالها علاقة، كان يخلي
+ *   الفحص يعتقد إنو الاسم "معرّف بمكان ما" ويطلّع ScopeError غلط.
+ *
+ *   لما جربنا نصلّحها بحيث تحسب locals كل دالة لحالها (بمسح مسبق لجسمها، نفس
+ *   منطق بايثون الحقيقي بإنو أي اسم بينعيّن بمكان ما بجسم الدالة بيصير محلي
+ *   لكامل الدالة)، اكتشفنا إنو هاد بالضبط نفس الشغل يلي عم يعمله بشكل صحيح
+ *   ومن غير تكرار [[UseBeforeAssignmentChecker]] (تشيكر مستقل تبع راما).
+ *   فبدل ما نكرر نفس التقرير مرتين لنفس السطر، خلّينا ScopeChecker يقتصر بس
+ *   على isAccessible ويسكت لما يفشل — UseBeforeAssignmentChecker مسؤولة عن
+ *   الاستخدام-قبل-التعريف بنفس الدالة، وUndefinedVariableChecker مسؤولة عن
+ *   المتغير غير المعرّف إطلاقًا.
+ */
+>>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
 public class ScopeChecker {
 
     private final SymbolTable          symbolTable;
@@ -43,8 +80,12 @@ public class ScopeChecker {
 
     private final List<Set<String>> scopeStack = new ArrayList<>();
 
+<<<<<<< HEAD
     private final Set<String> allDefinedVars = new HashSet<>();
 
+=======
+    /** Built-in functions في Python */
+>>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
     private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList(
             "print", "len", "range", "int", "float", "str", "bool", "list", "dict",
             "tuple", "set", "type", "isinstance", "hasattr", "getattr", "setattr",
@@ -64,7 +105,6 @@ public class ScopeChecker {
         scopeStack.add(new HashSet<>());
         // builtins
         scopeStack.get(0).addAll(BUILTINS);
-        allDefinedVars.addAll(BUILTINS);
     }
 
     public void check(ASTNode root) {
@@ -83,7 +123,6 @@ public class ScopeChecker {
     private void define(String name) {
         if (name == null) return;
         scopeStack.get(scopeStack.size() - 1).add(name);
-        allDefinedVars.add(name);
     }
 
     private boolean isAccessible(String name) {
@@ -92,6 +131,7 @@ public class ScopeChecker {
         }
         return false;
     }
+<<<<<<< HEAD
     private boolean wasEverDefined(String name) {
         if (allDefinedVars.contains(name)) return true;
         // fallback: SymbolTable (imports, etc.)
@@ -99,6 +139,12 @@ public class ScopeChecker {
     }
 
 
+=======
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Dispatcher
+    // ═══════════════════════════════════════════════════════════════════
+>>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
@@ -200,6 +246,7 @@ public class ScopeChecker {
     }
 
 
+<<<<<<< HEAD
     private void checkIdentifier(Identifier node) {
         if (node.name == null) return;
 
@@ -212,6 +259,20 @@ public class ScopeChecker {
         if (wasEverDefined(node.name)) {
             handler.report(new ScopeError(node.name, node.getLineNumber(), "PYTHON"));
         }
+=======
+    /**
+     * ★ checkIdentifier
+     *
+     *  لو isAccessible(name) → تمام (موجود بـ current scope stack)
+     *  غير هيك → منسكت، ما منبلّغ إشي من هون. الاستخدام-قبل-التعريف بنفس
+     *  الدالة مسؤولية [[UseBeforeAssignmentChecker]]، والمتغير غير المعرّف
+     *  إطلاقًا مسؤولية UndefinedVariableChecker (شغل غالية) — تجنّبًا لتكرار
+     *  نفس الخطأ من تشيكرين مختلفين لنفس السطر.
+     */
+    private void checkIdentifier(Identifier node) {
+        if (node.name == null) return;
+        if (isAccessible(node.name)) return;  // ✓ تمام — غير هيك منسكت
+>>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
     }
 
     //  Expressions

@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% block name %} ... {% endblock %}
- */
+
 public class BlockNode extends StatementNode {
 
     private final String name;

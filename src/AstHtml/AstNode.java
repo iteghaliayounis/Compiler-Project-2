@@ -4,21 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * القاعدة المجردة لكل عقدة في شجرة الـ AST.
- *
- * كل subclass بيعمل override لـ:
- *   - name()     : اسم الـ node (متل "IfNode", "ElementNode")
- *   - label()    : معلومات إضافية (متل سطر + قيمة)
- *   - children() : قائمة الأبناء
- *
- * الـ toString بيولّد الشكل المرئي تلقائياً:
- *   IfNode [line=5]
- *   ├── BinaryOp [user.age > 18]
- *   └── BlockContent
- *       ├── TextNode ("Welcome!")
- *       └── ElementNode [div]
- */
+
 public abstract class AstNode {
 
     private final int line;
@@ -35,33 +21,22 @@ public abstract class AstNode {
     public String getSourceFile() { return sourceFile; }
     public void setSourceFile(String sourceFile) { this.sourceFile = sourceFile; }
 
-    // ====== Methods لازم أي subclass يعمل override لها ======
 
-    /** اسم الـ node للعرض (متل "IfNode", "ElementNode"). */
     public abstract String name();
 
-    /** معلومات إضافية للعرض (متل "[line=5]" أو "(\"hello\")"). ممكن تكون فاضية. */
     public String label() {
         return "[line=" + line + "]";
     }
 
-    /** قائمة الأبناء للـ tree printing. */
+
     public List<AstNode> children() {
         return Collections.emptyList();
     }
 
-    /** تنفيذ الـ Visitor Pattern. */
+
     public abstract <T> T accept(AstVisitor<T> visitor);
 
-    // ====== Tree printing تلقائي ======
 
-    /**
-     * يولّد الشكل المرئي للشجرة الكاملة (متبوع بـ ├── و └──).
-     * مثال:
-     *   └── IfNode [line=5]
-     *       ├── BinaryOp [a > b]
-     *       └── TextNode ("hi")
-     */
     public String toTreeString() {
         StringBuilder sb = new StringBuilder();
         buildTree(sb, "", true);
@@ -71,10 +46,7 @@ public abstract class AstNode {
         return sb.toString();
     }
 
-    /**
-     * toString() الافتراضي يطبع الشجرة الكاملة.
-     * أي subclass ممكن يعمل override ليعطي عرض مختصر (متل "user.name" أو "42").
-     */
+
     @Override
     public String toString() {
         return toTreeString();
@@ -98,7 +70,7 @@ public abstract class AstNode {
         }
     }
 
-    /** مساعدة لبناء قائمة أبناء من عدد من الـ nodes. */
+
     protected static List<AstNode> list(Object... items) {
         List<AstNode> result = new ArrayList<>();
         for (Object o : items) {

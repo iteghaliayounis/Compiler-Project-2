@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * عملية ثنائية: left OP right
- */
+
 public class BinaryOpNode extends ExpressionNode {
 
     public enum Operator {

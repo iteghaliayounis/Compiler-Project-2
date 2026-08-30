@@ -2,16 +2,13 @@ package symbol_table;
 
 import java.util.*;
 
-/**
- * Stack-based Symbol Table for HTML / Jinja
- * يدعم عدّة قوالب بنفس الوقت كل واحد فيه متغيراتو المستقلة
- */
+
+//HTML / Jinja
+
 public class SymbolTable {
     private int scopeCounter = 0;
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Kind Enum
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public enum Kind {
         VARIABLE, LOOP_VAR, BLOCK, MACRO, MACRO_PARAM,
         TEMPLATE, EXTENDS, INCLUDE, SET_VAR, FILTER,
@@ -24,9 +21,7 @@ public class SymbolTable {
         catch (IllegalArgumentException e) { return Kind.VARIABLE; }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  متغيرات Flask — بس للفحص، ما بنحطها بالجدول
-    // ═══════════════════════════════════════════════════════════════════════════
+
     private static final Set<String> FLASK_GLOBALS = new HashSet<>(Arrays.asList(
             "request", "session", "g", "config", "url_for",
             "get_flashed_messages", "range", "dict", "joiner",
@@ -37,9 +32,7 @@ public class SymbolTable {
         return FLASK_GLOBALS.contains(name);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Symbol
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public static class Symbol {
         private final String name;
         private       Kind   kind;
@@ -57,7 +50,7 @@ public class SymbolTable {
         private List<String> macroParameters = new ArrayList<>();
         private List<String> usedVariables = new ArrayList<>();
 
-        //  تتبع سمات المتغيرات: product → [image, name, price, description]
+
         private Map<String, List<String>> variableAttributes = new LinkedHashMap<>();
 
         public Symbol(String name, Kind kind, String type, Object value, int line) {
@@ -115,9 +108,7 @@ public class SymbolTable {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Scope Entry
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public static class ScopeEntry {
         final String scopeName;
         final Map<String, Symbol> symbols = new LinkedHashMap<>();
@@ -126,9 +117,7 @@ public class SymbolTable {
         public String getScopeName()            { return scopeName; }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  State
-    // ═══════════════════════════════════════════════════════════════════════════
+
     private final Deque<ScopeEntry> stack     = new ArrayDeque<>();
     private final List<ScopeEntry>  allScopes = new ArrayList<>();
 
@@ -144,9 +133,9 @@ public class SymbolTable {
 
     public static void reset() { instance = null; }
 
-    // ═══════════════════════════════════════════════════════════════════════════
+
     //  Scope management
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public void allocate(String name) {
         ScopeEntry entry = new ScopeEntry(name);
         stack.push(entry);
@@ -159,9 +148,7 @@ public class SymbolTable {
 
     private int depth() { return stack.size() - 1; }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  insert
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public boolean insert(String name, Kind kind, String type, Object value, int line) {
         ScopeEntry top = stack.peek();
         if (top.symbols.containsKey(name)) {
@@ -186,9 +173,7 @@ public class SymbolTable {
         insert(name, parseKind(kind), "Unknown", value, -1);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  lookup
-    // ═══════════════════════════════════════════════════════════════════════════
+
     public Symbol lookup(String name) {
         for (ScopeEntry entry : stack) {
             Symbol s = entry.symbols.get(name);
@@ -205,9 +190,6 @@ public class SymbolTable {
         return null;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  update / delete
-    // ═══════════════════════════════════════════════════════════════════════════
     public boolean update(String name, Object newValue) {
         Symbol s = lookup(name);
         if (s == null) return false;
@@ -234,10 +216,7 @@ public class SymbolTable {
         return all;
     }
 
-    /**
-     * كل المتغيرات يلي بيحتاجها كل قالب من render_template
-     * (منحذف: Flask globals, loop vars, set vars, macro params)
-     */
+
     public Set<String> getAllUsedVariableNames() {
         Set<String> used = new LinkedHashSet<>();
         for (ScopeEntry entry : allScopes) {
@@ -268,9 +247,7 @@ public class SymbolTable {
         return templates;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  printTable
-    // ═══════════════════════════════════════════════════════════════════════════
+
     private String clip(String s, int max) {
         if (s == null) return "—";
         return s.length() <= max ? s : s.substring(0, max - 3) + "...";

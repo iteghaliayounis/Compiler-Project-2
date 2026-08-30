@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * {% import "macros.html" as forms %}
- */
+
 public class ImportNode extends StatementNode {
 
     private final String template;

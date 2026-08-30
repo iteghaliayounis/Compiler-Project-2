@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% from "macros.html" import form_field, button as btn %}
- */
+
 public class FromImportNode extends StatementNode {
 
     public static class ImportName {

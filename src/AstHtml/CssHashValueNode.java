@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * لون hex أو ID selector.
- * مثال: #fff, #007bff, #my-element
- */
+
 public class CssHashValueNode extends CssValueNode {
 
     private final String hash;

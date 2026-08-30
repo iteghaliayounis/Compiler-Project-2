@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * slicing: array[start:stop:step]
- */
+
 public class SliceNode extends ExpressionNode {
 
     private final ExpressionNode array;

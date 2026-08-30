@@ -3,11 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * تعريف CSS:  property: value [!important]
- * مثال:  color: red !important
- *        background: linear-gradient(45deg, rgba(0,0,0,0.5), blue)
- */
+
 public class CssDeclarationNode extends CssNode {
 
     private final String property;

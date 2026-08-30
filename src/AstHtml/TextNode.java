@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * نص HTML خام بين التاغات.
- */
+
 public class TextNode extends StatementNode {
 
     private final String value;

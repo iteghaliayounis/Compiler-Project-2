@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * selector CSS (متل "div.foo > p + span:nth-child(odd)").
- * نحتفظ فيه كـ string للـ code generation.
- */
+
 public class CssSelectorNode extends CssNode {
 
     private final String selector;

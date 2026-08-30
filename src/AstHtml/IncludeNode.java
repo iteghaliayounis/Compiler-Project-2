@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * {% include "file.html" %}  أو  {% include "file.html" as name %}
- */
+
 public class IncludeNode extends StatementNode {
 
     private final String template;
