@@ -59,7 +59,7 @@ public class Main {
         runErrorTest("wrong_arguments",        true);
         runErrorTest("invalid_function_call",  true);
         runErrorTest("use_before_assignment",  false);
-        runErrorTest("return_type_mismatch",   false);  
+        runErrorTest("return_type_mismatch",   false);
         // ─────────────────────────────────────────────────────────────
     }
 
