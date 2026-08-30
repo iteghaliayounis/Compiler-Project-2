@@ -9,14 +9,12 @@
 
 <h1>Jinja Scope Error Test</h1>
 
-# متوقع: UnboundLocalError: 'p' is not defined outside loop
 {% for p in products %}
 <p>{{ p }}</p>
 {% endfor %}
 <p>{{ p }}</p>
 
 
-# متوقع: ScopeError
 {% if flag %}
 {% set y = 1 %}
 <p>{{ y }}</p>
@@ -24,14 +22,12 @@
 <p>{{ y }}</p>
 
 
-# متوقع: ScopeError
 {% with total = 100 %}
 <p>{{ total }}</p>
 {% endwith %}
 <p>{{ total }}</p>
 
 
-# متوقع: ScopeError
 {% macro greet(username) %}
 <p>{{ username }}</p>
 {% endmacro %}
@@ -47,7 +43,6 @@
 {% endfor %}
 
 
-# بس لسا جوا الحلقة الخارجية → ScopeError
 {% for outer in groups %}
     {% for inner in outer.items %}
     <p>{{ inner }}</p>
@@ -63,7 +58,6 @@
 {% endfor %}
 
 
-# استخدامه بين الحلقتين → ScopeError، واستخدامه جوا الحلقة الثانية → تمام
 {% for p in products %}
 <p>{{ p }}</p>
 {% endfor %}
@@ -73,7 +67,6 @@
 {% endfor %}
 
 
-# متوقع: ScopeError
 {% block content %}
 {% set inner_var = 5 %}
 <p>{{ inner_var }}</p>
@@ -81,7 +74,6 @@
 <p>{{ inner_var }}</p>
 
 
-# (هاي مسؤولية UndefinedVariableChecker مش ScopeChecker)
 <p>{{ completely_unknown }}</p>
 
 </body>
