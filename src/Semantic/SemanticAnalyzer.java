@@ -18,14 +18,11 @@ public class SemanticAnalyzer {
     private final PythonSemanticAnalyzer pythonAnalyzer;
     private final JinjaSemanticAnalyzer jinjaAnalyzer;
 
-<<<<<<< HEAD
+
     private MissingFlaskVariableChecker  flaskLinker;
     private FilterTypeMismatchChecker filterTypeChecker;
-=======
-    private MissingFlaskVariableChecker  flaskLinker;// غالية ✅
-    private FilterTypeMismatchChecker filterTypeChecker;    // 🆕 جديد
-    private InvalidAttributeAccessChecker invalidAttributeAccessChecker; // 🆕 جديد (Bridge)
->>>>>>> 731c849680d74f791c31c0eeb1b74682e91a867e
+    private InvalidAttributeAccessChecker invalidAttributeAccessChecker;
+
 
 
     public SemanticAnalyzer(SymbolTable pythonST, symbol_table.SymbolTable jinjaST) {
@@ -37,12 +34,12 @@ public class SemanticAnalyzer {
 
         if (pythonST != null && jinjaST != null) {
             this.flaskLinker       = new MissingFlaskVariableChecker(pythonST, jinjaST, handler);
-<<<<<<< HEAD
+
             this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
-=======
+
            this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
            this.invalidAttributeAccessChecker = new InvalidAttributeAccessChecker(pythonST, jinjaST, handler);
->>>>>>> 731c849680d74f791c31c0eeb1b74682e91a867e
+
         }
     }
 
@@ -80,17 +77,13 @@ public class SemanticAnalyzer {
             filterTypeChecker.check(jinjaRoot);
         }
 
-<<<<<<< HEAD
-=======
-        // 4.5. 🆕 تشغيل فحص الـ Bridge — Invalid Attribute Access (AttributeError)
-        //    نفس متطلبات filterTypeChecker: يحتاج pythonST كـ fallback
-        //    لمعرفة أنواع المتغيرات الممرّرة مباشرة من Flask
+
+
         if (invalidAttributeAccessChecker != null && jinjaRoot != null) {
             invalidAttributeAccessChecker.check(jinjaRoot);
         }
 
-        // 5. طباعة النتائج النهائية مرة واحدة فقط
->>>>>>> 731c849680d74f791c31c0eeb1b74682e91a867e
+
         handler.printAll();
 
         System.out.println("==========================================================\n");
