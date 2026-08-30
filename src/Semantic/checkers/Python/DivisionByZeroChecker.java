@@ -37,21 +37,12 @@ import SymbolTable.SymbolTable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * DivisionByZeroChecker (Python) — يفحص أخطاء القسمة على صفر
- *
- * الحالات التي يفحصها:
- *   1) x = 10 / 0      → ZeroDivisionError: division by zero
- *   2) x = 10 % 0      → ZeroDivisionError: integer division or modulo by zero
- *   3) y = 0
- *      x = 10 / y      → ZeroDivisionError: division by zero (constant propagation)
- */
+
 public class DivisionByZeroChecker {
 
     private final SymbolTable          symbolTable;
     private final SemanticErrorHandler handler;
 
-    /** خريطة المتغيرات لقيمها الحرفية (constant propagation) */
     private final Map<String, Object> knownConstants = new HashMap<>();
 
     public DivisionByZeroChecker(SymbolTable symbolTable, SemanticErrorHandler handler) {
@@ -59,16 +50,12 @@ public class DivisionByZeroChecker {
         this.handler     = handler;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Entry Point
-    // ═══════════════════════════════════════════════════════════════════
+
     public void check(ASTNode root) {
         checkNode(root);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
@@ -90,13 +77,9 @@ public class DivisionByZeroChecker {
         else if (node instanceof DictAtom)        checkNode(((DictAtom) node).dictLiteral);
         else if (node instanceof DictLiteral)     checkDictLiteral((DictLiteral) node);
         else if (node instanceof TargetCall)      checkNode(((TargetCall) node).callChain);
-        else if (node instanceof TargetID)        { /* لا فحص */ }
-        // Identifier و Literals يتم فحصها ضمن العمليات الحسابية
+        else if (node instanceof TargetID)        {  }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Program / FuncDef / ExprStmt / IfStmt / ForStmt / TryStmt
-    // ═══════════════════════════════════════════════════════════════════
     private void checkProgram(Program node) {
         for (ASTNode child : node.elements) checkNode(child);
     }
@@ -108,30 +91,18 @@ public class DivisionByZeroChecker {
         knownConstants.putAll(outerConstants);
     }
 
-    /**
-     * ★ checkExprStmt — فحص التعيين (constant propagation)
-     *
-     *  y = 0        →  node.target = TargetID("y"), node.value = IntegerLiteral(0)
-     *  z = 10 / y   →  node.target = TargetID("z"), node.value = ArithExpr
-     */
     private void checkExprStmt(ExprStmt node) {
-        // ★ الأول: افحص القيمة (لأي قسمة على صفر بداخلها)
         if (node.value != null) checkNode(node.value);
-        // ★ ثانياً: سجّل القيمة الحرفية للمتغير (constant propagation)
         if (node.target != null && node.value != null) {
             storeConstant(node.target, node.value);
         }
     }
 
-    /**
-     * لو target هو TargetID و value هو literal → خزّن القيمة
-     */
     private void storeConstant(ASTNode target, ASTNode value) {
         if (!(target instanceof TargetID)) return;
         String varName = ((TargetID) target).name;
         if (varName == null) return;
 
-        // ★ استخدم extractValue (مو extractLiteralValue) عشان نعالج CallChainExpr
         Object constValue = extractValue(value);
         if (constValue instanceof Number) {
             knownConstants.put(varName, constValue);
@@ -157,9 +128,7 @@ public class DivisionByZeroChecker {
         for (ASTNode stmt : node.finallyBlock) checkNode(stmt);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  CallChainExpr
-    // ═══════════════════════════════════════════════════════════════════
     private void checkCallChain(CallChainExpr node) {
         checkNode(node.base);
         if (node.suffixes == null) return;
@@ -174,19 +143,13 @@ public class DivisionByZeroChecker {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ ArithExpr — الفحص الرئيسي للقسمة على صفر
-    // ═══════════════════════════════════════════════════════════════════
     private void checkArithExpr(ArithExpr node) {
         if (node.terms == null || node.terms.isEmpty()) return;
 
-        // افحص كل term على حدة
         for (ASTNode term : node.terms) checkNode(term);
 
-        // إذا لا يوجد operators → لا فحص
         if (node.operators == null || node.operators.isEmpty()) return;
 
-        // افحص كل زوج مع العامل
         for (int i = 0; i < node.operators.size() && (i + 1) < node.terms.size(); i++) {
             String op = node.operators.get(i);
             ASTNode rightNode = node.terms.get(i + 1);
@@ -194,21 +157,17 @@ public class DivisionByZeroChecker {
         }
     }
 
-    /**
-     * فحص المقسوم عليه في عملية القسمة أو Modulo
-     */
+
     private void checkDivisionOperand(String op, ASTNode rightNode, int line) {
         if (rightNode == null || op == null) return;
 
-        // ★ تطبيع العامل (الـ Visitor عندك بيخزن الرموز الفعلية: "+", "-", "*", "/", "%")
         boolean isDivision = "/".equals(op) || "DIV".equalsIgnoreCase(op) || "SLASH".equalsIgnoreCase(op);
         boolean isModulo   = "%".equals(op) || "MOD".equalsIgnoreCase(op) || "PERCENT".equalsIgnoreCase(op);
 
         if (!isDivision && !isModulo) return;
 
-        // ★ استخراج القيمة العددية للمقسوم عليه (باستخدام الـ fields مباشرة!)
         Object value = extractValue(rightNode);
-        if (value == null) return;  // UNKNOWN → لا نبلغ
+        if (value == null) return;
 
         Number numValue = toNumber(value);
         if (numValue == null) return;
@@ -223,27 +182,17 @@ public class DivisionByZeroChecker {
         }
     }
 
-    /**
-     * ★ استخراج القيمة من AST node
-     *
-     *  - Identifier → ابحث في knownConstants الأول، ثم Symbol Table
-     *  - CallChainExpr بدون suffixes → فكه وافحص base (مهم جداً!)
-     *  - ParenExpr → فك القوسين
-     *  - Literals → استخدم الـ fields مباشرة
-     */
+
     private Object extractValue(ASTNode node) {
         if (node == null) return null;
 
-        // 1) Identifier → ابحث في knownConstants الأول، ثم Symbol Table
         if (node instanceof Identifier) {
             String name = ((Identifier) node).name;
 
-            // ★ أول: constant propagation
             if (knownConstants.containsKey(name)) {
                 return knownConstants.get(name);
             }
 
-            // ثم: Symbol Table
             SymbolTable.Symbol sym = symbolTable.lookupInAllScopes(name);
             if (sym != null) {
                 return sym.getValue();
@@ -251,24 +200,19 @@ public class DivisionByZeroChecker {
             return null;
         }
 
-        // 2) ParenExpr → فك القوسين
         if (node instanceof ParenExpr) {
             return extractValue(((ParenExpr) node).expr);
         }
 
-        // 3) ★ CallChainExpr بدون suffixes → فكه وافحص base
-        //    (هاد السر! الـ Visitor بيغلّف كل شي بـ CallChainExpr)
         if (node instanceof CallChainExpr) {
             CallChainExpr cc = (CallChainExpr) node;
             if (cc.suffixes == null || cc.suffixes.isEmpty()) {
-                // ★ لازم ننادي extractValue (مو extractLiteralValue)
-                //   عشان لو base هو Identifier نبحث عنو بـ knownConstants
+
                 return extractValue(cc.base);
             }
-            return null;  // لو فيه suffixes → مش مجرد قيمة
+            return null;
         }
 
-        // 4) ArithExpr بم operand واحد → استخرج قيمته
         if (node instanceof ArithExpr) {
             ArithExpr arith = (ArithExpr) node;
             if (arith.terms != null && arith.terms.size() == 1) {
@@ -276,21 +220,18 @@ public class DivisionByZeroChecker {
             }
         }
 
-        // 5) Literals
         return extractLiteralValue(node);
     }
 
-    /**
-     * استخراج القيمة الحرفية من literal node فقط (مو Identifier ولا CallChainExpr)
-     */
+
     private Object extractLiteralValue(ASTNode node) {
         if (node == null) return null;
 
         if (node instanceof IntegerLiteral) {
-            return ((IntegerLiteral) node).value;  // int
+            return ((IntegerLiteral) node).value;
         }
         if (node instanceof FloatLiteral) {
-            return ((FloatLiteral) node).value;    // double
+            return ((FloatLiteral) node).value;
         }
         if (node instanceof BoolLiteral) {
             return ((BoolLiteral) node).value ? 1 : 0;
@@ -314,9 +255,7 @@ public class DivisionByZeroChecker {
         return null;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ComparisonExpr / ArgList / ListLiteral / DictLiteral
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkComparisonExpr(ComparisonExpr node) {
         checkNode(node.first);
         if (node.rest == null || node.rest.isEmpty()) return;

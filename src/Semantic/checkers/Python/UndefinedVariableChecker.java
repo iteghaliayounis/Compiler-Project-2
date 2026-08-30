@@ -49,12 +49,10 @@ public class UndefinedVariableChecker {
         this.handler     = handler;
     }
 
-    // ── Entry point ──────────────────────────────────────────────────────
     public void check(ASTNode node) {
         checkNode(node);
     }
 
-    // ── Dispatcher ───────────────────────────────────────────────────────
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
@@ -93,12 +91,10 @@ public class UndefinedVariableChecker {
 
     }
 
-    // ── Program ──────────────────────────────────────────────────────────
     private void checkProgram(Program node) {
         for (ASTNode child : node.elements) checkNode(child);
     }
 
-    // ── FuncDef ──────────────────────────────────────────────────────────
     private void checkFuncDef(FuncDef node) {
         for (Decorator d : node.decorators) {
             if (d.name != null && !d.name.getParts().isEmpty()) {
@@ -113,7 +109,6 @@ public class UndefinedVariableChecker {
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
-    // ── ExprStmt ─────────────────────────────────────────────────────────
     private void checkExprStmt(ExprStmt node) {
         if (node.value != null) {
             checkNode(node.value);
@@ -121,19 +116,16 @@ public class UndefinedVariableChecker {
             checkNode(node.target);
         }
     }
-    // ── IfStmt ───────────────────────────────────────────────────────────
     private void checkIfStmt(IfStmt node) {
         checkNode(node.condition);
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
-    // ── ForStmt ──────────────────────────────────────────────────────────
     private void checkForStmt(ForStmt node) {
         checkNode(node.iterable);
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
-    // ── TryStmt ──────────────────────────────────────────────────────────
     private void checkTryStmt(TryStmt node) {
         for (ASTNode stmt : node.tryBlock)     checkNode(stmt);
         for (TryStmt.CatchBlock cb : node.catches)
@@ -141,11 +133,9 @@ public class UndefinedVariableChecker {
         for (ASTNode stmt : node.finallyBlock) checkNode(stmt);
     }
 
-    // ── CallChainExpr ────────────────────────────────────────────────────
     private void checkCallChain(CallChainExpr node) {
 
         checkNode(node.base);
-        // تحقق من الـ arguments داخل FunctionCall suffixes
         for (CallSuffix suffix : node.suffixes) {
             if (suffix instanceof FunctionCall) {
                 FunctionCall fc = (FunctionCall) suffix;
@@ -158,7 +148,6 @@ public class UndefinedVariableChecker {
         }
     }
 
-    // ── Identifier ───────────────────────────────────────────────────────
     private void checkIdentifier(Identifier node) {
         String name = node.name;
         if (BUILTINS.contains(name)) return;
@@ -167,25 +156,21 @@ public class UndefinedVariableChecker {
         }
     }
 
-    // ── ArithExpr ────────────────────────────────────────────────────────
     private void checkArithExpr(ArithExpr node) {
         for (ASTNode term : node.terms) checkNode(term);
     }
 
-    // ── ComparisonExpr ───────────────────────────────────────────────────
     private void checkComparisonExpr(ComparisonExpr node) {
         checkNode(node.first);
         for (ASTNode right : node.rest) checkNode(right);
     }
 
-    // ── GenExpr ──────────────────────────────────────────────────────────
     private void checkGenExpr(GenExpr node) {
         checkNode(node.iterable);
         checkNode(node.expr);
         if (node.condition != null) checkNode(node.condition);
     }
 
-    // ── ArgList ──────────────────────────────────────────────────────────
     private void checkArgList(ArgList node) {
         for (Arg arg : node.args) {
             if (arg instanceof ExprArg)   checkNode(((ExprArg) arg).expr);
@@ -193,7 +178,6 @@ public class UndefinedVariableChecker {
         }
     }
 
-    // ── ListLiteral ──────────────────────────────────────────────────────
     private void checkListLiteral(ListLiteral node) {
         for (ASTNode elem : node.elements) checkNode(elem);
     }

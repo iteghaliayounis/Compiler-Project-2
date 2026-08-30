@@ -43,9 +43,6 @@ public class MissingFlaskVariableChecker {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  check — نقطة الدخول
-    // ═══════════════════════════════════════════════════════════════════════
 
     public void check() {
         missingFlaskVariables.clear();
@@ -70,13 +67,10 @@ public class MissingFlaskVariableChecker {
         }
         System.out.println();
 
-        // ── ربط Python Template مع Jinja Template بالاسم مباشرة ──
         for (PyTemplate py : pyTemplates) {
 
             for (JinjaTpl jinja : jinjaTemplates) {
 
-                // py.name مثل: profile.html
-                // jinja.name قد يكون: profile أو profile.html
                 if (sameTemplateName(py.name, jinja.name)) {
                     linkAndCompare(py, jinja);
                     break;
@@ -91,10 +85,6 @@ public class MissingFlaskVariableChecker {
             System.out.println("  [Flask Linker]  Found " + newErrors + " missing variable(s)."); // <- عدلي الطباعة
         }
     }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  جمع البيانات
-    // ═══════════════════════════════════════════════════════════════════════
 
     private List<PyTemplate> collectPythonTemplates() {
         List<PyTemplate> list = new ArrayList<>();
@@ -124,10 +114,6 @@ public class MissingFlaskVariableChecker {
         return list;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  الربط والمقارنة
-    // ═══════════════════════════════════════════════════════════════════════
-
     private int matchScore(List<String> passed, List<String> used) {
         if (used.isEmpty()) return 0;
         int found = 0;
@@ -143,7 +129,6 @@ public class MissingFlaskVariableChecker {
             return false;
         }
 
-        // إزالة امتداد .html من الاسم إن وجد
         String pyBase = pyName.replaceAll("\\.html$", "");
         String jinjaBase = jinjaName.replaceAll("\\.html$", "");
 
@@ -163,10 +148,6 @@ public class MissingFlaskVariableChecker {
         }
 
     }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  Type Propagation
-    // ═══════════════════════════════════════════════════════════════════════
 
     private void propagateTypeAndValue(String varName) {
         SymbolTable.Symbol pyVar = pythonST.lookupInAllScopes(varName);

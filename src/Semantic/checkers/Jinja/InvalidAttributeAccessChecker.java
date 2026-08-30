@@ -8,29 +8,11 @@ import Semantic.util.PythonTypeInference;
 
 import java.util.*;
 
-/**
- * InvalidAttributeAccessChecker (Bridge) — محاكاة AttributeError الصارمة لبايثون
- * داخل قوالب Jinja2، لمتغيرات ممرّرة من Flask.
- *
- * ⚠️ سبب وجوده تحت طبقة الـ Bridge (checkers/flask) وليس checkers/Jinja:
- *    نفس السبب الموجود بـ FilterTypeMismatchChecker بالضبط —
- *    المتغيرات الممررة مباشرة من Flask ومُستخدمة مباشرة بالقالب (بدون {% set %})
- *    لا تُسجَّل كـ Symbol مستقل بجدول رموز جينجا (jinjaST)، فـ JinjaTypeInference
- *    بترجع UNKNOWN لها دائماً. لذلك نحتاج fallback مباشر لجدول رموز بايثون (pythonST)
- *    — بالضبط نفس نمط lookupPythonType() المستخدم بـ FilterTypeMismatchChecker.
- *
- * ⚠️ ملاحظة مهمة (توثيق أكاديمي):
- * Jinja2 الحقيقية (Undefined غير الصارم) ما بترمي AttributeError أبداً —
- * {{ product.discount }} لو "discount" مش موجودة بترجع Undefined وتطبع فاضي بصمت.
- * هاد الـ checker "يحاكي" سلوك بايثون الصارم فقط لأغراض التحليل الساكن.
- *
- * القرار التصميمي: نفحص فقط عندما يكون نوع الـ object معروف (من jinjaST أو fallback
- * pythonST). إذا كان النوع UNKNOWN من الاثنين → لا نُبلغ (False Positive أسوأ من False Negative).
- */
+
 public class InvalidAttributeAccessChecker {
 
-    private final SymbolTable.SymbolTable  pythonST;   // جدول بايثون
-    private final symbol_table.SymbolTable jinjaST;    // جدول جينجا
+    private final SymbolTable.SymbolTable  pythonST;
+    private final symbol_table.SymbolTable jinjaST;
     private final SemanticErrorHandler     handler;
 
     private static final Map<String, Set<String>> ALLOWED_ATTRS = Map.of(
@@ -80,26 +62,20 @@ public class InvalidAttributeAccessChecker {
         this.handler  = handler;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  Entry Point
-    // ═══════════════════════════════════════════════════════════════════
     public void check(AstNode jinjaRoot) {
         if (jinjaRoot != null) checkNode(jinjaRoot);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher — مطابق حرفياً لبنية FilterTypeMismatchChecker (Bridge)
-    // ═══════════════════════════════════════════════════════════════════
+    //  Dispatcher
     private void checkNode(AstNode node) {
         if (node == null) return;
-
-        // ── AttributeAccessNode هو محور الفحص ──────────────────────
         if (node instanceof AttributeAccessNode) {
             checkAttributeAccess((AttributeAccessNode) node);
-            return; // checkAttributeAccess بتزور الـ object بنفسها
+            return;
         }
 
-        // ── Structural nodes ───────────────────────────────────────
+        // Structural nodes
         if      (node instanceof TemplateNode)    { for (AstNode c : ((TemplateNode) node).getChildren()) checkNode(c); }
         else if (node instanceof ForNode)         { checkNode(((ForNode) node).getIterable()); for (AstNode c : ((ForNode) node).getBody()) checkNode(c); if (((ForNode) node).getElseBody() != null) for (AstNode c : ((ForNode) node).getElseBody()) checkNode(c); }
         else if (node instanceof IfNode)          { checkIf((IfNode) node); }
@@ -110,7 +86,7 @@ public class InvalidAttributeAccessChecker {
         else if (node instanceof FilterBlockNode) { for (ExpressionNode a : ((FilterBlockNode) node).getFilterArgs()) checkNode(a); for (AstNode c : ((FilterBlockNode) node).getBody()) checkNode(c); }
         else if (node instanceof JinjaVarOutputNode) { checkNode(((JinjaVarOutputNode) node).getExpression()); }
 
-        // ── Expressions ───────────────────────────────────────────
+        //  Expressions
         else if (node instanceof BinaryOpNode)  { checkNode(((BinaryOpNode) node).getLeft()); checkNode(((BinaryOpNode) node).getRight()); }
         else if (node instanceof IndexNode)     { checkNode(((IndexNode) node).getArray()); checkNode(((IndexNode) node).getIndex()); }
         else if (node instanceof SliceNode)     { checkNode(((SliceNode) node).getArray()); checkNode(((SliceNode) node).getStart()); checkNode(((SliceNode) node).getStop()); checkNode(((SliceNode) node).getStep()); }
@@ -118,9 +94,9 @@ public class InvalidAttributeAccessChecker {
         else if (node instanceof TernaryNode)   { checkNode(((TernaryNode) node).getValue()); checkNode(((TernaryNode) node).getCondition()); checkNode(((TernaryNode) node).getAlternative()); }
         else if (node instanceof FilterNode)    { checkNode(((FilterNode) node).getOperand()); for (ExpressionNode a : ((FilterNode) node).getArguments()) checkNode(a); }
         else if (node instanceof CallNode)      { checkNode(((CallNode) node).getCallee()); for (ExpressionNode a : ((CallNode) node).getArguments()) checkNode(a); }
-        else if (node instanceof VariableNode)  { /* لا فحص — المتغير نفسه ليس عملية */ }
+        else if (node instanceof VariableNode)  {  }
 
-        // ── HTML / CSS ────────────────────────────────────────────
+        // HTML / CSS
         else if (node instanceof ElementNode)        { for (AttributeNode a : ((ElementNode) node).getAttributes()) checkAttribute(a); for (AstNode c : ((ElementNode) node).getChildren()) checkNode(c); }
         else if (node instanceof VoidElementNode)    { for (AttributeNode a : ((VoidElementNode) node).getAttributes()) checkAttribute(a); }
         else if (node instanceof StyleElementNode)   { for (CssNode s : ((StyleElementNode) node).getStatements()) checkNode(s); }
@@ -143,18 +119,12 @@ public class InvalidAttributeAccessChecker {
         if (node.getJinjaValue() != null) checkNode(node.getJinjaValue());
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ الفحص الرئيسي — AttributeAccessNode
-    //  {{ items.foo }} حيث items=list (ممرّرة من Flask)  →  AttributeError
-    // ═══════════════════════════════════════════════════════════════════
+    //    — AttributeAccessNode
     private void checkAttributeAccess(AttributeAccessNode node) {
-        // افحص الـ object أولاً (لتغطية أي attribute access متداخل بداخله)
         checkNode(node.getObject());
 
         String objType = JinjaTypeInference.inferType(node.getObject(), jinjaST);
 
-        // 🆕 إذا النوع Unknown في Jinja ST، ابحث في Python ST مباشرةً
-        // (نفس نمط lookupPythonType بـ FilterTypeMismatchChecker بالضبط)
         if ("UNKNOWN".equals(objType) && node.getObject() instanceof VariableNode) {
             String varName = ((VariableNode) node.getObject()).getName();
             objType = lookupPythonType(varName);
@@ -162,7 +132,6 @@ public class InvalidAttributeAccessChecker {
 
         String type = PythonTypeInference.normalizeType(objType);
 
-        // نوع غير معروف أو غير مشمول بالجدول → لا نفحص (تفادي False Positive)
         if (!ALLOWED_ATTRS.containsKey(type)) {
             return;
         }
@@ -176,10 +145,6 @@ public class InvalidAttributeAccessChecker {
         }
     }
 
-    /**
-     * Helper: ابحث عن متغير في جدول بايثون (لاستخدام الأنواع الممررة من Flask)
-     * — مطابق تماماً لـ FilterTypeMismatchChecker.lookupPythonType()
-     */
     private String lookupPythonType(String varName) {
         SymbolTable.SymbolTable.Symbol sym = pythonST.lookupInAllScopes(varName);
         if (sym != null) {

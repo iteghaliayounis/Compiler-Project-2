@@ -38,22 +38,7 @@ import SymbolTable.SymbolTable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TypeErrorChecker (Python) — يفحص أخطاء النوع في العملية نفسها
- *
- * الحالات التي يفحصها (المتاحة في الـ Parser الحالي):
- *   1) for i in 5:           →  'int' object is not iterable
- *   2) len(10)               →  object of type 'int' has no len()
- *   3) x = 5; x[0]           →  'int' object is not subscriptable
- *   4) "Sara" + 4            →  can only concatenate str (not "int") to str
- *   5) "Sara" - 4            →  unsupported operand type(s) for -: 'str' and 'int'
- *   6) "Sara" < 4            →  '<' not supported between instances of 'str' and 'int'
- *   7) x = None; x + 5       →  unsupported operand type(s) for +: 'NoneType' and 'int'
- *
- * ⚠️ لا يفحص: الإسناد الخاطئ (c: int = "hello") — هذا عمل TypeMismatchChecker
- * ⚠️ لا يفحص: استدعاء غير قابل للاستدعاء (x()) — هذا عمل InvalidFunctionCallChecker
- * ⚠️ ملاحظة: الـ Parser الحالي يدعم + و - فقط (لا يدعم * / % **)
- */
+
 public class TypeErrorChecker {
 
     private final SymbolTable          symbolTable;
@@ -64,16 +49,12 @@ public class TypeErrorChecker {
         this.handler     = handler;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  Entry Point
-    // ═══════════════════════════════════════════════════════════════════
     public void check(ASTNode root) {
         checkNode(root);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher — يوجه كل عقدة للـ method المناسبة
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
@@ -96,13 +77,9 @@ public class TypeErrorChecker {
         else if (node instanceof DictAtom)        checkNode(((DictAtom) node).dictLiteral);
         else if (node instanceof DictLiteral)     checkDictLiteral((DictLiteral) node);
         else if (node instanceof TargetCall)      checkNode(((TargetCall) node).callChain);
-        else if (node instanceof TargetID)        { /* لا فحص — المتغير نفسه ليس عملية */ }
-        // Identifier و Literals لا تحتاج فحص هنا
+        else if (node instanceof TargetID)        {  }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Program / FuncDef / ExprStmt / IfStmt / TryStmt
-    // ═══════════════════════════════════════════════════════════════════
     private void checkProgram(Program node) {
         for (ASTNode child : node.elements) checkNode(child);
     }
@@ -128,10 +105,6 @@ public class TypeErrorChecker {
         for (ASTNode stmt : node.finallyBlock) checkNode(stmt);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ ForStmt — فحص التكرار على نوع غير قابل للتكرار
-    //  for i in 5:  →  'int' object is not iterable
-    // ═══════════════════════════════════════════════════════════════════
     private void checkForStmt(ForStmt node) {
         String iterType = PythonTypeInference.inferType(node.iterable, symbolTable);
 
@@ -140,16 +113,9 @@ public class TypeErrorChecker {
             String pyType = PythonTypeInference.toPythonTypeName(iterType);
             handler.report(TypeError.notIterable(pyType, node.getLineNumber(), "PYTHON"));
         }
-
-        // تابع الفحص للجسم
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ CallChainExpr — فحص:
-    //    1) len(10)                    →  object of type 'int' has no len()
-    //    2) x[0] حيث x ليس قابل للفهرسة  →  'int' object is not subscriptable
-    // ═══════════════════════════════════════════════════════════════════
     private void checkCallChain(CallChainExpr node) {
         checkNode(node.base);
 
@@ -168,7 +134,6 @@ public class TypeErrorChecker {
         }
     }
 
-    /** فحص استدعاءات الدوال المدمجة — مثل len(10) */
     private void checkFunctionCallArgs(CallChainExpr node, FunctionCall fc) {
         if (!(node.base instanceof Identifier)) return;
         String funcName = ((Identifier) node.base).name;
@@ -190,7 +155,6 @@ public class TypeErrorChecker {
         }
     }
 
-    /** فحص الفهرسة — x[0] حيث x ليس قابل للفهرسة */
     private void checkIndexAccess(CallChainExpr node, IndexAccess suffix) {
         String baseType = PythonTypeInference.inferType(node.base, symbolTable);
         if (TypeCompatibility.bothKnown(baseType, baseType)
@@ -200,23 +164,15 @@ public class TypeErrorChecker {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ ArithExpr — فحص الجمع (+) والطرح (-) باستخدام operators الفعلي
-    //  "Sara" + 4  →  can only concatenate str (not "int") to str
-    //  "Sara" - 4  →  unsupported operand type(s) for -: 'str' and 'int'
-    // ═══════════════════════════════════════════════════════════════════
     private void checkArithExpr(ArithExpr node) {
         if (node.terms == null || node.terms.isEmpty()) return;
 
-        // افحص كل term على حدة (لأي أخطاء متداخلة بداخلها)
         for (ASTNode term : node.terms) checkNode(term);
 
-        // إذا لا يوجد operators (operand واحد) → لا فحص
         if (node.operators == null || node.operators.isEmpty()) return;
 
-        // افحص كل زوج (terms[i], terms[i+1]) مع العامل operators[i]
         for (int i = 0; i < node.operators.size() && (i + 1) < node.terms.size(); i++) {
-            String op = node.operators.get(i);  // "PLUS" أو "MINUS"
+            String op = node.operators.get(i);
             ASTNode leftNode  = node.terms.get(i);
             ASTNode rightNode = node.terms.get(i + 1);
 
@@ -227,11 +183,6 @@ public class TypeErrorChecker {
         }
     }
 
-    /**
-     * فحص زوج واحد من ArithExpr مع العامل الفعلي
-     * الـ Parser يدعم + و - فقط
-     * الـ operator قد يكون "PLUS"/"MINUS" أو "+"/"-" حسب الـ Visitor
-     */
     private void checkArithPair(String op, String leftType, String rightType, int line) {
         if (!TypeCompatibility.bothKnown(leftType, rightType)) return;
 
@@ -240,18 +191,15 @@ public class TypeErrorChecker {
         String plt = PythonTypeInference.toPythonTypeName(lt);
         String prt = PythonTypeInference.toPythonTypeName(rt);
 
-        // ── تطبيع العامل: قد يكون "PLUS"/"MINUS" أو "+"/"-" ──
         boolean isPlus  = op != null && (op.equalsIgnoreCase("PLUS")  || "+".equals(op));
         boolean isMinus = op != null && (op.equalsIgnoreCase("MINUS") || "-".equals(op));
         String opStr = isPlus ? "+" : (isMinus ? "-" : op);
 
-        // ── None + أي شيء (كل العمليات تفشل على None) ──
         if ("NONE".equals(lt) || "NONE".equals(rt)) {
             handler.report(TypeError.unsupportedOperand(opStr, plt, prt, line, "PYTHON"));
             return;
         }
 
-        // ── الجمع (+) ──
         if (isPlus) {
             if (!TypeCompatibility.isAddCompatible(lt, rt)) {
                 if ("STRING".equals(lt) && !"STRING".equals(rt)) {
@@ -265,7 +213,6 @@ public class TypeErrorChecker {
             return;
         }
 
-        // ── الطرح (-) ──
         if (isMinus) {
             if (!TypeCompatibility.isSubCompatible(lt, rt)) {
                 handler.report(TypeError.unsupportedOperand("-", plt, prt, line, "PYTHON"));
@@ -274,10 +221,7 @@ public class TypeErrorChecker {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ ComparisonExpr — فحص المقارنة بين أنواع غير متوافقة
-    //  "Sara" < 4  →  '<' not supported between instances of 'str' and 'int'
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkComparisonExpr(ComparisonExpr node) {
         checkNode(node.first);
         if (node.rest == null || node.rest.isEmpty()) return;
@@ -306,15 +250,11 @@ public class TypeErrorChecker {
         }
     }
 
-    /** فقط عوامل الترتيب (<, >, <=, >=) تثير TypeError */
     private boolean isOrderingOperator(String operator) {
         return "<".equals(operator) || ">".equals(operator)
                 || "<=".equals(operator) || ">=".equals(operator);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  GenExpr / ArgList / ListLiteral / DictLiteral
-    // ═══════════════════════════════════════════════════════════════════
     private void checkGenExpr(GenExpr node) {
         checkNode(node.iterable);
         checkNode(node.expr);

@@ -35,39 +35,16 @@ import SymbolTable.SymbolTable;
 
 import java.util.*;
 
-/**
- * ScopeChecker (Python) — يفحص أخطاء Scope
- *
- * الخطأ الحقيقي: UnboundLocalError
- *
- * ⚠️ المنهجية:
- *   الـ Checker يدير scopes بنفسه أثناء traversal (مو يعتمد على SymbolTable).
- *   لما يدخل FuncDef → push scope + define params
- *   لما يخرج من FuncDef → pop scope
- *   لما يلاقي assignment → define المتغير في current scope
- *   لما يلاقي Identifier usage → يتأكد إنو موجود بـ current scope stack
- *
- *   لو المتغير معرف بـ scope تاني (popped) → ScopeError
- *   لو المتغير مش معرف أبداً → UndefinedVarError (شغل غالية)
- *
- * ⚠️ ملاحظة عن Python:
- *   Python عندها function-level scoping (مو block-level):
- *     - المتغيرات بـ if/for/while بتضل متاحة بعد البلوك
- *     - بس FuncDef بتنشئ scope جديد
- *   فإحنا بن push/pop بس مع FuncDef.
- */
+
 public class ScopeChecker {
 
     private final SymbolTable          symbolTable;
     private final SemanticErrorHandler handler;
 
-    /** Stack of scopes — كل scope عبارة عن Set من المتغيرات */
     private final List<Set<String>> scopeStack = new ArrayList<>();
 
-    /** كل المتغيرات المعرفة بأي scope (حتى المحذوفة) — للتمييز عن UndefinedVarError */
     private final Set<String> allDefinedVars = new HashSet<>();
 
-    /** Built-in functions في Python */
     private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList(
             "print", "len", "range", "int", "float", "str", "bool", "list", "dict",
             "tuple", "set", "type", "isinstance", "hasattr", "getattr", "setattr",
@@ -90,16 +67,11 @@ public class ScopeChecker {
         allDefinedVars.addAll(BUILTINS);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Entry Point
-    // ═══════════════════════════════════════════════════════════════════
     public void check(ASTNode root) {
         checkNode(root);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Scope helpers
-    // ═══════════════════════════════════════════════════════════════════
+
     private void pushScope() {
         scopeStack.add(new HashSet<>());
     }
@@ -108,31 +80,25 @@ public class ScopeChecker {
         if (scopeStack.size() > 1) scopeStack.remove(scopeStack.size() - 1);
     }
 
-    /** تعريف متغير في current scope */
     private void define(String name) {
         if (name == null) return;
         scopeStack.get(scopeStack.size() - 1).add(name);
         allDefinedVars.add(name);
     }
 
-    /** هل المتغير متاح بـ current scope stack (من current لـ global)؟ */
     private boolean isAccessible(String name) {
         for (int i = scopeStack.size() - 1; i >= 0; i--) {
             if (scopeStack.get(i).contains(name)) return true;
         }
         return false;
     }
-
-    /** هل المتغير معرف بأي scope (حتى المحذوفة) أو بـ SymbolTable؟ */
     private boolean wasEverDefined(String name) {
         if (allDefinedVars.contains(name)) return true;
         // fallback: SymbolTable (imports, etc.)
         return symbolTable.lookupInAllScopes(name) != null;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkNode(ASTNode node) {
         if (node == null) return;
 
@@ -154,43 +120,29 @@ public class ScopeChecker {
         else if (node instanceof DictAtom)        checkNode(((DictAtom) node).dictLiteral);
         else if (node instanceof DictLiteral)     checkDictLiteral((DictLiteral) node);
         else if (node instanceof TargetCall)      checkNode(((TargetCall) node).callChain);
-        else if (node instanceof TargetID)        { /* التعريف ليس استخدام */ }
+        else if (node instanceof TargetID)        {  }
         else if (node instanceof Identifier)      checkIdentifier((Identifier) node);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Program / FuncDef / ExprStmt / IfStmt / ForStmt / TryStmt
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkProgram(Program node) {
         for (ASTNode child : node.elements) checkNode(child);
     }
 
-    /**
-     * ★ FuncDef — push scope + define function name + params + check body + pop
-     *
-     *  ⚠️ ملاحظة مهمة عن Route Functions:
-     *  الـ route functions (يلي فيها @app.route) بـ AST تبعهم بيتقطع الـ body.
-     *  فإحنا ما بنعمل pop للـ route functions عشان متغيراتها تضل متاحة.
-     */
+
     private void checkFuncDef(FuncDef node) {
-        // 1) Define function name في CURRENT scope (قبل push)
         define(node.name);
 
-        // 2) Push new scope للـ function
         pushScope();
 
-        // 3) Define parameters
         if (node.parameters != null && node.parameters.names != null) {
             for (String param : node.parameters.names) {
                 define(param);
             }
         }
 
-        // 4) Check body
         for (ASTNode stmt : node.body) checkNode(stmt);
 
-        // 5) ★ Pop scope - بس للـ functions العادية (مو route functions)
-        // لو فيها decorator route → ما نعمل pop (لأنو الـ AST بيتقطع)
         boolean isRouteFunction = false;
         if (node.decorators != null) {
             for (AST.Decorator d : node.decorators) {
@@ -208,15 +160,8 @@ public class ScopeChecker {
         if (!isRouteFunction) {
             popScope();
         }
-        // لو route function → ما نعمل pop (المتغيرات تضل متاحة)
     }
 
-    /**
-     * ★ ExprStmt — افحص value ثم define target
-     *
-     *  y = 0        →  check(0), define("y")
-     *  z = 10 / y   →  check(10/y), define("z")
-     */
     private void checkExprStmt(ExprStmt node) {
         // 1) افحص القيمة (استخدام)
         if (node.value != null) checkNode(node.value);
@@ -228,30 +173,19 @@ public class ScopeChecker {
         }
     }
 
-    /**
-     * IfStmt — Python ما عندها block scoping، فما بن push/pop
-     */
+
     private void checkIfStmt(IfStmt node) {
         checkNode(node.condition);
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
-    /**
-     * ★ ForStmt — Python بتحتفظ بـ loop variable بعد الحلقة!
-     *  for i in range(5): pass
-     *  print(i)   ← صحيح بـ Python! (i = 4)
-     *
-     *  فإحنا بن define المتغير بـ current scope (مو بن push/pop)
-     */
+
     private void checkForStmt(ForStmt node) {
         checkNode(node.iterable);
 
-        // ★ تعريف متغير الـ loop بـ current scope
         if (node.var != null) {
             define(node.var);
         }
-
-        // فحص جسم الـ for
         for (ASTNode stmt : node.body) checkNode(stmt);
     }
 
@@ -265,43 +199,22 @@ public class ScopeChecker {
         for (ASTNode stmt : node.finallyBlock) checkNode(stmt);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ الفحص الفعلي
-    // ═══════════════════════════════════════════════════════════════════
 
-    /**
-     * ★ checkIdentifier — الفحص الرئيسي
-     *
-     *  1) لو isAccessible(name) → تمام (موجود بـ current scope stack)
-     *  2) لو wasEverDefined(name) → ScopeError (موجود بـ scope تاني)
-     *  3) لو مش معرف → UndefinedVarError (شغل غالية)
-     */
     private void checkIdentifier(Identifier node) {
         if (node.name == null) return;
 
-        // ★ DEBUG: شوفي حالة الـ scope وقت فحص كل identifier
-     //   System.out.println("[DEBUG checkIdentifier] checking '" + node.name + "' at line " + node.getLineNumber());
-       // System.out.println("[DEBUG checkIdentifier] scopeStack size: " + scopeStack.size());
         for (int i = 0; i < scopeStack.size(); i++) {
-           // System.out.println("[DEBUG checkIdentifier] scope " + i + ": " + scopeStack.get(i));
         }
-        //System.out.println("[DEBUG checkIdentifier] isAccessible('" + node.name + "'): " + isAccessible(node.name));
-
-        // 1) هل المتغير متاح بـ current scope stack؟
         if (isAccessible(node.name)) {
-            return;  // ✓ تمام
+            return;
         }
 
-        // 2) هل المتغير معرف بـ scope تاني (popped)؟
         if (wasEverDefined(node.name)) {
-            // → ScopeError!
             handler.report(new ScopeError(node.name, node.getLineNumber(), "PYTHON"));
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  Expressions
-    // ═══════════════════════════════════════════════════════════════════
     private void checkCallChain(CallChainExpr node) {
         checkNode(node.base);
         if (node.suffixes == null) return;

@@ -10,7 +10,6 @@ import java.util.*;
 
 public class UndefinedVariableChecker {
 
-    // ── Scope Stack مستقل ──────────────────────────────────────────────
     private final Deque<Set<String>> scopeStack = new ArrayDeque<>();
     private final SemanticErrorHandler handler;
 
@@ -26,7 +25,6 @@ public class UndefinedVariableChecker {
             flaskMissingVars.add(varName);
         }
     }
-    // Flask globals — متوفرة دائماً في قوالب Jinja2
     private static final Set<String> FLASK_GLOBALS = new HashSet<>(Arrays.asList(
             "request", "session", "g", "config", "url_for",
             "get_flashed_messages", "range", "dict", "joiner",
@@ -35,12 +33,10 @@ public class UndefinedVariableChecker {
 
     public UndefinedVariableChecker(SemanticErrorHandler handler) {
         this.handler = handler;
-        // Global scope يلي فيه Flask globals
         scopeStack.push(new LinkedHashSet<>(FLASK_GLOBALS));
     }
 
 
-    // ── Scope Management ────────────────────────────────────────────────
     private void pushScope() {
         scopeStack.push(new LinkedHashSet<>());
     }
@@ -64,13 +60,11 @@ public class UndefinedVariableChecker {
     }
 
 
-    // ── Entry Point ─────────────────────────────────────────────────────
     public void check(AstNode node) {
         if (node != null) checkNode(node);
     }
 
 
-    // ── Dispatcher ──────────────────────────────────────────────────────
     private void checkNode(AstNode node) {
         if (node == null) return;
 
@@ -90,7 +84,6 @@ public class UndefinedVariableChecker {
 
         else if (node instanceof JinjaVarOutputNode) checkNode(((JinjaVarOutputNode) node).getExpression());
 
-            // ── Expressions ─────────────────────────────────────────────
         else if (node instanceof VariableNode)        checkVariable((VariableNode) node);
         else if (node instanceof AttributeAccessNode) checkNode(((AttributeAccessNode) node).getObject());
         else if (node instanceof CallNode)            checkCall((CallNode) node);
@@ -101,7 +94,6 @@ public class UndefinedVariableChecker {
         else if (node instanceof TernaryNode)        { checkNode(((TernaryNode) node).getValue()); checkNode(((TernaryNode) node).getCondition()); checkNode(((TernaryNode) node).getAlternative()); }
         else if (node instanceof FilterNode)          checkFilter((FilterNode) node);
 
-            // ── HTML Elements ───────────────────────────────────────────
         else if (node instanceof ElementNode)         checkElement((ElementNode) node);
         else if (node instanceof VoidElementNode)     checkVoidElement((VoidElementNode) node);
         else if (node instanceof TextNode)            { /* نص عادي */ }
@@ -110,7 +102,6 @@ public class UndefinedVariableChecker {
         else if (node instanceof StyleElementNode)    checkStyleElement((StyleElementNode) node);
         else if (node instanceof StyleAttributeNode)  { /* CSS inline — لا فحص متغيرات */ }
 
-        // ── CSS مع Jinja ────────────────────────────────────────────
         else if (node instanceof CssJinjaValueNode)   checkNode(((CssJinjaValueNode) node).getExpression());
 
 
@@ -120,14 +111,10 @@ public class UndefinedVariableChecker {
 
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-     الفحص الأساسي
-     * ═══════════════════════════════════════════════════════════════════ */
+
     private void checkVariable(VariableNode node) {
         String name = node.getName();
 
-        // Flask Bridge هو المسؤول عن هذه الأخطاء
-        // حتى لا يتم الإبلاغ عنها مرة ثانية كـ JINJA NameError
         if (flaskMissingVars.contains(name)) {
             return;
         }
@@ -147,9 +134,6 @@ public class UndefinedVariableChecker {
             );
         }
     }
-    /* ═══════════════════════════════════════════════════════════════════
-     *  إدارة الـ Scopes
-     * ═══════════════════════════════════════════════════════════════════ */
 
     private void checkTemplate(TemplateNode node) {
         for (AstNode child : node.getChildren()) checkNode(child);
@@ -165,7 +149,7 @@ public class UndefinedVariableChecker {
         for (String target : node.getTargets()) {
             define(target);
         }
-        define("loop"); // loop.index, loop.first...
+        define("loop");
 
 
         for (AstNode child : node.getBody()) checkNode(child);
@@ -275,9 +259,7 @@ public class UndefinedVariableChecker {
     }
 
 
-    /* ═══════════════════════════════════════════════════════════════════
-     *  تعابير Jinja
-     * ═══════════════════════════════════════════════════════════════════ */
+
 
     private void checkCall(CallNode node) {
         checkNode(node.getCallee());
@@ -291,18 +273,13 @@ public class UndefinedVariableChecker {
         checkNode(node.getStep());
     }
 
-    /**
-     * {{ x | upper }}
-     * نتحقق من x فقط — upper فيلتر مش متغير
-     */
+
     private void checkFilter(FilterNode node) {
         checkNode(node.getOperand());
         for (ExpressionNode arg : node.getArguments()) checkNode(arg);
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-     *  CSS Nodes — للوصول للجينجا جوه الـ style
-     * ═══════════════════════════════════════════════════════════════════ */
+
     private void checkCssRuleSet(CssRuleSetNode node) {
         for (CssDeclarationNode decl : node.getDeclarations()) {
             checkNode(decl);
@@ -314,9 +291,7 @@ public class UndefinedVariableChecker {
             checkNode(val);
         }
     }
-    /* ═══════════════════════════════════════════════════════════════════
-     *  عناصر HTML
-     * ═══════════════════════════════════════════════════════════════════ */
+
 
     private void checkElement(ElementNode node) {
         for (AttributeNode attr : node.getAttributes()) checkAttribute(attr);

@@ -14,10 +14,6 @@ import SymbolTable.SymbolTable;
 import java.lang.reflect.Field;
 import java.util.*;
 
-/**
- * WrongArgumentsChecker — راما
- * يفحص: TypeError: foo() takes X positional arguments but Y were given
- */
 public class WrongArgumentsChecker {
 
     private final SymbolTable symbolTable;
@@ -113,7 +109,7 @@ public class WrongArgumentsChecker {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    // تجاهل
+
                 }
             }
             clazz = clazz.getSuperclass();

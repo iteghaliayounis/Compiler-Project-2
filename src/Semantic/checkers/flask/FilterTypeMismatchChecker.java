@@ -8,25 +8,11 @@ import Semantic.util.PythonTypeInference;
 
 import java.util.*;
 
-/**
- * FilterTypeMismatchChecker (Bridge) — يفحص توافق الفلاتر في Jinja2
- * مع الأنواع الممررة من Flask.
- *
- * الحالات التي يفحصها:
- *   {{ age|upper }}  حيث age=int   →  filter 'upper' expects str, got int
- *   {{ age|lower }}  حيث age=int   →  filter 'lower' expects str, got int
- *   {{ count|length }} حيث count=int → filter 'length' expects str/list/dict, got int
- *
- * ⚠️ هذا الـ Checker يعمل في طبقة الـ Bridge: يقرأ من Python ST (لأنواع المتغيرات
- *    الممررة عبر render_template) و Jinja ST (لاستخدامات المتغيرات في القوالب).
- *
- * ⚠️ لا يفحص: العمليات الحسابية في Jinja — هذا عمل Jinja/TypeErrorChecker
- */
+
 public class FilterTypeMismatchChecker {
 
-    // نستخدم الاسم الكامل لتجنب التعارض بين الجدولين
-    private final SymbolTable.SymbolTable    pythonST;    // جدول بايثون
-    private final symbol_table.SymbolTable   jinjaST;     // جدول جينجا
+    private final SymbolTable.SymbolTable    pythonST;
+    private final symbol_table.SymbolTable   jinjaST;
     private final SemanticErrorHandler       handler;
 
     public FilterTypeMismatchChecker(
@@ -38,15 +24,10 @@ public class FilterTypeMismatchChecker {
         this.handler  = handler;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  خريطة الفلاتر المتوقعة لأنواع الإدخال
-    //  كل فلتر → قائمة الأنواع المقبولة
-    // ═══════════════════════════════════════════════════════════════════
     private static final Map<String, Set<String>> FILTER_EXPECTED_TYPES;
     static {
         FILTER_EXPECTED_TYPES = new HashMap<>();
 
-        // فلاتر نصية — تتوقع STRING
         Set<String> stringFilters = new HashSet<>(Arrays.asList(
                 "upper", "lower", "capitalize", "title", "trim", "striptags",
                 "escape", "e", "truncate", "replace", "wordwrap", "indent",
@@ -54,7 +35,6 @@ public class FilterTypeMismatchChecker {
         ));
         for (String f : stringFilters) FILTER_EXPECTED_TYPES.put(f, new HashSet<>(Collections.singleton("STRING")));
 
-        // فلاتر طول/عد — تتوقع STRING, LIST, DICT, TUPLE, SET, RANGE
         Set<String> sizedTypes = new HashSet<>(Arrays.asList(
                 "STRING", "LIST", "DICT", "TUPLE", "SET", "RANGE"
         ));
@@ -62,15 +42,11 @@ public class FilterTypeMismatchChecker {
         FILTER_EXPECTED_TYPES.put("count",  new HashSet<>(sizedTypes));
         FILTER_EXPECTED_TYPES.put("wordcount", new HashSet<>(Collections.singleton("STRING")));
 
-        // فلاتر رقمية — تتوقع INT أو FLOAT
         Set<String> numericTypes = new HashSet<>(Arrays.asList("INT", "FLOAT"));
         FILTER_EXPECTED_TYPES.put("abs",   new HashSet<>(numericTypes));
         FILTER_EXPECTED_TYPES.put("round", new HashSet<>(numericTypes));
 
-        // فلاتر تحويل — لا فحص (تقبل أي نوع)
-        // int, float, str, bool, list, dict, default
 
-        // فلاتر قوائم — تتوقع LIST أو iterable
         Set<String> iterableTypes = new HashSet<>(Arrays.asList(
                 "STRING", "LIST", "DICT", "TUPLE", "SET", "RANGE"
         ));
@@ -88,26 +64,19 @@ public class FilterTypeMismatchChecker {
         FILTER_EXPECTED_TYPES.put("rejectattr", new HashSet<>(iterableTypes));
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Entry Point — يبدأ الفحص من جذر Jinja AST
-    // ═══════════════════════════════════════════════════════════════════
     public void check(AstNode jinjaRoot) {
         if (jinjaRoot != null) checkNode(jinjaRoot);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher
-    // ═══════════════════════════════════════════════════════════════════
     private void checkNode(AstNode node) {
         if (node == null) return;
 
-        // ── FilterNode هو محور الفحص ──────────────────────────────
         if (node instanceof FilterNode) {
             checkFilter((FilterNode) node);
-            return; // checkFilter ستزور المعامل بنفسها
+            return;
         }
 
-        // ── Structural nodes ───────────────────────────────────────
+        //  Structural nodes
         if      (node instanceof TemplateNode)    { for (AstNode c : ((TemplateNode) node).getChildren()) checkNode(c); }
         else if (node instanceof ForNode)         { checkNode(((ForNode) node).getIterable()); for (AstNode c : ((ForNode) node).getBody()) checkNode(c); if (((ForNode) node).getElseBody() != null) for (AstNode c : ((ForNode) node).getElseBody()) checkNode(c); }
         else if (node instanceof IfNode)          { checkIf((IfNode) node); }
@@ -118,7 +87,7 @@ public class FilterTypeMismatchChecker {
         else if (node instanceof FilterBlockNode) { for (ExpressionNode a : ((FilterBlockNode) node).getFilterArgs()) checkNode(a); for (AstNode c : ((FilterBlockNode) node).getBody()) checkNode(c); }
         else if (node instanceof JinjaVarOutputNode) { checkNode(((JinjaVarOutputNode) node).getExpression()); }
 
-        // ── Expressions ───────────────────────────────────────────
+        //  Expressions
         else if (node instanceof BinaryOpNode)      { checkNode(((BinaryOpNode) node).getLeft()); checkNode(((BinaryOpNode) node).getRight()); }
         else if (node instanceof IndexNode)         { checkNode(((IndexNode) node).getArray()); checkNode(((IndexNode) node).getIndex()); }
         else if (node instanceof SliceNode)         { checkNode(((SliceNode) node).getArray()); checkNode(((SliceNode) node).getStart()); checkNode(((SliceNode) node).getStop()); checkNode(((SliceNode) node).getStep()); }
@@ -127,7 +96,7 @@ public class FilterTypeMismatchChecker {
         else if (node instanceof CallNode)          { checkNode(((CallNode) node).getCallee()); for (ExpressionNode a : ((CallNode) node).getArguments()) checkNode(a); }
         else if (node instanceof AttributeAccessNode) { checkNode(((AttributeAccessNode) node).getObject()); }
 
-        // ── HTML / CSS ────────────────────────────────────────────
+        //  HTML / CSS
         else if (node instanceof ElementNode)       { for (AttributeNode a : ((ElementNode) node).getAttributes()) checkAttribute(a); for (AstNode c : ((ElementNode) node).getChildren()) checkNode(c); }
         else if (node instanceof VoidElementNode)   { for (AttributeNode a : ((VoidElementNode) node).getAttributes()) checkAttribute(a); }
         else if (node instanceof StyleElementNode)  { for (CssNode s : ((StyleElementNode) node).getStatements()) checkNode(s); }
@@ -150,41 +119,33 @@ public class FilterTypeMismatchChecker {
         if (node.getJinjaValue() != null) checkNode(node.getJinjaValue());
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ الفحص الرئيسي — FilterNode
-    //  {{ age|upper }}  حيث age=int  →  filter 'upper' expects str, got int
-    // ═══════════════════════════════════════════════════════════════════
+    //   FilterNode
+
     private void checkFilter(FilterNode node) {
-        // افحص المعامل أولاً (قد يحتوي على فلاتر متداخلة)
         checkNode(node.getOperand());
         for (ExpressionNode arg : node.getArguments()) checkNode(arg);
 
         String filterName = JinjaTypeInference.getFilterName(node);
         if (filterName == null || "unknown_filter".equals(filterName)) return;
 
-        // هل هذا الفلتر له نوع متوقع؟
         Set<String> expectedTypes = FILTER_EXPECTED_TYPES.get(filterName);
-        if (expectedTypes == null) return; // فلتر غير معروف → لا فحص
+        if (expectedTypes == null) return;
 
-        // استنتاج نوع المعامل — جرّب Jinja ST أولاً
         String operandType = JinjaTypeInference.inferType(node.getOperand(), jinjaST);
 
-        // 🆕 إذا النوع Unknown في Jinja ST، ابحث في Python ST مباشرةً
         if ("UNKNOWN".equals(operandType) && node.getOperand() instanceof VariableNode) {
             String varName = ((VariableNode) node.getOperand()).getName();
             operandType = lookupPythonType(varName);
         }
 
-        if ("UNKNOWN".equals(operandType)) return; // لا نعرف → لا نبلغ
+        if ("UNKNOWN".equals(operandType)) return;
 
         String normalizedType = PythonTypeInference.normalizeType(operandType);
 
-        // هل النوع الفعلي ضمن الأنواع المقبولة؟
         if (!expectedTypes.contains(normalizedType)) {
             String expPy = formatExpectedTypes(expectedTypes);
             String actPy = PythonTypeInference.toPythonTypeName(normalizedType);
 
-            // ابحث عن اسم القالب الحالي
             String templateName = getCurrentTemplateName();
 
             handler.report(TypeMismatchError.filterTypeMismatch(
@@ -193,10 +154,6 @@ public class FilterTypeMismatchChecker {
         }
     }
 
-    /**
-     * 🆕 Helper: ابحث عن متغير في جدول بايثون (لاستخدام الأنواع الممررة من Flask)
-     * هذا الحل البديل عندما يفشل Type Propagation من Jinja ST
-     */
     private String lookupPythonType(String varName) {
         SymbolTable.SymbolTable.Symbol sym = pythonST.lookupInAllScopes(varName);
         if (sym != null) {
@@ -208,7 +165,6 @@ public class FilterTypeMismatchChecker {
         return "UNKNOWN";
     }
 
-    /** صياغة الأنواع المتوقعة للرسالة: "str" أو "str or list" */
     private String formatExpectedTypes(Set<String> expectedTypes) {
         List<String> pyNames = new ArrayList<>();
         for (String t : expectedTypes) {
@@ -218,7 +174,6 @@ public class FilterTypeMismatchChecker {
         return String.join(" or ", pyNames);
     }
 
-    /** استخرج اسم القالب الحالي من Jinja ST */
     private String getCurrentTemplateName() {
         for (symbol_table.SymbolTable.ScopeEntry scope : jinjaST.getAllScopes()) {
             for (symbol_table.SymbolTable.Symbol sym : scope.getSymbols()) {

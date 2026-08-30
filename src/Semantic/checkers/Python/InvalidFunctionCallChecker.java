@@ -15,10 +15,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * InvalidFunctionCallChecker — راما
- * يفحص: TypeError: 'X' object is not callable
- */
+
 public class InvalidFunctionCallChecker {
 
     private final SymbolTable symbolTable;
@@ -60,17 +57,13 @@ public class InvalidFunctionCallChecker {
 
         Symbol.Kind kind = symbol.getKind();
 
-        // لو المتغير عادي (مش دالة)
         if (kind == Symbol.Kind.VARIABLE) {
             for (int i = 0; i < suffixes.size(); i++) {
                 CallSuffix suffix = suffixes.get(i);
 
-                // يلي جاي استدعاء دالة؟
                 if (suffix instanceof FunctionCall) {
-                    // ★ التعديل هنا: نتأكد إنه ما فيش نقطة (AttributeAccess) قبل الأقواس
                     boolean isMethodCall = (i > 0 && suffixes.get(i - 1) instanceof AttributeAccess);
 
-                    // لو ما فيش نقطة قبل الأقواس، فالمتغير عم يستدعى كأنه دالة (زي products())
                     if (!isMethodCall) {
                         String pythonType = normalizeType(symbol.getType());
                         handler.report(new InvalidFunctionCallError(pythonType,
@@ -117,7 +110,6 @@ public class InvalidFunctionCallChecker {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    // تجاهل
                 }
             }
             clazz = clazz.getSuperclass();

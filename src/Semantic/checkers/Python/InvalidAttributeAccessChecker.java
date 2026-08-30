@@ -36,19 +36,7 @@ import SymbolTable.SymbolTable;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * InvalidAttributeAccessChecker (Python) — يفحص AttributeError الحقيقي
- *
- *   x = "hi";  x.push("!")   ->  AttributeError: 'str' object has no attribute 'push'
- *   y = 5;     y.upper()     ->  AttributeError: 'int' object has no attribute 'upper'
- *   z = None;  z.upper()     ->  AttributeError: 'NoneType' object has no attribute 'upper'
- *
- * القاعدة الذهبية: أي x.attr نتحقق منها دائمًا -- حتى لو x = None.
- * (عمليات زي + - [] () for len هي مسؤولية TypeErrorChecker مش هون).
- *
- * إذا نوع x غير معروف (UNKNOWN) أو نوع مش موجود أصلًا بالجدول (FUNCTION/RANGE/TUPLE/SET)
- * لا نُبلغ عن خطأ -- "False Positive أسوأ من False Negative".
- */
+
 public class InvalidAttributeAccessChecker {
 
     private final SymbolTable          symbolTable;

@@ -8,19 +8,7 @@ import Semantic.util.PythonTypeInference;
 
 import symbol_table.SymbolTable;
 
-/**
- * DivisionByZeroChecker (Jinja) — يفحص أخطاء القسمة على صفر في قوالب Jinja2
- *
- * الحالات التي يفحصها:
- *   1) {{ 10 / 0 }}          → ZeroDivisionError: division by zero
- *   2) {{ 10 % 0 }}          → ZeroDivisionError: integer division or modulo by zero
- *   3) {# count = 0 #}
- *      {{ price / count }}   → ZeroDivisionError: division by zero
- *
- * ⚠️ القاعدة الذهبية:
- *   لو قيمة المقسوم عليه UNKNOWN (ما معروفش وقت الـ compile)
- *   → ما نبلّغ عن خطأ (تجنب False Positives).
- */
+
 public class DivisionByZeroChecker {
 
     private final SymbolTable          jinjaST;
@@ -31,16 +19,10 @@ public class DivisionByZeroChecker {
         this.handler  = handler;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Entry Point
-    // ═══════════════════════════════════════════════════════════════════
     public void check(AstNode root) {
         checkNode(root);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Dispatcher — يوجّه كل عقدة للـ method المناسبة
-    // ═══════════════════════════════════════════════════════════════════
     private void checkNode(AstNode node) {
         if (node == null) return;
 
@@ -102,12 +84,9 @@ public class DivisionByZeroChecker {
         else if (node instanceof SliceNode) {
             checkNode(((SliceNode) node).getArray());
         }
-        // Literals و VariableNode ما يحتاجوا فحص للقسمة
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  Compound Nodes
-    // ═══════════════════════════════════════════════════════════════════
     private void checkIfNode(IfNode node) {
         for (ExpressionNode cond : node.getConditions()) checkNode(cond);
         for (java.util.List<AstNode> body : node.getBodies()) {
@@ -161,12 +140,7 @@ public class DivisionByZeroChecker {
         for (ExpressionNode arg : node.getArguments()) checkNode(arg);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★ BinaryOpNode — الفحص الرئيسي للقسمة على صفر
-    //
-    //  {{ 10 / 0 }}      → ZeroDivisionError: division by zero
-    //  {{ 10 % 0 }}      → ZeroDivisionError: integer division or modulo by zero
-    // ═══════════════════════════════════════════════════════════════════
+
     private void checkBinaryOp(BinaryOpNode node) {
         // افحص المعاملات أولاً (لأي أخطاء متداخلة)
         checkNode(node.getLeft());
@@ -174,15 +148,13 @@ public class DivisionByZeroChecker {
 
         BinaryOpNode.Operator op = node.getOperator();
 
-        // فقط فحص القسمة و Modulo
         if (op != BinaryOpNode.Operator.DIV && op != BinaryOpNode.Operator.MOD) {
             return;
         }
 
-        // استخراج قيمة المقسوم عليه (operand اليمين)
         Object rightValue = extractValue(node.getRight());
 
-        if (rightValue == null) return;  // UNKNOWN → لا نبلغ
+        if (rightValue == null) return;
 
         Number numValue = toNumber(rightValue);
         if (numValue == null) return;
@@ -198,19 +170,10 @@ public class DivisionByZeroChecker {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     //  Helpers
-    // ═══════════════════════════════════════════════════════════════════
-
-    /**
-     * استخراج القيمة من AstNode
-     * - VariableNode → ابحث في Jinja Symbol Table
-     * - NumberLiteral → رجّع القيمة
-     */
     private Object extractValue(AstNode node) {
         if (node == null) return null;
 
-        // VariableNode → ابحث في Jinja ST
         if (node instanceof VariableNode) {
             String name = ((VariableNode) node).getName();
             symbol_table.SymbolTable.Symbol sym = jinjaST.lookupInAllScopes(name);
@@ -220,18 +183,13 @@ public class DivisionByZeroChecker {
             return null;
         }
 
-        // NumberLiteral → رجّع القيمة
         if (node instanceof NumberLiteral) {
             return ((NumberLiteral) node).getValue();
         }
 
-        // ParenExpr-like (لو في) → فك القوسين
-        // (ما في ParenExpr بـ AST تبع Jinja، بس نتركها احتياطاً)
-
         return null;
     }
 
-    /** تحويل أي Object إلى Number */
     private Number toNumber(Object value) {
         if (value == null) return null;
         if (value instanceof Number) return (Number) value;

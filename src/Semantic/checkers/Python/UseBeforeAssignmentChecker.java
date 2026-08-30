@@ -13,21 +13,12 @@ import SymbolTable.SymbolTable;
 import java.lang.reflect.Field;
 import java.util.*;
 
-/**
- * UseBeforeAssignmentChecker — راما
- * يفحص: UnboundLocalError: local variable 'x' referenced before assignment
- *
- * إصلاحات في النسخة 2:
- *   1. منع تكرار نفس الخطأ (نفس المتغير + نفس السطر)
- *   2. استبعاد المتغيرات الـ global (موجودة في scope 0 ولا تُسند في الدالة)
- *   3. التأكد من عدم الإبلاغ عن متغير في نفس السطر الذي يُسند فيه
- */
+
 public class UseBeforeAssignmentChecker {
 
     private final SymbolTable symbolTable;
     private final SemanticErrorHandler handler;
 
-    // لمنع التكرار: نخزن "varName|line" لكل خطأ تم الإبلاغ عنه
     private final Set<String> reportedErrors = new HashSet<>();
 
     private static final String SOURCE = "PYTHON";
@@ -76,7 +67,6 @@ public class UseBeforeAssignmentChecker {
             }
         }
 
-        // فحص الدوال المتداخلة — لكن دون إعادة فحص جسم الدالة الأب
         if (funcDef.body != null) {
             for (ASTNode stmt : funcDef.body) {
                 findNestedFunctionsOnly(stmt);
@@ -144,8 +134,7 @@ public class UseBeforeAssignmentChecker {
         if (node instanceof Identifier) {
             String name = ((Identifier) node).getName();
 
-            // تحقق فقط إن كان المتغير مسنداً في هذه الدالة (local)
-            // ولم يُسند بعد
+
             if (allAssignedInFunc.contains(name) && !assignedSoFar.contains(name)) {
                 String key = name + "|" + node.getLineNumber();
                 if (!reportedErrors.contains(key)) {
@@ -162,10 +151,6 @@ public class UseBeforeAssignmentChecker {
         }
     }
 
-    /**
-     * يبحث عن FuncDef متداخلة فقط (دون إعادة فحص أي شيء آخر)
-     * هذا يمنع التكرار.
-     */
     private void findNestedFunctionsOnly(ASTNode node) {
         if (node == null) return;
         if (node instanceof FuncDef) {
@@ -197,7 +182,6 @@ public class UseBeforeAssignmentChecker {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    // تجاهل
                 }
             }
             clazz = clazz.getSuperclass();
