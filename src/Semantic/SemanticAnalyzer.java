@@ -5,6 +5,7 @@ import AST.ASTNode;
 import Semantic.analyzers.PythonSemanticAnalyzer;
 import Semantic.analyzers.JinjaSemanticAnalyzer;
 import Semantic.checkers.flask.FilterTypeMismatchChecker;
+import Semantic.checkers.flask.InvalidAttributeAccessChecker;
 import Semantic.checkers.flask.MissingFlaskVariableChecker;
 import Semantic.handlers.SemanticErrorHandler;
 import SymbolTable.SymbolTable;
@@ -19,6 +20,7 @@ public class SemanticAnalyzer {
 
     private MissingFlaskVariableChecker  flaskLinker;// غالية ✅
     private FilterTypeMismatchChecker filterTypeChecker;    // 🆕 جديد
+    private InvalidAttributeAccessChecker invalidAttributeAccessChecker; // 🆕 جديد (Bridge)
 
     //private FilterTypeMismatchChecker    filterTypeChecker;    // رؤى ← جديد
 
@@ -35,6 +37,7 @@ public class SemanticAnalyzer {
         if (pythonST != null && jinjaST != null) {
             this.flaskLinker       = new MissingFlaskVariableChecker(pythonST, jinjaST, handler);
            this.filterTypeChecker = new FilterTypeMismatchChecker(pythonST, jinjaST, handler);
+           this.invalidAttributeAccessChecker = new InvalidAttributeAccessChecker(pythonST, jinjaST, handler);
         }
     }
 
@@ -78,6 +81,13 @@ public class SemanticAnalyzer {
         //    لأنه يحتاج الأنواع المنسوخة من Python ST
         if (filterTypeChecker != null && jinjaRoot != null) {
             filterTypeChecker.check(jinjaRoot);
+        }
+
+        // 4.5. 🆕 تشغيل فحص الـ Bridge — Invalid Attribute Access (AttributeError)
+        //    نفس متطلبات filterTypeChecker: يحتاج pythonST كـ fallback
+        //    لمعرفة أنواع المتغيرات الممرّرة مباشرة من Flask
+        if (invalidAttributeAccessChecker != null && jinjaRoot != null) {
+            invalidAttributeAccessChecker.check(jinjaRoot);
         }
 
         // 5. طباعة النتائج النهائية مرة واحدة فقط
