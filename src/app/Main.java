@@ -78,7 +78,7 @@ public class Main {
     private static void runHtml() {
         try {
             System.out.println("Running HTML Compiler...\n");
-           // String fileName = "Tests/missing_flask_variable/ templates/base.html";
+            // String fileName = "Tests/missing_flask_variable/ templates/base.html";
             String fileName = "Tests/undefined_variable/jinja_test.html";
             InputStream is = new FileInputStream(fileName);
             CharStream input = CharStreams.fromStream(is);
