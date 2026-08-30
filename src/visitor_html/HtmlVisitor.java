@@ -534,7 +534,11 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         ExpressionNode value = (ExpressionNode) visit(setCtx.jinjaExpression());
 
         // ====== Symbol Table: إدخال متغير الـ set ======
-        st.insert(var, Kind.SET_VAR, "Unknown", null, p[0]);
+        // ★ تصحيح: لو القيمة رقم حرفي (زي {% set count = 0 %})، نخزّن قيمته الحقيقية
+        // بدل null، حتى DivisionByZeroChecker يقدر يعمل constant propagation عليها
+        // (كان دايمًا بيرجع null فـ"count / 0" ما كانت تنكشف أبداً).
+        Object literalValue = (value instanceof NumberLiteral) ? ((NumberLiteral) value).getValue() : null;
+        st.insert(var, Kind.SET_VAR, "Unknown", literalValue, p[0]);
 
         return new SetNode(var, value, p[0], p[1]);
     }

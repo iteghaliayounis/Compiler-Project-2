@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Jinja Scope Error Test</title>
+</head>
+
+<body>
+
+<h1>Jinja Scope Error Test</h1>
+
+# TEST 1 — متغير الـ for loop مستخدم بعد نهاية الحلقة
+# متوقع: UnboundLocalError: 'p' is not defined outside loop
+{% for p in products %}
+<p>{{ p }}</p>
+{% endfor %}
+<p>{{ p }}</p>
+
+
+# TEST 2 — متغير set داخل شرط if، مستخدم بعد نهاية الـ if
+# متوقع: ScopeError
+{% if flag %}
+{% set y = 1 %}
+<p>{{ y }}</p>
+{% endif %}
+<p>{{ y }}</p>
+
+
+# TEST 3 — متغير with مستخدم بعد نهاية الـ with
+# متوقع: ScopeError
+{% with total = 100 %}
+<p>{{ total }}</p>
+{% endwith %}
+<p>{{ total }}</p>
+
+
+# TEST 4 — بارامتر ماكرو مستخدم برا الماكرو (بعد نهاية تعريفها)
+# متوقع: ScopeError
+{% macro greet(username) %}
+<p>{{ username }}</p>
+{% endmacro %}
+<p>{{ username }}</p>
+
+
+# TEST 5 — يجب ألا يبلّغ: set على مستوى القالب العلوي (مش جوا if/for/with)
+{% set page_title = "Store" %}
+<p>{{ page_title }}</p>
+
+
+# TEST 6 — يجب ألا يبلّغ: متغير الـ for loop مستخدم جوا الحلقة نفسها
+{% for item in items %}
+<p>{{ item }}</p>
+{% endfor %}
+
+
+# TEST 7 — حلقتين متداخلتين: متغير الحلقة الداخلية مستخدم بعد نهاية الحلقة الداخلية
+# بس لسا جوا الحلقة الخارجية → ScopeError
+{% for outer in groups %}
+    {% for inner in outer.items %}
+    <p>{{ inner }}</p>
+    {% endfor %}
+    <p>{{ inner }}</p>
+{% endfor %}
+
+
+# TEST 8 — يجب ألا يبلّغ: متغير الحلقة الخارجية متاح جوا الحلقة الداخلية المتداخلة
+{% for outer in groups %}
+    {% for inner in outer.items %}
+    <p>{{ outer }} - {{ inner }}</p>
+    {% endfor %}
+{% endfor %}
+
+
+# TEST 9 — نفس اسم متغير حلقة يستخدم بحلقتين منفصلتين متتاليتين
+# استخدامه بين الحلقتين → ScopeError، واستخدامه جوا الحلقة الثانية → تمام
+{% for p in products %}
+<p>{{ p }}</p>
+{% endfor %}
+<p>{{ p }}</p>
+{% for p in others %}
+<p>{{ p }}</p>
+{% endfor %}
+
+
+# TEST 10 — متغير set جوا block، مستخدم بعد نهاية الـ block
+# متوقع: ScopeError
+{% block content %}
+{% set inner_var = 5 %}
+<p>{{ inner_var }}</p>
+{% endblock %}
+<p>{{ inner_var }}</p>
+
+
+# TEST 11 — يجب ألا يبلّغ من ScopeChecker: متغير مش معرّف أبداً بأي set/for/with/macro
+# (هاي مسؤولية UndefinedVariableChecker مش ScopeChecker)
+<p>{{ completely_unknown }}</p>
+
+</body>
+</html>

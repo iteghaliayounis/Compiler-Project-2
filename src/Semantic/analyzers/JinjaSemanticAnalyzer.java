@@ -10,11 +10,34 @@ import Semantic.checkers.Jinja.InvalidFunctionCallChecker;   // ← راما
 import Semantic.handlers.SemanticErrorHandler;
 import java.util.Set;
 
+<<<<<<< HEAD
 
 public class JinjaSemanticAnalyzer {
 
     private final UndefinedVariableChecker undefinedChecker;
     private final TypeErrorChecker         typeErrorChecker;        // ← رؤى
+=======
+/**
+ * JinjaSemanticAnalyzer — مدير أخطاء Jinja2
+ *
+ * يدير الـ Checkers التالية:
+ *   1. UndefinedVariableChecker  ← غالية ✅ (موجود مسبقاً)
+ *   2. TypeErrorChecker          ← رؤى (جديد)
+ *
+ * ملاحظة: Type Mismatch للجينجا (فلاتر) يتم في طبقة الـ Bridge
+ *         (FilterTypeMismatchChecker) وليس هنا.
+ *
+ * ملاحظة إضافية: Invalid Attribute Access (AttributeError) للجينجا
+ *         يتم أيضاً في طبقة الـ Bridge (InvalidAttributeAccessChecker
+ *         تحت checkers/flask) وليس هنا — لنفس سبب FilterTypeMismatchChecker:
+ *         يحتاج fallback لجدول رموز بايثون (pythonST) لمعرفة أنواع
+ *         المتغيرات الممرّرة مباشرة من Flask.
+ */
+public class JinjaSemanticAnalyzer {
+
+    private final UndefinedVariableChecker undefinedChecker;
+    private final TypeErrorChecker         typeErrorChecker;
+>>>>>>> 731c849680d74f791c31c0eeb1b74682e91a867e
     private final ScopeChecker             scopeChecker;
     private final DivisionByZeroChecker    divisionByZeroChecker;
 

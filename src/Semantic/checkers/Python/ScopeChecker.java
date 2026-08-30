@@ -38,8 +38,6 @@ import java.util.*;
 /**
  * ScopeChecker (Python) — يفحص أخطاء Scope
  *
- * الخطأ الحقيقي: UnboundLocalError
- *
  * ⚠️ المنهجية:
  *   الـ Checker يدير scopes بنفسه أثناء traversal (مو يعتمد على SymbolTable).
  *   لما يدخل FuncDef → push scope + define params
@@ -47,14 +45,29 @@ import java.util.*;
  *   لما يلاقي assignment → define المتغير في current scope
  *   لما يلاقي Identifier usage → يتأكد إنو موجود بـ current scope stack
  *
- *   لو المتغير معرف بـ scope تاني (popped) → ScopeError
- *   لو المتغير مش معرف أبداً → UndefinedVarError (شغل غالية)
+ *   لو المتغير مش متاح بـ current scope stack → ما منبلّغ إشي من هون (منترك
+ *   المجال لتشيكرز تانية مختصة، شوفي الملاحظة تحت).
  *
  * ⚠️ ملاحظة عن Python:
  *   Python عندها function-level scoping (مو block-level):
  *     - المتغيرات بـ if/for/while بتضل متاحة بعد البلوك
  *     - بس FuncDef بتنشئ scope جديد
  *   فإحنا بن push/pop بس مع FuncDef.
+ *
+ * ★ تصحيح (كان فيه bug اكتشفته غالية): الفحص القديم كان فيه خطوة تانية بعد
+ *   isAccessible — لو المتغير "معرّف بمكان ما" (allDefinedVars عالمي بيتراكم
+ *   عبر كل دوال الملف من غير ما ينمسح) كان يطلّع ScopeError (UnboundLocalError).
+ *   المشكلة: أي متغير محلي بأي دالة، حتى لو بعيدة تمامًا ومالها علاقة، كان يخلي
+ *   الفحص يعتقد إنو الاسم "معرّف بمكان ما" ويطلّع ScopeError غلط.
+ *
+ *   لما جربنا نصلّحها بحيث تحسب locals كل دالة لحالها (بمسح مسبق لجسمها، نفس
+ *   منطق بايثون الحقيقي بإنو أي اسم بينعيّن بمكان ما بجسم الدالة بيصير محلي
+ *   لكامل الدالة)، اكتشفنا إنو هاد بالضبط نفس الشغل يلي عم يعمله بشكل صحيح
+ *   ومن غير تكرار [[UseBeforeAssignmentChecker]] (تشيكر مستقل تبع راما).
+ *   فبدل ما نكرر نفس التقرير مرتين لنفس السطر، خلّينا ScopeChecker يقتصر بس
+ *   على isAccessible ويسكت لما يفشل — UseBeforeAssignmentChecker مسؤولة عن
+ *   الاستخدام-قبل-التعريف بنفس الدالة، وUndefinedVariableChecker مسؤولة عن
+ *   المتغير غير المعرّف إطلاقًا.
  */
 public class ScopeChecker {
 
@@ -63,9 +76,6 @@ public class ScopeChecker {
 
     /** Stack of scopes — كل scope عبارة عن Set من المتغيرات */
     private final List<Set<String>> scopeStack = new ArrayList<>();
-
-    /** كل المتغيرات المعرفة بأي scope (حتى المحذوفة) — للتمييز عن UndefinedVarError */
-    private final Set<String> allDefinedVars = new HashSet<>();
 
     /** Built-in functions في Python */
     private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList(
@@ -87,7 +97,6 @@ public class ScopeChecker {
         scopeStack.add(new HashSet<>());
         // builtins
         scopeStack.get(0).addAll(BUILTINS);
-        allDefinedVars.addAll(BUILTINS);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -112,7 +121,6 @@ public class ScopeChecker {
     private void define(String name) {
         if (name == null) return;
         scopeStack.get(scopeStack.size() - 1).add(name);
-        allDefinedVars.add(name);
     }
 
     /** هل المتغير متاح بـ current scope stack (من current لـ global)؟ */
@@ -121,13 +129,6 @@ public class ScopeChecker {
             if (scopeStack.get(i).contains(name)) return true;
         }
         return false;
-    }
-
-    /** هل المتغير معرف بأي scope (حتى المحذوفة) أو بـ SymbolTable؟ */
-    private boolean wasEverDefined(String name) {
-        if (allDefinedVars.contains(name)) return true;
-        // fallback: SymbolTable (imports, etc.)
-        return symbolTable.lookupInAllScopes(name) != null;
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -270,33 +271,17 @@ public class ScopeChecker {
     // ═══════════════════════════════════════════════════════════════════
 
     /**
-     * ★ checkIdentifier — الفحص الرئيسي
+     * ★ checkIdentifier
      *
-     *  1) لو isAccessible(name) → تمام (موجود بـ current scope stack)
-     *  2) لو wasEverDefined(name) → ScopeError (موجود بـ scope تاني)
-     *  3) لو مش معرف → UndefinedVarError (شغل غالية)
+     *  لو isAccessible(name) → تمام (موجود بـ current scope stack)
+     *  غير هيك → منسكت، ما منبلّغ إشي من هون. الاستخدام-قبل-التعريف بنفس
+     *  الدالة مسؤولية [[UseBeforeAssignmentChecker]]، والمتغير غير المعرّف
+     *  إطلاقًا مسؤولية UndefinedVariableChecker (شغل غالية) — تجنّبًا لتكرار
+     *  نفس الخطأ من تشيكرين مختلفين لنفس السطر.
      */
     private void checkIdentifier(Identifier node) {
         if (node.name == null) return;
-
-        // ★ DEBUG: شوفي حالة الـ scope وقت فحص كل identifier
-     //   System.out.println("[DEBUG checkIdentifier] checking '" + node.name + "' at line " + node.getLineNumber());
-       // System.out.println("[DEBUG checkIdentifier] scopeStack size: " + scopeStack.size());
-        for (int i = 0; i < scopeStack.size(); i++) {
-           // System.out.println("[DEBUG checkIdentifier] scope " + i + ": " + scopeStack.get(i));
-        }
-        //System.out.println("[DEBUG checkIdentifier] isAccessible('" + node.name + "'): " + isAccessible(node.name));
-
-        // 1) هل المتغير متاح بـ current scope stack؟
-        if (isAccessible(node.name)) {
-            return;  // ✓ تمام
-        }
-
-        // 2) هل المتغير معرف بـ scope تاني (popped)؟
-        if (wasEverDefined(node.name)) {
-            // → ScopeError!
-            handler.report(new ScopeError(node.name, node.getLineNumber(), "PYTHON"));
-        }
+        if (isAccessible(node.name)) return;  // ✓ تمام — غير هيك منسكت
     }
 
     // ═══════════════════════════════════════════════════════════════════

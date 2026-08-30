@@ -34,6 +34,7 @@
 <p>{{ "Sara" - 4 }}</p>
 
 
+
 <!-- Test 5: مقارنة str < int -->
 <!-- المتوقع: TypeError: '<' not supported between instances of 'str' and 'int' -->
 {% if "Sara" < 4 %}
@@ -111,6 +112,21 @@
 
 <!-- ✅ صحيح (المتغير items معرف كـ list و length يقبل list) -->
 <p>{{ items | length }}</p>
+
+{# Test: AttributeError — items هي list (ممررة من Flask) #}
+{{ items.foo }}              {# ← متوقع: AttributeError: 'list' object has no attribute 'foo' #}
+
+{# Test: صحيح — list.append موجودة فعلاً #}
+{{ items.append }}           {# ← ✅ لا خطأ (append موجودة، حتى لو استدعاؤها كـ property غريب بجينجا، هاد فحص ثابت الأسماء فقط) #}
+
+{# Test: AttributeError — name هي str #}
+{{ name.push }}               {# ← متوقع: AttributeError: 'str' object has no attribute 'push' #}
+
+{# Test: صحيح — str.upper موجودة #}
+{{ name.upper }}               {# ← ✅ لا خطأ #}
+
+{# Test: نوع غير معروف — لا يجب أن يطلع خطأ #}
+{{ some_undefined_thing.whatever }}   {# ← ❌ لا خطأ (UNKNOWN)، لكن رح يطلع خطأ تاني من UndefinedVariableChecker على المتغير نفسه، وهاد طبيعي ومتوقع #}
 
 </body>
 </html>
