@@ -9,57 +9,46 @@
 
 <h1>Jinja Division By Zero Test</h1>
 
-# TEST 1 — قسمة مباشرة على صفر (literal)
 <p>{{ 10 / 0 }}</p>
 
 
-# TEST 2 — modulo مباشر على صفر (literal)
 <p>{{ 10 % 0 }}</p>
 
 
-# TEST 3 — Constant Propagation عبر set
 
 {% set count = 0 %}
 <p>{{ price / count }}</p>
 
 
-# TEST 4 — يجب ألا يبلّغ: قسمة آمنة بقيم غير صفرية
 <p>{{ 10 / 5 }}</p>
 
 
-# TEST 5 — يجب ألا يبلّغ: القاسم متغير مجهول القيمة (UNKNOWN)
 <p>{{ 10 / unknown_value }}</p>
 
 
-# TEST 6 — يجب ألا يبلّغ: القاسم تعبير مركّب محسوب = صفر (الـ checker ما بيقيّم تعابير مركّبة، بس literal/variable مباشرة)
 <p>{{ 10 / (5 - 5) }}</p>
 
 
-# TEST 7 — قسمة على صفر داخل حلقة for
 {% for x in items %}
 <p>{{ 10 / 0 }}</p>
 {% endfor %}
 
 
-# TEST 8 — قسمة على صفر داخل شرط if
 {% if flag %}
 <p>{{ 10 / 0 }}</p>
 {% endif %}
 
 
-# TEST 9 — قسمة على صفر داخل جسم ماكرو
 {% macro calc() %}
 <p>{{ 10 / 0 }}</p>
 {% endmacro %}
 
 
-# TEST 10 — قسمة على صفر داخل with (يتأكد إنو الـ checker بيدخل جسم with)
 {% with x = 5 %}
 <p>{{ 10 / 0 }}</p>
 {% endwith %}
 
 
-# TEST 11 — قسمة على صفر جوا قيمة CSS مبنية من Jinja (جوا وسم الستايل)
 <style>
 .box {
     width: {{ 100 / 0 }}px;

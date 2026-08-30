@@ -4,7 +4,6 @@ app = Flask(__name__)
 
 
 
-# TEST 1
 
 @app.route('/profile')
 def profile():
@@ -15,7 +14,6 @@ def profile():
     )
 
 
-# TEST 2
 @app.route('/dashboard')
 def dashboard():
     return render_template(
@@ -25,13 +23,11 @@ def dashboard():
     )
 
 
-# TEST 3
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
 
 
-# TEST 4
 @app.route('/about')
 def about():
     return render_template(
@@ -40,7 +36,6 @@ def about():
     )
 
 
-# TEST 5
 @app.route('/cart')
 def cart():
     return render_template(
@@ -50,7 +45,6 @@ def cart():
         quantity=1
     )
 
-# TEST 6
 @app.route('/notifications')
 def notifications():
     return render_template(
@@ -61,7 +55,6 @@ def notifications():
     )
 
 
-# TEST 7
 @app.route('/static-page')
 def static_page():
     return render_template('static_page.html')

@@ -3,8 +3,8 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 
-# TEST 1 — قسمة مباشرة على صفر (literal)
 
+# TEST 1 — قسمة مباشرة على صفر (literal)
 
 @app.route("/direct-div")
 def direct_div():
@@ -13,8 +13,8 @@ def direct_div():
 
 
 
-# TEST 2 — modulo مباشر على صفر (literal)
 
+# TEST 2 — modulo مباشر على صفر (literal)
 
 @app.route("/direct-mod")
 def direct_mod():
@@ -23,14 +23,15 @@ def direct_mod():
 
 
 
-# TEST 3 — Constant Propagation: متغير قيمته صفر ثم قسمة عليه
 
+# TEST 3 — Constant Propagation: متغير قيمته صفر ثم قسمة عليه
 
 @app.route("/const-div")
 def const_div():
     y = 0
     x = 10 / y
     return str(x)
+
 
 
 
@@ -45,8 +46,8 @@ def const_mod():
 
 
 
-# TEST 5 —  القاسم قيمته غير صفرية معروفة
 
+# TEST 5 —  القاسم قيمته غير صفرية معروفة
 
 @app.route("/safe-const")
 def safe_const():
@@ -58,7 +59,6 @@ def safe_const():
 
 # TEST 6 —  القاسم متغير مجهول القيمةـ 
 
-
 @app.route("/unknown-divisor")
 def unknown_divisor():
     x = 10 / count
@@ -66,8 +66,8 @@ def unknown_divisor():
 
 
 
-# TEST 7 
 
+# TEST 7 
 
 @app.route("/reassigned")
 def reassigned():
@@ -78,8 +78,8 @@ def reassigned():
 
 
 
-# TEST 8 — قسمة على صفر داخل if
 
+# TEST 8 — قسمة على صفر داخل if
 
 @app.route("/inside-if")
 def inside_if():
@@ -91,8 +91,8 @@ def inside_if():
 
 
 
-# TEST 9 — قسمة على صفر داخل for
 
+# TEST 9 — قسمة على صفر داخل for
 
 @app.route("/inside-for")
 def inside_for():
@@ -103,7 +103,9 @@ def inside_for():
 
 
 
+
 # TEST 10 — قسمة على صفر داخل try/except
+
 
 
 @app.route("/inside-try")
@@ -116,8 +118,8 @@ def inside_try():
 
 
 
-# TEST 11 — سلسلة قسمة متتالية تنتهي بصفر (a / b / c)
 
+# TEST 11 — سلسلة قسمة متتالية تنتهي بصفر (a / b / c)
 
 @app.route("/chained")
 def chained():
@@ -126,7 +128,9 @@ def chained():
 
 
 
+
 # TEST 12 
+
 @app.route("/leak-a")
 def leak_a():
     z = 0

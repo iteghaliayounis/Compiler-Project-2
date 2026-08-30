@@ -1,69 +1,43 @@
 <html>
 <body>
 
-<!-- Test 1: for على رقم -->
-<!-- المتوقع: TypeError: 'int' object is not iterable -->
 {% for i in 5 %}
     <p>{{ i }}</p>
 {% endfor %}
 
 
-<!-- Test 2: جمع int + str -->
-<!-- المتوقع: TypeError: unsupported operand type(s) for +: 'int' and 'str' -->
 <p>{{ 5 + "hello" }}</p>
 
 
-<!-- Test 3: فهرسة رقم -->
-<!-- المتوقع: TypeError: 'int' object is not subscriptable -->
 <p>{{ 10[0] }}</p>
 
 
-<!-- Test 4: طرح str - int -->
-<!-- المتوقع: TypeError: unsupported operand type(s) for -: 'str' and 'int' -->
 <p>{{ "Sara" - 4 }}</p>
 
 
 
-<!-- Test 5: مقارنة str < int -->
-<!-- المتوقع: TypeError: '<' not supported between instances of 'str' and 'int' -->
 {% if "Sara" < 4 %}
     <p>compare</p>
 {% endif %}
 
 
-<!-- Test 6: جمع str + int (الترتيب معكوس) -->
-<!-- المتوقع: TypeError: can only concatenate str (not "int") to str -->
 <p>{{ "Sara" + 4 }}</p>
 
 
-<!-- Test 7: ضرب str * str -->
-<!-- المتوقع: TypeError: can't multiply sequence by non-int of type 'str' -->
 <p>{{ "a" * "b" }}</p>
 
 
-<!-- Test 8: قسمة int / str -->
-<!-- المتوقع: TypeError: unsupported operand type(s) for /: 'int' and 'str' -->
 <p>{{ 5 / "hello" }}</p>
 
 
-<!-- ───────────────────────────────────────────── -->
-<!--  (TypeMismatchError) - Flask Bridge -->
-<!-- ───────────────────────────────────────────── -->
 
-<!-- Test 9: TypeError في الجمع بين متغير int و string -->
-<!-- المتوقع: TypeError: unsupported operand type(s) for +: 'int' and 'str' -->
 <p>{{ age + "SS" }}</p>
 
-<!-- Test 10: filter 'lower' expects str, got int -->
-<!-- المتوقع: TypeError: filter 'lower' expects str, got int -->
 <p>{{ age | lower }}</p>
 
-<!-- Test 11: filter 'length' expects str/list/dict, got float -->
-<!-- المتوقع: TypeError: filter 'length' expects dict or list or ..., got float -->
+
 <p>{{ price | length }}</p>
 
-<!-- Test 12: filter 'abs' expects int/float, got str -->
-<!-- المتوقع: TypeError: filter 'abs' expects float or int, got str -->
 <p>{{ name | abs }}</p>
 
 </body>

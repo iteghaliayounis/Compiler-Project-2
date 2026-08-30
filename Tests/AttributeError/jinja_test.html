@@ -5,21 +5,19 @@
 <body>
 
 
-<!-- Test 1-->
+
 <p>{{ name.push }}</p>
 
-<!-- Test 2: items هي list (ممررة من Flask)، foo مش موجودة -->
 <p>{{ items.foo }}</p>
 
 
 
-<!-- Test 3: name.upper موجودة فعلاً على str -->
 <p>{{ name.upper }}</p>
 
-<!-- Test 4: items.append موجودة فعلاً على list -->
 <p>{{ items.append }}</p>
 
-<!-- Test 5: نوع غير معروف وقت التحليل —  AttributeError -->
+
+
 <p>{{ some_undefined_thing.whatever }}</p>
 
 </body>
