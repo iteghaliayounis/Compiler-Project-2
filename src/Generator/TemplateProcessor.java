@@ -12,11 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-/**
- * الشخص 2 — يدمج {% extends %} مع {% block %}:
- * ياخد شجرة قالب طفل (فيها extends)، يقرأ ملف الأب (base.html)،
- * يبني شجرته من جديد، وبيستبدل كل block بالأب بمحتوى نفس الـ block بالطفل.
- */
+
 public class TemplateProcessor {
 
     private final Path templatesDir;
@@ -28,11 +24,11 @@ public class TemplateProcessor {
 
     public List<String> getLog() { return log; }
 
-    /** بترجع الشجرة الجاهزة للرندر (شجرة الأب مع البلوكات مستبدلة، أو شجرة الطفل نفسها لو ما في extends). */
+
     public TemplateNode resolve(TemplateNode childTree, String childTemplateName) throws IOException {
         ExtendsNode extendsNode = findExtends(childTree);
         if (extendsNode == null) {
-            return childTree; // ما في extends — القالب مستقل بحاله
+            return childTree;
         }
 
         String parentName = extendsNode.getParentTemplate();
@@ -44,7 +40,7 @@ public class TemplateProcessor {
             return childTree;
         }
 
-        // بارس مستقل وجديد لملف الـ base (كل مرة نسخة طازة، ما في تشارك مراجع بين القوالب)
+
         String parentContent = Files.readString(parentFile);
         product_htmlLexer lexer = new product_htmlLexer(CharStreams.fromString(parentContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -3,9 +3,7 @@ parser grammar product_htmlParser;
 
 options { tokenVocab = product_htmlLexer; }
 
-// ============================================================
-// القاعدة العليا
-// ============================================================
+
 
 program
     : (prolog | content)* EOF
@@ -15,9 +13,6 @@ prolog
     : DOCTYPE
     ;
 
-// ============================================================
-// المحتوى (أي شيء يظهر بين/خارج التاغات)
-// ============================================================
 
 content
     : text                 #TextContent
@@ -30,9 +25,6 @@ text
     : TEXT+
     ;
 
-// ============================================================
-// العناصر (تاغات HTML) — عام لكل التاغات
-// ============================================================
 
 element
     : styleElement         #StyleElemAlt
@@ -41,23 +33,22 @@ element
     | containerElement     #ContainerElemAlt
     ;
 
-// <style>...</style>  مع CSS حقيقي
+
 styleElement
     : STYLE_OPEN cssStatement* STYLE_CLOSE
     ;
 
-// <script>...</script>  مع نص خام
+
 scriptElement
     : SCRIPT_OPEN SCRIPT_TEXT? SCRIPT_CLOSE
     ;
 
-// العناصر void (مثل <br>, <img>, <input>) أو self-closing (<div/>)
+
 voidElement
     : LT TAG_VOID_NAME attribute* (TAG_CLOSE | TAG_SELF_CLOSE)   #VoidTag
     | LT TAG_NAME attribute* TAG_SELF_CLOSE                       #SelfClosingTag
     ;
 
-// العناصر الحاويةة: <div> ... </div>
 containerElement
     : openTag content* closeTag
     ;
@@ -70,21 +61,16 @@ closeTag
     : LT TAG_SLASH TAG_NAME TAG_CLOSE
     ;
 
-// ============================================================
-// الخصائص (Attributes)
-// ============================================================
 
 attribute
     : styleAttribute       #StyleAttr
     | normalAttribute      #NormalAttr
     ;
 
-// style="..."  — خاصية inline style مع CSS
 styleAttribute
     : TAG_STYLE_ATTR_OPEN cssDeclaration* CSS_ATTR_CLOSE
     ;
 
-// خاصية عادية: name="value" | name='value' | name={{ jinja }} | name (boolean)
 normalAttribute
     : TAG_NAME (TAG_EQUAL attributeValue)?
     ;
@@ -95,17 +81,13 @@ attributeValue
     | jinja_block           #AttrJinjaBlockValue
     ;
 
-// ============================================================
-// Jinja — المتغيرات {{ ... }}
-// ============================================================
+
 
 jinja_var
     : JINJA_VAR_OPEN jinjaExpression? JINJA_VAR_CLOSE
     ;
 
-// ============================================================
-// Jinja — الأوامر {% ... %}
-// ============================================================
+
 
 jinja_block
     : jinjaExtends         #JinjaExtendsStmt
@@ -193,7 +175,7 @@ jinjaMacroParams
     ;
 
 jinjaMacroParam
-    : JINJA_ID (JINJA_ASSIGN jinjaExpression)?     // قيمة افتراضية اختيارية
+    : JINJA_ID (JINJA_ASSIGN jinjaExpression)?
     ;
 
 jinjaWith
@@ -213,14 +195,11 @@ jinjaFilterBlock
       JINJA_BLOCK_OPEN JINJA_ENDFILTER JINJA_BLOCK_CLOSE
     ;
 
-// أي أمر Jinja آخر — قبول عام
+
 jinjaGenericBlock
     : JINJA_BLOCK_OPEN jinjaExpression? JINJA_BLOCK_CLOSE
     ;
 
-// ============================================================
-// تعابير Jinja — مع ترتيب الأسبقية الكامل
-// ============================================================
 
 jinjaExpression
     : jinjaTernary
@@ -290,7 +269,7 @@ jinjaCallArg
     : JINJA_ID JINJA_ASSIGN jinjaExpression    #JinjaKwArg
     | jinjaExpression                           #JinjaPosArg
     ;
-// يدعم الوصول بالفهرس والـ slicing: arr[0], arr[1:5], arr[:n], arr[::2]
+
 jinjaSlice
     : jinjaExpression? (JINJA_COLON jinjaExpression?)*
     ;
@@ -310,16 +289,13 @@ jinjaExpressionList
     : jinjaExpression (JINJA_COMMA jinjaExpression)*
     ;
 
-// ============================================================
-// CSS — داخل <style> و style="..."
-// ============================================================
 
 cssStatement
     : cssRuleSet                                #CssRule
     | cssAtRule                                 #CssAtRuleStmt
     ;
 
-// قاعدة CSS كاملة: selector, selector { declarations }
+
 cssRuleSet
     : cssSelectorList CSS_LBRACE cssDeclaration* CSS_RBRACE
     ;
@@ -328,13 +304,12 @@ cssSelectorList
     : cssSelector (CSS_COMMA cssSelector)*
     ;
 
-// selector معقد: compound (combinator compound)*
+
 cssSelector
     : cssCompoundSelector (cssCombinator? cssCompoundSelector)*
     ;
 
-// compound selector: سلسلة من selectors بسيطة بدون combinator
-// مثال: div.foo#bar:hover  — ويدعم 0%, 100% لـ @keyframes
+
 cssCompoundSelector
     : ( CSS_IDENT
         | CSS_STAR
@@ -374,7 +349,6 @@ cssCombinator
     | CSS_TILDE             #GeneralSiblingCombinator
     ;
 
-// At-rules: @media, @keyframes, @import, @font-face, ...
 cssAtRule
     : CSS_AT_KEYWORD cssAtRulePrelude? cssAtRuleBody
     ;
@@ -391,7 +365,7 @@ cssAtRuleBody
     | CSS_SEMI                                   #AtRuleSimple
     ;
 
-// تعريف CSS: property: value;
+
 cssDeclaration
     : CSS_IDENT CSS_COLON cssValueList CSS_IMPORTANT? CSS_SEMI?
     ;

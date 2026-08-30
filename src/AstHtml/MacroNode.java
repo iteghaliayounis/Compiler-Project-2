@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% macro name(param1, param2=default) %} ... {% endmacro %}
- */
+
 public class MacroNode extends StatementNode {
 
     public static class Param {

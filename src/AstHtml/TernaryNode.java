@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * تعبير شرطي (ternary): value if condition else alternative
- */
+
 public class TernaryNode extends ExpressionNode {
 
     private final ExpressionNode value;

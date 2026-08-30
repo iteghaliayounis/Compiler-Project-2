@@ -12,20 +12,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-/**
- * الشخص 1 — Demo لاختبار السيناريو كامل بمعزل عن باقي الفريق:
- *   app.py (نص)  →  Lexer/Parser  →  PythonVisitor (AST جاهزة)
- *                →  PythonContextGenerator (Context Data)
- *                →  ast_python.json + generation_log.txt
- *
- * هاد الملف بس للاختبار المحلي عندك، مش جزء من نظام التشغيل النهائي
- * (الشخص 3 رح يستخدم PythonContextGenerator مباشرة بالـ pipeline الرئيسي).
- */
+
 public class PersonOneDemo {
 
     public static void main(String[] args) throws IOException {
 
-        // ── مثال app.py مطابق تمامًا لمثال الدكتورة بالتوضيح ──
+
         String sampleAppPy =
                 "from flask import Flask, render_template, request, redirect, url_for, abort\n" +
                         "\n" +
@@ -117,19 +109,18 @@ public class PersonOneDemo {
                         "if name == \"main\":\n" +
                         "    app.run(debug=True)";
 
-        // ── 1) Lexer + Parser (ANTLR) ──
+
         ProductLexer lexer = new ProductLexer(CharStreams.fromString(sampleAppPy));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ProductParser parser = new ProductParser(tokens);
 
-        // ── 2) بناء الـ AST عبر الـ Visitor الجاهز (بدون أي تعديل عليه) ──
         PythonVisitor visitor = new PythonVisitor();
         Program root = (Program) visitor.visit(parser.program());
 
         System.out.println("===== AST (Pretty Print) =====");
         System.out.println(root.toString(0));
 
-        // ── 3) تشغيل الـ Generator تبعنا (الشخص 1) ──
+
         PythonContextGenerator generator = new PythonContextGenerator();
         generator.generate(root);
 
@@ -146,15 +137,13 @@ public class PersonOneDemo {
             }
         }
 
-        // ── 4) تصدير compiler_output/ast_python.json و generation_log.txt ──
+
         Path compilerOutput = Path.of("compiler_output");
         GenerationOutputWriter.writeAstJson(AstJsonSerializer.pythonTreeToJson(root), compilerOutput);
         GenerationOutputWriter.writeGenerationLog(generator.getLog(), compilerOutput, false, "Python Generator Log");
-        System.out.println("\n✅ تم إنشاء compiler_output/ast_python.json و generation_log.txt");
+        System.out.println("\n تم إنشاء compiler_output/ast_python.json و generation_log.txt");
 
-        // ── هيك بيوصل الشخص 2 على الـ Context Data الجاهز لأي قالب ──
-      //  Map<String, Object> indexContext = generator.getContextFor("index.jinja");
-        // ── هيك بيوصل الشخص 2 على الـ Context Data الجاهز لأي قالب ──
+
         List<Map<String, Object>> indexContexts = generator.getContextFor("index.html");
         System.out.println("\n===== Context جاهز لتسليمه للشخص 2 (index.html) =====");
         for (Map<String, Object> ctx : indexContexts) {

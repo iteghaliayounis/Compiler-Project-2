@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * عدد (int أو float).
- */
+
 public class NumberLiteral extends ExpressionNode {
 
     private final String rawValue;

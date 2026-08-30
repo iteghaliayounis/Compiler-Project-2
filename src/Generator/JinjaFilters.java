@@ -3,10 +3,6 @@ package Generator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * الشخص 2 — تطبيق أشهر Jinja filters (المستخدمة عادة بمشاريع Flask بسيطة).
- * أي فلتر مش معروف: بترجع القيمة متل ما هي بدل ما تكسّري التوليد بالكامل.
- */
 public class JinjaFilters {
 
     public static Object apply(String name, Object value, List<Object> args) {

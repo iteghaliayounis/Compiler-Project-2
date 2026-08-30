@@ -3,10 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * function call CSS.
- * مثال: linear-gradient(45deg, rgba(0,0,0,0.5), blue)
- */
+
 public class CssFunctionValueNode extends CssValueNode {
 
     private final String name;

@@ -9,20 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * الشخص 4 (أو أي حدا) — يحوّل الشجرتين (Python وJinja/HTML) لـ JSON حقيقي متداخل
- * (objects/arrays فعلية)، بدل ما يكون نص شجرة مهرّب جوا حقل واحد.
- *
- * - Python: بنستخدم Reflection (فحص حقول الكلاس تلقائيًا) لأنو ASTNode
- *   ما عندها children() موحّدة بكل الكلاسات.
- * - Jinja/HTML: بنستخدم name()/label()/children() الجاهزين أصلًا
- *   بكل عقدة (polymorphism حقيقي، بدون Reflection ولا تعديل أي كلاس).
- */
+
 public class AstJsonSerializer {
 
-    // ════════════════════════════════════════════════════════════════
-    //  Python AST → JSON (عبر Reflection)
-    // ════════════════════════════════════════════════════════════════
 
     public static String pythonTreeToJson(ASTNode root) {
         return valueToJson(root, 0);
@@ -89,15 +78,11 @@ public class AstJsonSerializer {
             return sb.toString();
         }
 
-        // أي كائن تاني (ASTNode أو حتى كلاس مساعد زي TryStmt.CatchBlock)
+
         return objectToJson(val, indent);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  Jinja/HTML AST → JSON (عبر name()/label()/children() الجاهزين)
-    // ════════════════════════════════════════════════════════════════
 
-    /** بتاخد خريطة (اسم القالب → جذر شجرته) وترجع JSON فيه كل القوالب. */
     public static String jinjaTreesToJson(Map<String, TemplateNode> templateRoots) {
         StringBuilder sb = new StringBuilder("{\n");
         int i = 0;
@@ -135,10 +120,6 @@ public class AstJsonSerializer {
         sb.append(ind).append("}");
         return sb.toString();
     }
-
-    // ════════════════════════════════════════════════════════════════
-    //  Helper
-    // ════════════════════════════════════════════════════════════════
 
     private static String escape(String s) {
         if (s == null) return "";

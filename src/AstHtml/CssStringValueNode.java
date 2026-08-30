@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * قيمة نصية CSS (entre quotes).
- * مثال: 'Helvetica Neue', "Arial"
- */
+
 public class CssStringValueNode extends CssValueNode {
 
     private final String value;

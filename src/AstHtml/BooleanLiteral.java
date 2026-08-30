@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * true / false
- */
+
 public class BooleanLiteral extends ExpressionNode {
 
     private final boolean value;

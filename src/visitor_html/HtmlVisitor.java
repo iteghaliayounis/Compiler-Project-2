@@ -19,12 +19,10 @@ import symbol_table.SymbolTable;
 import symbol_table.SymbolTable.Kind;
 import symbol_table.SymbolTable.Symbol;
 
-/**
- * 🔥 محدّث: مدمج مع Symbol Table بالكامل (كل عقد Jinja تدخل الرموز المناسبة)
- */
+
 public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
 
-    // ====== Symbol Table Integration ======
+
 
     private final SymbolTable st = SymbolTable.getInstance();
 
@@ -53,7 +51,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
     }
 
 
-    // ====== Utility: إرجاع line و column من token ======
     private static int[] pos(Token t) {
         return new int[]{t.getLine(), t.getCharPositionInLine()};
     }
@@ -62,7 +59,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return new int[]{ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine()};
     }
 
-    /** يزور قائمة children ويرجع قائمة AstNode (متجاهلاً nulls). */
     private List<AstNode> visitAll(List<? extends ParserRuleContext> contexts) {
         List<AstNode> result = new ArrayList<>();
         for (ParserRuleContext ctx : contexts) {
@@ -72,15 +68,13 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return result;
     }
 
-    // ================================================================
-    // ====== Top-level ======
-    // ================================================================
+
     @Override
     public AstNode visitProgram(product_htmlParser.ProgramContext ctx) {
         int[] p = pos(ctx);
         TemplateNode template = new TemplateNode(p[0], p[1]);
 
-        //  NEW: إذا الاسم من الخارج مو الافتراضي (يعني ملف حقيقي)، نحافظ عليه
+
         boolean useRealName = !currentTemplateName.equals("default_template")
                 && !currentTemplateName.equals("htmlTest");
 
@@ -116,7 +110,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return template;
     }
 
-    /** فحص هل العنصر هو {% extends "..." %} */
+
     private boolean isExtendsBlock(ParseTree child) {
         if (child instanceof product_htmlParser.PrologContext) return false;
         String text = child.getText().toLowerCase();
@@ -128,9 +122,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return new TextNode(ctx.DOCTYPE().getText(), p[0], p[1]);
     }
 
-    // ================================================================
-    // ====== Content (المحتوى بين التاغات) ======
-    // ================================================================
 
     @Override
     public AstNode visitTextContent(product_htmlParser.TextContentContext ctx) {
@@ -157,9 +148,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return visit(ctx.jinja_block());
     }
 
-    // ================================================================
-    // ====== HTML Elements ======
-    // ================================================================
+
 
     @Override
     public AstNode visitStyleElemAlt(product_htmlParser.StyleElemAltContext ctx) {
@@ -263,17 +252,16 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitOpenTag(product_htmlParser.OpenTagContext ctx) {
-        return null;  // معالج ضمن visitContainerElement
+        return null;
     }
 
     @Override
     public AstNode visitCloseTag(product_htmlParser.CloseTagContext ctx) {
-        return null;  // معالج ضمن visitContainerElement
+        return null;
     }
 
-    // ================================================================
-    // ====== Attributes ======
-    // ================================================================
+
+    //  Attributes
 
     @Override
     public AstNode visitStyleAttr(product_htmlParser.StyleAttrContext ctx) {
@@ -296,10 +284,10 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String name = naCtx.TAG_NAME().getText();
 
         if (naCtx.attributeValue() == null) {
-            // boolean attribute
+
             return new AttributeNode(name, p[0], p[1]);
         }
-        // visit attributeValue
+
         AstNode valNode = visit(naCtx.attributeValue());
         if (valNode instanceof AttributeNode) {
             return valNode;
@@ -338,7 +326,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return new AttributeNode(name, p[0], p[1]);
     }
 
-    /** يجيب اسم الـ attribute من الـ parent NormalAttributeContext. */
+
     private String getAttrNameFromParent(ParserRuleContext ctx) {
         ParserRuleContext p = ctx.getParent();
         while (p != null) {
@@ -353,9 +341,8 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
     }
 
 
-    // ================================================================
-    // ====== Jinja Variables ({{ ... }}) ======
-    // ================================================================
+
+    //  Jinja Variables
 
     @Override
     public AstNode visitJinja_var(product_htmlParser.Jinja_varContext ctx) {
@@ -367,9 +354,8 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return new JinjaVarOutputNode(expr, p[0], p[1]);
     }
 
-    // ================================================================
-    // ====== Jinja Block Statements ({% ... %}) ======
-    // ================================================================
+
+    // ====== Jinja Block Statements
 
     @Override
     public AstNode visitJinjaExtendsStmt(product_htmlParser.JinjaExtendsStmtContext ctx) {
@@ -378,13 +364,12 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String raw = eCtx.JINJA_STRING().getText();
         String template = raw.substring(1, raw.length() - 1);
 
-        // سجّل الـ extends على القالب الحالي
+
         Symbol tmplSym = st.lookup(currentTemplateName);
         if (tmplSym != null) {
             tmplSym.setExtendsTemplate(template);
         }
 
-        // اسم فريد لكل extends (بسطره)
         st.insert("extends_" + template + "_L" + p[0], Kind.EXTENDS, "String", template, p[0]);
 
         return new ExtendsNode(template, p[0], p[1]);
@@ -396,7 +381,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String name = blockCtx.JINJA_ID(0).getText();
         BlockNode node = new BlockNode(name, p[0], p[1]);
 
-        // اسم الـ scope يبيّن لف أي قالب هاد البلوك
         st.allocate("block_" + name + " (" + currentTemplateName + ")");
         st.insert(name, Kind.BLOCK, "Block", null, p[0]);
 
@@ -417,7 +401,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
 
         ExpressionNode currentCond = null;
         List<AstNode> currentBody = new ArrayList<>();
-        String currentSection = null; // "if" | "elif" | "else"
+        String currentSection = null;
         int branchIndex = 0;
 
         for (int i = 0; i < ifCtx.getChildCount(); i++) {
@@ -430,7 +414,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
                     currentSection = "if";
 
                 } else if (type == product_htmlLexer.JINJA_ELIF) {
-                    // أقفلي الفرع السابق (if أو elif) قبل ما نبلش elif جديد
+
                     closeBranch(node, currentSection, currentCond, currentBody, p[0], branchIndex);
                     if ("if".equals(currentSection) || "elif".equals(currentSection)) branchIndex++;
                     currentBody = new ArrayList<>();
@@ -460,7 +444,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return node;
     }
 
-    /** يقفل الفرع الحالي (if/elif → addBranch، else → setElseBody) قبل ما نبلش الفرع الجاي. */
+
     private void closeBranch(IfNode node, String section, ExpressionNode cond,
                              List<AstNode> body, int line, int branchIndex) {
         if ("else".equals(section)) {
@@ -472,7 +456,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             node.addBranch(cond, body);
             st.free();
         }
-        // section == null → أول مرة، ما في شي نقفله
     }
 
     @Override
@@ -482,17 +465,15 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         ExpressionNode iterable = (ExpressionNode) visit(forCtx.jinjaExpression());
         ForNode node = new ForNode(iterable, p[0], p[1]);
 
-        // ====== Symbol Table: فتح scope للحلقة ======
         st.allocate("For_Loop_Line_" + p[0]);
 
-        // ====== إدخال متغيرات الحلقة كـ LOOP_VAR ======
+
         for (TerminalNode id : forCtx.forTarget().JINJA_ID()) {
             String varName = id.getText();
             node.addTarget(varName);
             st.insert(varName, Kind.LOOP_VAR, "Unknown", null, p[0]);
         }
 
-        // زيارة محتويات الحلقة (داخل الـ scope الجديد)
         List<product_htmlParser.ContentContext> allContent = forCtx.content();
         boolean hasElse = forCtx.JINJA_ELSE() != null;
 
@@ -501,7 +482,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
                 AstNode n = visit(allContent.get(i));
                 if (n != null) node.addBodyItem(n);
             }
-            // ====== فتح scope لـ for-else ======
+
             st.allocate("for_else_" + p[0]);
             List<AstNode> elseBody = new ArrayList<>();
             AstNode n = visit(allContent.get(allContent.size() - 1));
@@ -515,7 +496,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             }
         }
 
-        // ====== إغلاق scope الحلقة ======
+
         st.free();
 
         return node;
@@ -533,10 +514,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String var = setCtx.JINJA_ID().getText();
         ExpressionNode value = (ExpressionNode) visit(setCtx.jinjaExpression());
 
-        // ====== Symbol Table: إدخال متغير الـ set ======
-        // ★ تصحيح: لو القيمة رقم حرفي (زي {% set count = 0 %})، نخزّن قيمته الحقيقية
-        // بدل null، حتى DivisionByZeroChecker يقدر يعمل constant propagation عليها
-        // (كان دايمًا بيرجع null فـ"count / 0" ما كانت تنكشف أبداً).
+
         Object literalValue = (value instanceof NumberLiteral) ? ((NumberLiteral) value).getValue() : null;
         st.insert(var, Kind.SET_VAR, "Unknown", literalValue, p[0]);
 
@@ -554,7 +532,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             alias = incCtx.JINJA_ID().getText();
         }
 
-        // ====== Symbol Table: تسجيل القالب المُضمَّن ======
         st.insert("include_" + tmpl + "_" + p[0], Kind.INCLUDE, "String", tmpl, p[0]);
         Symbol tmplSym = st.lookup(currentTemplateName);
         if (tmplSym != null) {
@@ -572,7 +549,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String tmpl = raw.substring(1, raw.length() - 1);
         String alias = impCtx.JINJA_ID().getText();
 
-        // ====== Symbol Table: تسجيل الاستيراد + الاسم المستعار ======
         st.insert(alias, Kind.IMPORT, "Module", tmpl, p[0]);
 
         return new ImportNode(tmpl, alias, p[0], p[1]);
@@ -595,7 +571,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             }
             node.addImport(name, alias);
 
-            // ====== Symbol Table: إدخال الاسم المستورد ======
             st.insert(alias != null ? alias : name, Kind.IMPORT, "Symbol", tmpl + "::" + name, p[0]);
         }
         return node;
@@ -620,11 +595,10 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String name = mCtx.JINJA_ID().getText();
         MacroNode node = new MacroNode(name, p[0], p[1]);
 
-        // ====== Symbol Table: فتح scope للماكرو + إدخال الماكرو ======
+
         st.allocate("macro_" + name);
         st.insert(name, Kind.MACRO, "Macro", null, p[0]);
 
-        // إدخال وسائط الماكرو كـ MACRO_PARAM
         List<String> macroParams = new ArrayList<>();
         if (mCtx.jinjaMacroParams() != null) {
             for (product_htmlParser.JinjaMacroParamContext paramCtx :
@@ -641,7 +615,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             }
         }
 
-        // ربط وسائط الماكرو برمزه
+
         Symbol macroSym = st.lookup(name);
         if (macroSym != null) {
             macroSym.setMacroParameters(macroParams);
@@ -652,7 +626,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             if (n != null) node.addBodyItem(n);
         }
 
-        // ====== إغلاق scope الماكرو ======
+
         st.free();
 
         return node;
@@ -664,7 +638,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         product_htmlParser.JinjaWithContext wCtx = ctx.jinjaWith();
         WithNode node = new WithNode(p[0], p[1]);
 
-        // ====== Symbol Table: فتح scope للـ with ======
+
         st.allocate("with_" + p[0]);
 
         for (product_htmlParser.JinjaSetExprContext setCtx : wCtx.jinjaSetExpr()) {
@@ -672,7 +646,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             ExpressionNode value = (ExpressionNode) visit(setCtx.jinjaExpression());
             node.addAssignment(name, value);
 
-            // ====== إدخال متغيرات الـ with كـ SET_VAR ======
+
             st.insert(name, Kind.SET_VAR, "Unknown", null, p[0]);
         }
 
@@ -681,7 +655,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             if (n != null) node.addBodyItem(n);
         }
 
-        // ====== إغلاق scope الـ with ======
         st.free();
 
         return node;
@@ -694,7 +667,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         String filterName = fCtx.JINJA_ID().getText();
         FilterBlockNode node = new FilterBlockNode(filterName, p[0], p[1]);
 
-        // ====== Symbol Table: تسجيل الفلتر المستخدم ======
         if (st.lookup("filter_" + filterName) == null) {
             st.insert("filter_" + filterName, Kind.FILTER, "Filter", filterName, p[0]);
         }
@@ -706,7 +678,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             }
         }
 
-        // ====== فتح scope لجسم الـ filter block ======
         st.allocate("filter_block_" + filterName + "_" + p[0]);
 
         for (product_htmlParser.ContentContext c : fCtx.content()) {
@@ -724,9 +695,7 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return new TextNode(ctx.getText(), p[0], p[1]);
     }
 
-    // ================================================================
-    // ====== Jinja Expressions ======
-    // ================================================================
+
 
     @Override
     public AstNode visitJinjaExpression(product_htmlParser.JinjaExpressionContext ctx) {
@@ -898,7 +867,6 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
             String filterName = ctx.JINJA_ID(i).getText();
             FilterNode filterNode = new FilterNode(operand, filterName, p[0], p[1]);
 
-            // ====== Symbol Table: تسجيل الفلتر المستخدم ======
             if (st.lookup("filter_" + filterName) == null) {
                 st.insert("filter_" + filterName, Kind.FILTER, "Filter", filterName, p[0]);
             }
@@ -1087,9 +1055,8 @@ public class HtmlVisitor extends product_htmlParserBaseVisitor<AstNode> {
         return null;
     }
 
-    // ================================================================
+
     //  CSS
-    // ================================================================
 
     @Override
     public AstNode visitCssRule(product_htmlParser.CssRuleContext ctx) {

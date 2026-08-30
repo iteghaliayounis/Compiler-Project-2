@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * At-rule: @media, @keyframes, @import, @font-face
- */
+
 public class CssAtRuleNode extends CssNode {
 
     private final String keyword;

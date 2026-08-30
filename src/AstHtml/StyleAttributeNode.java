@@ -3,12 +3,6 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * خاصية style="..." inline.
- * مثال: <div style="color: red; margin: 10px;">
- *
- * - declarations: قائمة بـ CssDeclarationNode (نعيد استخدام نفس الـ AST nodes المستخدمة بـ <style>)
- */
 public class StyleAttributeNode extends AstNode {
 
     private final List<CssDeclarationNode> declarations = new ArrayList<>();

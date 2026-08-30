@@ -1,9 +1,6 @@
 package AstHtml;
 
-/**
- * identifier CSS (keyword value).
- * مثال: red, auto, flex, solid, border-box, none
- */
+
 public class CssIdentValueNode extends CssValueNode {
 
     private final String identifier;

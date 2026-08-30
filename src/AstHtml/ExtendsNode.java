@@ -2,9 +2,6 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * {% extends "base.html" %}
- */
 public class ExtendsNode extends StatementNode {
 
     private final String parentTemplate;

@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * تطبيق filter: expression | filterName(args)
- */
+
 public class FilterNode extends ExpressionNode {
 
     private final ExpressionNode operand;

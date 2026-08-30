@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% for x in items %} ... {% else %} ... {% endfor %}
- */
+
 public class ForNode extends StatementNode {
 
     private final List<String> targets = new ArrayList<>();

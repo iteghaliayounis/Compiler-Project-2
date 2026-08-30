@@ -17,26 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * الشخص 1 — جزء من Python Generator
- *
- * يحوّل عقدة AST تمثل قيمة (expression) إلى كائن Java حقيقي وقابل للاستخدام:
- *   StringLiteral   -> String
- *   IntegerLiteral   -> Integer
- *   FloatLiteral     -> Double
- *   BoolLiteral      -> Boolean
- *   NoneLiteral      -> null
- *   ListLiteral      -> List<Object>
- *   DictLiteral      -> Map<String,Object>   (المفاتيح كلها String لأن Pair.key نص)
- *   Identifier       -> يبحث عن قيمته بجدول المتغيرات المعروفة (knownVariables)
- *
- * أي عقدة تانية (نتيجة استدعاء دالة مثلاً، لسا ما قدرنا نحسبها بشكل ثابت)
- * بترجع null بدل ما تكسر البرنامج — هيك منطقي لأنه مش كل قيمة ممكن تُحسب
- * وقت التوليد الثابت (static generation).
- */
 public class LiteralEvaluator {
 
-    /** قيم المتغيرات المعروفة لحد هلق (المتغيرات اللي فسرناها قبل هاي النقطة). */
     private final Map<String, Object> knownVariables;
 
     public LiteralEvaluator(Map<String, Object> knownVariables) {
@@ -46,14 +28,13 @@ public class LiteralEvaluator {
     public Object evaluate(ASTNode node) {
         if (node == null) return null;
 
-        // ── القيم الأدبية المباشرة ──
+
         if (node instanceof StringLiteral)  return ((StringLiteral) node).value;
         if (node instanceof IntegerLiteral) return ((IntegerLiteral) node).value;
         if (node instanceof FloatLiteral)   return ((FloatLiteral) node).value;
         if (node instanceof BoolLiteral)    return ((BoolLiteral) node).value;
         if (node instanceof NoneLiteral)    return null;
 
-        // ── الحاويات (تحتاج تفريغ للطبقة الداخلية) ──
         if (node instanceof ListAtom) return evaluate(((ListAtom) node).listLiteral);
         if (node instanceof DictAtom) return evaluate(((DictAtom) node).dictLiteral);
 
@@ -73,45 +54,38 @@ public class LiteralEvaluator {
             return map;
         }
 
-        // ── معرّف بسيط (اسم متغير) ──
+
         if (node instanceof Identifier) {
             return knownVariables.get(((Identifier) node).name);
         }
 
-        // ── تعبير بين قوسين: (expr) — فك التغليف ومتابعة التقييم ──
+
         if (node instanceof ParenExpr) {
             return evaluate(((ParenExpr) node).expr);
         }
 
-        // ── عملية حسابية ثابتة: a + b، a - b، a * b، a / b (لو الطرفين أرقام) ──
         if (node instanceof ArithExpr) {
             return evaluateArithExpr((ArithExpr) node);
         }
 
-        // ── كل تعبير بيمر عبر call_chain بيترجم CallChainExpr حتى لو ما في استدعاء فعلي ──
         if (node instanceof CallChainExpr) {
             CallChainExpr cc = (CallChainExpr) node;
             if (cc.suffixes == null || cc.suffixes.isEmpty()) {
-                // ما في استدعاء/attribute حقيقي — بس تغليف، فك التغليف ومتابعة التقييم
+
                 return evaluate(cc.base);
             }
-            // فيه استدعاء دالة أو وصول attribute → قيمة ديناميكية، ما منقدر نحسبها بشكل ثابت
+
             return null;
         }
 
         return null;
     }
 
-    /**
-     * يحسب عملية حسابية ثابتة (+ - * / %) بس لو كل الأطراف أرقام حقيقية
-     * (Integer أو Double). لو أي طرف مش رقم (نتيجة دالة مثلاً) بيرجع null
-     * بدل ما يكسر البرنامج — منطقي لأنه هاي القيمة مش قابلة للحساب الثابت.
-     */
     private Object evaluateArithExpr(ArithExpr node) {
         List<Object> values = new ArrayList<>();
         for (ASTNode term : node.terms) {
             Object v = evaluate(term);
-            if (!(v instanceof Number)) return null; // أي طرف غير رقمي → نوقف الحساب الثابت
+            if (!(v instanceof Number)) return null;
             values.add(v);
         }
 
@@ -128,7 +102,7 @@ public class LiteralEvaluator {
                 case "*": result *= next; break;
                 case "/": result /= next; isFloat = true; break;
                 case "%": result %= next; break;
-                default: return null; // عملية غير مدعومة (** مثلاً) — نتجاهلها بأمان
+                default: return null;
             }
         }
 

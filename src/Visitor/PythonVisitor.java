@@ -46,14 +46,12 @@ import java.util.List;
 
 public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
-    // ── Symbol table (stack-based) ───────────────────────────────────────────
+
     private final SymbolTable symbolTable = new SymbolTable();
 
     public SymbolTable getSymbolTable() { return symbolTable; }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  program
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitProgram(ProductParser.ProgramContext ctx) {
         List<ASTNode> elements = new ArrayList<>();
@@ -72,16 +70,14 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visit(ParseTree tree) { return super.visit(tree); }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  import_stmt  ── fills symbol table
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitImportStmt(ProductParser.ImportStmtContext ctx) {
         List<String> modules = new ArrayList<>();
         for (ProductParser.Module_nameContext m : ctx.module_name()) {
             String mod = moduleNameStr(m);
             modules.add(mod);
-            // insert: name=module, kind=IMPORT, type=MODULE, value=null
+
             symbolTable.insert(mod, Kind.IMPORT, "MODULE", null, m.getStart().getLine());
         }
         return new ImportStmt(modules, ctx.getStart().getLine());
@@ -94,15 +90,13 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         for (TerminalNode id : ctx.ID()) {
             String name = id.getText();
             ids.add(name);
-            // insert: each imported name, kind=IMPORT, type=from <module>
+
             symbolTable.insert(name, Kind.IMPORT, "from " + module, null, id.getSymbol().getLine());
         }
         return new FromImportStmt(module, ids, ctx.getStart().getLine());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  statement delegates
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitSimpleStmt(ProductParser.SimpleStmtContext ctx)   { return visit(ctx.simple_stmt()); }
 
@@ -115,7 +109,6 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new SimpleStmt(inner, ctx.getStart().getLine());
     }
 
-    // ─── compound_stmt ───────────────────────────────────────────────────
     @Override
     public ASTNode visitFuncDef(ProductParser.FuncDefContext ctx)   { return visit(ctx.func_def()); }
     @Override
@@ -123,9 +116,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitTryStmt(ProductParser.TryStmtContext ctx)   { return visit(ctx.try_stmt()); }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  func_def  ── push/pop scope, insert function + parameters
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitFunc_def(ProductParser.Func_defContext ctx) {
         List<Decorator> decorators = new ArrayList<>();
@@ -136,17 +127,17 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         String funcName = ctx.ID().getText();
         int    line     = ctx.getStart().getLine();
 
-        // ── insert function symbol in the CURRENT (outer) scope ──────────
+
         symbolTable.insert(funcName, Kind.FUNCTION, "FUNCTION", null, line);
 
-        // ──  Dynamic Route Detection (Flask Specific Semantic) ─────────
+
         for (Decorator d : decorators) {
             if (d.name != null && d.name.getParts().size() >= 2) {
                 String decoratorAction = d.name.getParts().get(d.name.getParts().size() - 1);
                 if ("route".equals(decoratorAction)) {
                     Symbol funcSym = symbolTable.lookup(funcName);
                     if (funcSym != null) {
-                        funcSym.setKind(Kind.ROUTE_FUNCTION); // تغيير النوع
+                        funcSym.setKind(Kind.ROUTE_FUNCTION);
 
 
                         if (d.args != null && !d.args.args.isEmpty()) {
@@ -155,7 +146,6 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
                                 ASTNode expr = ((ExprArg) firstArg).expr;
                                 String routePath = null;
 
-                                // 🚀 Unwrap الـ AST عشان نوصل للنص الحقيقي
                                 if (expr instanceof StringLiteral) {
                                     routePath = ((StringLiteral) expr).value;
                                 } else if (expr instanceof CallChainExpr) {
@@ -175,14 +165,14 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
                 }
             }
         }
-        // ── open a new scope for this function ───────────────────────────
+
         symbolTable.pushScope(funcName);
-        // ── parameters ───────────────────────────────────────────────────
+
         Parameters params = ctx.parameters() != null
                 ? (Parameters) visit(ctx.parameters())
                 : new Parameters(new ArrayList<>(), line);
 
-        // ── body ─────────────────────────────────────────────────────────
+
         List<ASTNode> body = new ArrayList<>();
         for (ProductParser.StatementContext s : ctx.statement()) {
             ASTNode n = visit(s);
@@ -209,21 +199,17 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new ModuleName(parts, ctx.getStart().getLine());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  parameters  ── insert each param as PARAMETER
-    // ═══════════════════════════════════════════════════════════════════════
     @Override
     public ASTNode visitParameters(ProductParser.ParametersContext ctx) {
         List<String> names = new ArrayList<>();
 
-        // نمر على الأبناء بشكل متسلسل عشان نلتقط Type Hints (مثل pid: int)
+
         for (int i = 0; i < ctx.children.size(); i++) {
             ParseTree child = ctx.children.get(i);
 
             if (child instanceof TerminalNode) {
                 int tokenType = ((TerminalNode) child).getSymbol().getType();
 
-                // إذا كان الابن حرف عادي (اسم المتغير)
                 if (tokenType == ProductLexer.ID) {
                     String paramName = child.getText();
                     names.add(paramName);
@@ -246,9 +232,9 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new Parameters(names, ctx.getStart().getLine());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+
     //  small_stmt
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitReturnStmt(ProductParser.ReturnStmtContext ctx) { return visit(ctx.return_stmt()); }
     @Override
@@ -260,7 +246,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
     public ASTNode visitReturn_stmt(ProductParser.Return_stmtContext ctx) {
         ASTNode expr = ctx.expr() != null ? visit(ctx.expr()) : null;
 
-        // ── اكتشف render_template ──
+
         if (expr instanceof CallChainExpr) {
             tryRegisterRenderTemplate((CallChainExpr) expr, ctx.getStart().getLine());
         }
@@ -276,7 +262,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBreakStmt(ProductParser.BreakStmtContext ctx) {
-        // لو ما عندكن كلاس BreakStmt بالـ AST، ممكن ترجعي null أو أي عقدة بسيطة
+
         return null;
     }
 
@@ -290,9 +276,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return null;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  expr_stmt  ── detect assignments and insert/update symbol table
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitExpr_stmt(ProductParser.Expr_stmtContext ctx) {
         ASTNode target = visit(ctx.target());
@@ -325,7 +309,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
             return ((TargetID) target).name;
         }
         if (target instanceof TargetCall) {
-            ASTNode call = ((TargetCall) target).callChain;  // تأكد من اسم الحقل في كلاس TargetCall
+            ASTNode call = ((TargetCall) target).callChain;
             if (call instanceof CallChainExpr) {
                 CallChainExpr cc = (CallChainExpr) call;
                 if (cc.base instanceof Identifier) {
@@ -343,18 +327,16 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitTargetCall(ProductParser.TargetCallContext ctx) {
-        // 1. قراءة اسم المتغير (ID) ورقم السطر
+
         String name = ctx.ID().getText();
         int line = ctx.getStart().getLine();
 
-        // 2. إنشاء الـ Base (Identifier)
+
         Identifier base = new Identifier(name, line);
 
-        // 3. إنشاء قائمة الـ Suffixes
+
         List<CallSuffix> suffixes = new ArrayList<>();
 
-        // 4. مرور على كل call_suffix (سواء كانت نقطة . أو أقواس ())
-        //    الـ Visitor تلقائياً رح يبني الـ FunctionCall أو AttributeAccess ويرجعهن
         if (ctx.call_suffix() != null) {
             for (ProductParser.Call_suffixContext cs : ctx.call_suffix()) {
                 ASTNode visitedNode = visit(cs);
@@ -364,13 +346,12 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
             }
         }
 
-        // 5. بناء الـ CallChainExpr ووضعه داخل TargetCall
         return new TargetCall(new CallChainExpr(base, suffixes, line), line);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  flow_stmt  ── for-loop variable
-    // ═══════════════════════════════════════════════════════════════════════
+
+    //  flow_stmt
+
     @Override
     public ASTNode visitIfStmt(ProductParser.IfStmtContext ctx) {
         ASTNode cond = visit(ctx.expr());
@@ -388,7 +369,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         ASTNode   iterable = visit(ctx.expr());
         int       line     = ctx.getStart().getLine();
 
-        // insert loop variable
+
         if (symbolTable.lookup(var) == null) {
             symbolTable.insert(var, Kind.VARIABLE, "UNKNOWN", null, line);
         }
@@ -401,9 +382,6 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new ForStmt(var, iterable, body, line);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  try_stmt
-    // ═══════════════════════════════════════════════════════════════════════
     @Override
     public ASTNode visitTry_stmt(ProductParser.Try_stmtContext ctx) {
         List<ASTNode>            tryBlock     = new ArrayList<>();
@@ -453,9 +431,9 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new TryStmt(tryBlock, catches, finallyBlock, ctx.getStart().getLine());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+
     //  expr
-    // ═══════════════════════════════════════════════════════════════════════
+
     @Override
     public ASTNode visitGeneratorExpr(ProductParser.GeneratorExprContext ctx) { return visit(ctx.generator_expr()); }
 
@@ -508,7 +486,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new ArithExpr(terms, ops, ctx.getStart().getLine());
     }
 
-    // ─── call_chain ──────────────────────────────────────────────────────
+
     @Override
     public ASTNode visitCall_chain(ProductParser.Call_chainContext ctx) {
         ASTNode base = visit(ctx.atom());
@@ -534,7 +512,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new IndexAccess(visit(ctx.expr()), ctx.getStart().getLine());
     }
 
-    // ─── atom ────────────────────────────────────────────────────────────
+    // atom
     @Override
     public ASTNode visitIdentifier(ProductParser.IdentifierContext ctx) {
         return new Identifier(ctx.ID().getText(), ctx.getStart().getLine());
@@ -558,7 +536,6 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new ParenExpr(visit(ctx.expr()), ctx.getStart().getLine());
     }
 
-    // ─── generator_expr ──────────────────────────────────────────────────
     @Override
     public ASTNode visitGenerator_expr(ProductParser.Generator_exprContext ctx) {
         return new GeneratorExpr((GenExpr) visit(ctx.gen_expr()), ctx.getStart().getLine());
@@ -576,7 +553,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
         return new GenExpr(expr, var, iterable, cond, ctx.getStart().getLine());
     }
-    // ─── arg_list / arg ──────────────────────────────────────────────────
+
     @Override
     public ASTNode visitArg_list(ProductParser.Arg_listContext ctx) {
         List<Arg> args = new ArrayList<>();
@@ -594,7 +571,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new AssignArg(ctx.ID().getText(), visit(ctx.expr()), ctx.getStart().getLine());
     }
 
-    // ─── literals ────────────────────────────────────────────────────────
+    //  literals
     @Override
     public ASTNode visitStringLiteral(ProductParser.StringLiteralContext ctx) {
         String raw = ctx.STRING().getText();
@@ -622,7 +599,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new NoneLiteral(ctx.getStart().getLine());
     }
 
-    // ─── containers ──────────────────────────────────────────────────────
+
     @Override
     public ASTNode visitList_literal(ProductParser.List_literalContext ctx) {
         for (int i = 0; i < ctx.children.size(); i++) {
@@ -660,8 +637,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         FunctionCall fc = (FunctionCall) first;
         if (fc.args == null || fc.args.args.isEmpty()) return;
 
-        // ── اسم القالب (أول arg) ──
-// ── اسم القالب (أول arg) ──
+
         String templateName = null;
         Arg firstArg = fc.args.args.get(0);
         if (firstArg instanceof ExprArg) {
@@ -677,7 +653,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
 
         if (templateName == null) return;
 
-        // ── المتغيرات الممررة (AssignArg مثل products=products) ──
+
         List<String> passedVars = new ArrayList<>();
         for (int i = 1; i < fc.args.args.size(); i++) {
             Arg arg = fc.args.args.get(i);
@@ -686,7 +662,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
             }
         }
 
-        // ── تخزين في الـ Symbol Table ──
+
         String key = "render_" + templateName;
         if (symbolTable.lookup(key) == null) {
             Symbol sym = new Symbol(key, templateName, passedVars, line);
@@ -699,14 +675,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return new Pair(ctx.STRING().getText(), visit(ctx.expr()), ctx.getStart().getLine());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  Type / Value inference helpers
-    // ═══════════════════════════════════════════════════════════════════════
 
-    /**
-     * Tries to infer a type string from a visited AST node.
-     * Returns "UNKNOWN" when the type cannot be statically determined.
-     */
     private String inferType(ASTNode node) {
         if (node == null) return "UNKNOWN";
 
@@ -715,17 +684,17 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
             if (cc.suffixes == null || cc.suffixes.isEmpty())
                 return inferType(cc.base);
 
-            // ── تحقق من آخر suffix ──
+
             CallSuffix lastSuffix = cc.suffixes.get(cc.suffixes.size() - 1);
 
-            // إذا آخر حاجة .strip() أو .get() → STRING
+
             if (lastSuffix instanceof AttributeAccess) {
                 String attr = ((AttributeAccess) lastSuffix).attribute;
                 if ("strip".equals(attr) || "get".equals(attr) || "lower".equals(attr)
                         || "upper".equals(attr) || "format".equals(attr)) return "STRING";
             }
 
-            // إذا آخر حاجة FunctionCall وقبله attribute access
+
             if (lastSuffix instanceof FunctionCall && cc.suffixes.size() >= 2) {
                 CallSuffix prev = cc.suffixes.get(cc.suffixes.size() - 2);
                 if (prev instanceof AttributeAccess) {
@@ -735,7 +704,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
                 }
             }
 
-            // دوال معروفة في الـ base
+
             if (cc.base instanceof Identifier) {
                 String name = ((Identifier) cc.base).name;
                 if ("int".equals(name))   return "INT";
@@ -761,9 +730,7 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         return "UNKNOWN";
     }
 
-    /**
-     * Tries to extract a literal value for simple cases; returns null otherwise.
-     */
+
     private Object inferValue(ASTNode node) {
         if (node == null) return null;
 
@@ -790,11 +757,11 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         Identifier id = (Identifier) callExpr.base;
         if (!"render_template".equals(id.name)) return;
 
-        // استخراج اسم القالب (أول argument)
+
         String templateName = null;
         List<String> passedVars = new ArrayList<>();
 
-        // نفترض أن أول Arg هو اسم القالب (StringLiteral)
+
         if (!callExpr.suffixes.isEmpty()) {
             CallSuffix suffix = callExpr.suffixes.get(0);
             if (suffix instanceof FunctionCall) {
@@ -812,13 +779,12 @@ public class PythonVisitor extends ProductParserBaseVisitor<ASTNode> {
         }
 
         if (templateName != null) {
-            // جمع المتغيرات الممررة (AssignArg مثل products=products)
-            // ... (يمكن توسيعه لاحقاً)
+
             symbolTable.insert(new Symbol("render_" + templateName, templateName, passedVars, line));
             System.out.println("[INFO] Registered Template: " + templateName + " with vars: " + passedVars);
         }
     }
-    // ─── helper ──────────────────────────────────────────────────────────
+
     private String moduleNameStr(ProductParser.Module_nameContext ctx) {
         StringBuilder sb = new StringBuilder();
         for (TerminalNode id : ctx.ID()) {

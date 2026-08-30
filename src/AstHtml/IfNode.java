@@ -3,13 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {% if cond %} ... {% elif cond2 %} ... {% else %} ... {% endif %}
- *
- * - conditions: قائمة الشروط (الأول للـ if، الباقي للـ elif)
- * - bodies: قائمة الأجساد بنفس ترتيب الشروط
- * - elseBody: جسم الـ else (ممكن null)
- */
+
 public class IfNode extends StatementNode {
 
     private final List<ExpressionNode> conditions = new ArrayList<>();

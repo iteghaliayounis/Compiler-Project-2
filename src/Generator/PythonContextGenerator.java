@@ -27,20 +27,18 @@ import java.util.Map;
 
 public class PythonContextGenerator {
 
-    // ★ تغيير 1: كل قالب صار عنده List من الـ contexts (مش Map واحد)
+
     private final Map<String, Object> globalVariables = new LinkedHashMap<>();
     private final Map<String, List<Map<String, Object>>> templateContexts = new LinkedHashMap<>();
     private final List<String> log = new ArrayList<>();
 
-    // ★ تغيير 2: جدول جديد يربط اسم متغير محلي (زي "product") باسم القائمة يلي طلع منها (زي "products")
+
     private final Map<String, String> singleItemFromList = new LinkedHashMap<>();
 
-    // ★ جديد: خريطة اسم الدالة (endpoint) → نمط الـ route
-    // مثال: "product_detail" -> "/product/<int:pid>"
+
     private final Map<String, String> routes = new LinkedHashMap<>();
 
-    // ★ جديد: خريطة اسم الدالة (endpoint) → اسم القالب اللي بترندره
-    // مثال: "product_detail" -> "product_details.html"
+
     private final Map<String, String> endpointToTemplate = new LinkedHashMap<>();
 
     private Program rootNode;
@@ -54,7 +52,7 @@ public class PythonContextGenerator {
     public List<String> getLog() { return log; }
     public String getAstTreeString() { return rootNode != null ? rootNode.toString(0) : ""; }
 
-    // ★ تغيير 4: getContextFor صار بسيط وواضح، بدون تخمين بالأسماء
+
     public List<Map<String, Object>> getContextFor(String templateName) {
         List<Map<String, Object>> ctx = templateContexts.get(templateName);
         if (ctx == null) {
@@ -69,7 +67,7 @@ public class PythonContextGenerator {
         evaluator = new LiteralEvaluator(globalVariables);
 
         collectTopLevelVariables(root.elements);
-        collectRoutes(root.elements);       // ★ جديد
+        collectRoutes(root.elements);
         collectRenderCalls(root.elements);
 
         log.add("[DONE] تم استخراج " + globalVariables.size() + " متغير عام و"
@@ -99,7 +97,7 @@ public class PythonContextGenerator {
             }
         }
     }
-    // ★ تابع جديد كامل
+
     private void collectRoutes(List<ASTNode> elements) {
         for (ASTNode el : elements) {
             if (!(el instanceof FuncDef)) continue;
@@ -124,7 +122,7 @@ public class PythonContextGenerator {
         }
     }
 
-    // ★ تابع جديد كامل — نفس منطق extractTemplateName بس عام لأي StringLiteral
+
     private String extractStringValue(ASTNode expr) {
         if (expr instanceof CallChainExpr) {
             CallChainExpr cc = (CallChainExpr) expr;
@@ -138,7 +136,7 @@ public class PythonContextGenerator {
         if (body == null) return;
         for (ASTNode stmt : body) {
 
-            // ★ تغيير 5: هاد الجزء الجديد كامل — يكتشف "product = next(p for p in products ...)"
+
             ExprStmt assign = unwrapExprStmt(stmt);
             if (assign != null && assign.target instanceof TargetID && assign.value != null) {
                 String sourceList = detectSingleItemSource(assign.value);
@@ -165,7 +163,7 @@ public class PythonContextGenerator {
         }
     }
 
-    // ★ تابع جديد كامل — نضيفه تحت inspectBody مباشرة
+
     private String detectSingleItemSource(ASTNode valueNode) {
         if (!(valueNode instanceof CallChainExpr)) return null;
         CallChainExpr cc = (CallChainExpr) valueNode;
@@ -190,7 +188,7 @@ public class PythonContextGenerator {
         return null;
     }
 
-    // ★ تغيير 6: هاد التابع صار بالكامل مختلف عن القديم — استبدليه كامل
+
     private void inspectStatementForRender(ASTNode stmt, String endpointName) {
         ReturnStmt returnStmt = unwrapReturnStmt(stmt);
         if (returnStmt == null || returnStmt.value == null) return;
@@ -207,8 +205,6 @@ public class PythonContextGenerator {
         String templateName = extractTemplateName(fc.args.args.get(0));
         if (templateName == null) return;
 
-        // ★ جديد: نربط اسم الـ endpoint (الدالة) باسم القالب اللي بيرندره
-        // عشان نقدر لاحقًا نطابق url_for('endpoint', ...) مع اسم الملف الناتج الحقيقي
         if (endpointName != null) {
             endpointToTemplate.put(endpointName, templateName);
         }

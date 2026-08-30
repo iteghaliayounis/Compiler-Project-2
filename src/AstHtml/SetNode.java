@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * {% set var = expr %}
- */
+
 public class SetNode extends StatementNode {
 
     private final String variable;

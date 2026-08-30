@@ -3,9 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <style> ... CSS ... </style>
- */
+
 public class StyleElementNode extends HtmlNode {
 
     private final List<CssNode> statements = new ArrayList<>();

@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * none / null
- */
+
 public class NoneLiteral extends ExpressionNode {
 
     public NoneLiteral(int line, int column) {

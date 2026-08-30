@@ -2,9 +2,7 @@ package AstHtml;
 
 import java.util.List;
 
-/**
- * وصول لخاصية: object.attribute
- */
+
 public class AttributeAccessNode extends ExpressionNode {
 
     private final ExpressionNode object;

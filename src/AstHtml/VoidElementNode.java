@@ -3,10 +3,7 @@ package AstHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * عنصر void (بدون تاغ إغلاق): <br>, <img src="...">, <input type="text">, <meta charset="UTF-8">
- * أو self-closing tag: <div/>, <my-component/>
- */
+
 public class VoidElementNode extends HtmlNode {
 
     private final String tagName;
