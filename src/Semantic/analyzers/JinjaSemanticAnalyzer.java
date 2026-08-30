@@ -5,62 +5,70 @@ import Semantic.checkers.Jinja.DivisionByZeroChecker;
 import Semantic.checkers.Jinja.ScopeChecker;
 import Semantic.checkers.Jinja.UndefinedVariableChecker;
 import Semantic.checkers.Jinja.TypeErrorChecker;
+import Semantic.checkers.Jinja.WrongArgumentsChecker;        // ← راما
+import Semantic.checkers.Jinja.InvalidFunctionCallChecker;   // ← راما
 import Semantic.handlers.SemanticErrorHandler;
 import java.util.Set;
-import symbol_table.SymbolTable;
 
-/**
- * JinjaSemanticAnalyzer — مدير أخطاء Jinja2
- *
- * يدير الـ Checkers التالية:
- *   1. UndefinedVariableChecker  ← غالية ✅ (موجود مسبقاً)
- *   2. TypeErrorChecker          ← رؤى (جديد)
- *
- * ملاحظة: Type Mismatch للجينجا (فلاتر) يتم في طبقة الـ Bridge
- *         (FilterTypeMismatchChecker) وليس هنا.
- */
+
 public class JinjaSemanticAnalyzer {
 
     private final UndefinedVariableChecker undefinedChecker;
-    private final TypeErrorChecker         typeErrorChecker;        // ← جديد
+    private final TypeErrorChecker         typeErrorChecker;        // ← رؤى
     private final ScopeChecker             scopeChecker;
     private final DivisionByZeroChecker    divisionByZeroChecker;
 
-    // نحتاج Jinja ST لتمريرها لـ TypeErrorChecker
-    private final SymbolTable jinjaST;
 
-    public JinjaSemanticAnalyzer(SymbolTable jinjaST, SemanticErrorHandler sharedHandler) {
+    private final WrongArgumentsChecker       wrongArgumentsChecker;
+    private final InvalidFunctionCallChecker  invalidFunctionCallChecker;
+
+    private final symbol_table.SymbolTable jinjaST;
+    private final SymbolTable.SymbolTable pythonST;
+    public JinjaSemanticAnalyzer(symbol_table.SymbolTable jinjaST,
+                                 SymbolTable.SymbolTable pythonST,
+                                 SemanticErrorHandler sharedHandler) {
         this.jinjaST = jinjaST;
+        this.pythonST = pythonST;
 
-        // Existing checker (غالية) — لا يحتاج jinjaST لأنه يدير scopes داخلياً
         this.undefinedChecker = new UndefinedVariableChecker(sharedHandler);
 
-        // New checker (رؤى) — يحتاج jinjaST للاستعلام عن أنواع المتغيرات
         this.typeErrorChecker = new TypeErrorChecker(jinjaST, sharedHandler);
 
         this.scopeChecker = new ScopeChecker(jinjaST, sharedHandler);
         this.divisionByZeroChecker = new DivisionByZeroChecker(jinjaST, sharedHandler);
+
+
+        this.wrongArgumentsChecker        = new WrongArgumentsChecker(sharedHandler);
+        this.invalidFunctionCallChecker   = new InvalidFunctionCallChecker(jinjaST, pythonST, sharedHandler);
     }
 
-    /**
-     * Constructor قديم محافظ على التوافق الخلفي
-     * (يستخدم SymbolTable.getInstance() داخلياً)
-     */
+
+    public JinjaSemanticAnalyzer(symbol_table.SymbolTable jinjaST, SemanticErrorHandler sharedHandler) {
+        this(jinjaST, (SymbolTable.SymbolTable) null, sharedHandler);
+    }
+
+
     public JinjaSemanticAnalyzer(SemanticErrorHandler sharedHandler) {
-        this(SymbolTable.getInstance(), sharedHandler);
+        this(symbol_table.SymbolTable.getInstance(), (SymbolTable.SymbolTable) null, sharedHandler);
     }
 
     public void analyze(AstNode root) {
         System.out.println("\n[Semantic Analysis] Running Jinja checks...");
 
-        // 1. Undefined Variable (غالية)
+
         undefinedChecker.check(root);
 
-        // 2. Type Error (رؤى) — العمليات على أنواع خاطئة في القوالب
         typeErrorChecker.check(root);
 
         scopeChecker.check(root);
         divisionByZeroChecker.check(root);
+
+
+        wrongArgumentsChecker.check(root);
+
+
+        invalidFunctionCallChecker.check(root);
+        // ───────────────────────────────────────────────────────────────
     }
 
     public void addFlaskPassedVariable(String varName) {
