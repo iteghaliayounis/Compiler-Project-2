@@ -18,11 +18,17 @@ import symbol_table.SymbolTable;
  *
  * ملاحظة: Type Mismatch للجينجا (فلاتر) يتم في طبقة الـ Bridge
  *         (FilterTypeMismatchChecker) وليس هنا.
+ *
+ * ملاحظة إضافية: Invalid Attribute Access (AttributeError) للجينجا
+ *         يتم أيضاً في طبقة الـ Bridge (InvalidAttributeAccessChecker
+ *         تحت checkers/flask) وليس هنا — لنفس سبب FilterTypeMismatchChecker:
+ *         يحتاج fallback لجدول رموز بايثون (pythonST) لمعرفة أنواع
+ *         المتغيرات الممرّرة مباشرة من Flask.
  */
 public class JinjaSemanticAnalyzer {
 
     private final UndefinedVariableChecker undefinedChecker;
-    private final TypeErrorChecker         typeErrorChecker;        // ← جديد
+    private final TypeErrorChecker         typeErrorChecker;
     private final ScopeChecker             scopeChecker;
     private final DivisionByZeroChecker    divisionByZeroChecker;
 
