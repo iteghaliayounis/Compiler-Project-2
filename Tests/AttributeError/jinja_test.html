@@ -1,37 +1,22 @@
 {% extends "base.html" %}
 
-<!-- ==========================================================
-     اختبار معزول لخطأ Invalid Attribute Access (AttributeError)
-     Jinja2 Semantic Analysis (محاكاة سلوك بايثون الصارم)
-     ========================================================== -->
+
 
 <html>
 <body>
 
-<!-- ─────────────────────────────────────────────
-     1. أخطاء AttributeError الأساسية (المتوقع ظهورها)
-     ───────────────────────────────────────────── -->
 
-<!-- Test 1: name هي str (ممررة من Flask)، push مش موجودة -->
-<!-- المتوقع: AttributeError: 'str' object has no attribute 'push' -->
 <p>{{ name.push }}</p>
 
-<!-- Test 2: items هي list (ممررة من Flask)، foo مش موجودة -->
-<!-- المتوقع: AttributeError: 'list' object has no attribute 'foo' -->
 <p>{{ items.foo }}</p>
 
-<!-- ─────────────────────────────────────────────
-     2. حالات صحيحة (يجب ألا تطلع أي AttributeError)
-     ───────────────────────────────────────────── -->
 
-<!-- Test 3: name.upper موجودة فعلاً على str -->
+
 <p>{{ name.upper }}</p>
 
-<!-- Test 4: items.append موجودة فعلاً على list -->
 <p>{{ items.append }}</p>
 
-<!-- Test 5: نوع غير معروف وقت التحليل — لازم ما يطلع AttributeError
-     (رح يطلع NameError من UndefinedVariableChecker بدلاً منه، وهاد طبيعي ومقصود) -->
+
 <p>{{ some_undefined_thing.whatever }}</p>
 
 </body>

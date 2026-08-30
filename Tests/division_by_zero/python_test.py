@@ -3,10 +3,6 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 
-# TEST 1 — قسمة مباشرة على صفر (literal)
-# متوقع: ZeroDivisionError: division by zero
-
-
 @app.route("/direct-div")
 def direct_div():
     x = 10 / 0
@@ -14,19 +10,12 @@ def direct_div():
 
 
 
-# TEST 2 — modulo مباشر على صفر (literal)
-# متوقع: ZeroDivisionError: integer division or modulo by zero
-
 
 @app.route("/direct-mod")
 def direct_mod():
     x = 10 % 0
     return str(x)
 
-
-
-# TEST 3 — Constant Propagation: متغير قيمته صفر ثم قسمة عليه
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/const-div")
@@ -37,9 +26,6 @@ def const_div():
 
 
 
-# TEST 4 — Constant Propagation مع modulo
-# متوقع: ZeroDivisionError: integer division or modulo by zero
-
 
 @app.route("/const-mod")
 def const_mod():
@@ -49,7 +35,6 @@ def const_mod():
 
 
 
-# TEST 5 — يجب ألا يبلّغ: القاسم قيمته غير صفرية معروفة
 
 
 @app.route("/safe-const")
@@ -60,7 +45,6 @@ def safe_const():
 
 
 
-# TEST 6 — يجب ألا يبلّغ: القاسم متغير مجهول القيمة وقت الـ compile (UNKNOWN)
 
 
 @app.route("/unknown-divisor")
@@ -70,7 +54,6 @@ def unknown_divisor():
 
 
 
-# TEST 7 — يجب ألا يبلّغ: إعادة تعيين المتغير قبل الاستخدام (constant propagation يحدّث القيمة)
 
 
 @app.route("/reassigned")
@@ -81,9 +64,6 @@ def reassigned():
     return str(x)
 
 
-
-# TEST 8 — قسمة على صفر داخل if
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/inside-if")
@@ -96,9 +76,6 @@ def inside_if():
 
 
 
-# TEST 9 — قسمة على صفر داخل for
-# متوقع: ZeroDivisionError: division by zero
-
 
 @app.route("/inside-for")
 def inside_for():
@@ -108,9 +85,6 @@ def inside_for():
     return "OK"
 
 
-
-# TEST 10 — قسمة على صفر داخل try/except
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/inside-try")
@@ -123,8 +97,6 @@ def inside_try():
 
 
 
-# TEST 11 — سلسلة قسمة متتالية تنتهي بصفر (a / b / c)
-# متوقع: ZeroDivisionError: division by zero
 
 
 @app.route("/chained")
@@ -132,10 +104,6 @@ def chained():
     x = 100 / 5 / 0
     return str(x)
 
-
-
-# TEST 12 — يجب ألا يبلّغ: متغير بنفس الاسم بدالة أخرى قيمته صفر، ما لازم يسرّب لهاد الدالة
-# (كل دالة عندها knownConstants مستقلة عن الدوال التانية)
 
 
 @app.route("/leak-a")
