@@ -10,10 +10,6 @@ import Semantic.checkers.Jinja.InvalidFunctionCallChecker;
 import Semantic.handlers.SemanticErrorHandler;
 import java.util.Set;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
 public class JinjaSemanticAnalyzer {
 
     private final UndefinedVariableChecker undefinedChecker;
@@ -21,11 +17,6 @@ public class JinjaSemanticAnalyzer {
 
     private final ScopeChecker             scopeChecker;
     private final DivisionByZeroChecker    divisionByZeroChecker;
-
-<<<<<<< HEAD
-    private final SymbolTable jinjaST;
-=======
->>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
 
     private final WrongArgumentsChecker       wrongArgumentsChecker;
     private final InvalidFunctionCallChecker  invalidFunctionCallChecker;
@@ -39,10 +30,6 @@ public class JinjaSemanticAnalyzer {
         this.pythonST = pythonST;
 
         this.undefinedChecker = new UndefinedVariableChecker(sharedHandler);
-<<<<<<< HEAD
-=======
-
->>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
         this.typeErrorChecker = new TypeErrorChecker(jinjaST, sharedHandler);
 
         this.scopeChecker = new ScopeChecker(jinjaST, sharedHandler);
@@ -53,15 +40,10 @@ public class JinjaSemanticAnalyzer {
         this.invalidFunctionCallChecker   = new InvalidFunctionCallChecker(jinjaST, pythonST, sharedHandler);
     }
 
-<<<<<<< HEAD
-=======
-
     public JinjaSemanticAnalyzer(symbol_table.SymbolTable jinjaST, SemanticErrorHandler sharedHandler) {
         this(jinjaST, (SymbolTable.SymbolTable) null, sharedHandler);
     }
 
-
->>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
     public JinjaSemanticAnalyzer(SemanticErrorHandler sharedHandler) {
         this(symbol_table.SymbolTable.getInstance(), (SymbolTable.SymbolTable) null, sharedHandler);
     }
@@ -69,13 +51,7 @@ public class JinjaSemanticAnalyzer {
     public void analyze(AstNode root) {
         System.out.println("\n[Semantic Analysis] Running Jinja checks...");
 
-<<<<<<< HEAD
         undefinedChecker.check(root);
-=======
-
-        undefinedChecker.check(root);
-
->>>>>>> d3db31e57ef184a9ccb975529d83323ce81cf1f1
         typeErrorChecker.check(root);
         scopeChecker.check(root);
         divisionByZeroChecker.check(root);
