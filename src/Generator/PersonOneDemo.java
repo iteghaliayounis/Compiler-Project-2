@@ -145,7 +145,6 @@ public class PersonOneDemo {
 
 
         List<Map<String, Object>> indexContexts = generator.getContextFor("index.html");
-        System.out.println("\n===== Context جاهز لتسليمه للشخص 2 (index.html) =====");
         for (Map<String, Object> ctx : indexContexts) {
             System.out.println(ctx);
         }

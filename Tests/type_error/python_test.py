@@ -44,7 +44,7 @@ def home():
     items = [1, 2, 3]  # list
 
 
-       return render_template(
+    return render_template(
             "htmlTestErrors.html",
             age=age,
             name=name,

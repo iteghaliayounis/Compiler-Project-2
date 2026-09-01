@@ -60,10 +60,8 @@ public class MainPipeline {
     private static final Path OUTPUT_DIR = Path.of("output");
     private static final Path COMPILER_OUTPUT_DIR = Path.of("compiler_output");
 
-    // ★ جديد: سيرفر HTTP لتحرير المنتجات من الواجهة (إضافة/حذف)
     private static final int SERVER_PORT = 8080;
-    // ★ جديد: لما الـ HTTP handler هو نفسه يعدّل input/ ويعيد التوليد، منحط هاد العلم
-    // true حتى الـ watchForChanges() ما يعيد التوليد مرة زيادة لنفس التعديل
+
     private static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
 
     public static void main(String[] args) throws IOException {
@@ -362,15 +360,10 @@ public class MainPipeline {
         return "application/octet-stream";
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  ★ جديد: تعديل حقيقي لقائمة products بملف input/app.py
-    //  (بالاعتماد على الـ Python parser الحقيقي تبع المشروع، مش تخمين نصي)
-    // ════════════════════════════════════════════════════════════════
 
-    /** موقع قائمة products بالملف المصدري + محتواها الحالي كـ بنية بيانات جافا */
     private static class ProductsListLocation {
-        final int startLineIndex; // 0-based، أول سطر ("products = [")
-        final int endLineIndex;   // 0-based، سطر القوس المغلق المطابق "]"
+        final int startLineIndex;
+        final int endLineIndex;
         final List<Map<String, Object>> products;
 
         ProductsListLocation(int startLineIndex, int endLineIndex, List<Map<String, Object>> products) {
@@ -387,10 +380,7 @@ public class MainPipeline {
         return null;
     }
 
-    /**
-     * ★ الگرامر عندنا بتلف أي قيمة تعبير (زي [..] أو {..}) جوا CallChainExpr
-     * (base + suffixes فارغة) حتى لو مافي أي استدعاء دالة فعلي - لازم نفكها أول.
-     */
+
     private static ASTNode unwrapCallChain(ASTNode node) {
         if (node instanceof CallChainExpr) {
             CallChainExpr cc = (CallChainExpr) node;
@@ -399,7 +389,6 @@ public class MainPipeline {
         return node;
     }
 
-    /** يشيل علامات الاقتباس المحيطة بمفتاح الـ dict (Pair.key بيجي خام متضمّن الاقتباس). */
     private static String stripPyQuotes(String raw) {
         if (raw != null && raw.length() >= 2
                 && (raw.charAt(0) == '"' || raw.charAt(0) == '\'')) {
@@ -417,10 +406,7 @@ public class MainPipeline {
         return null;
     }
 
-    /**
-     * يقرأ input/app.py الحالي، يلاقي "products = [...]" عن طريق الـ parser الحقيقي،
-     * ويرجّع موقعها بالملف (بالأسطر) + محتواها الحالي كقائمة Map جاهزة للتعديل.
-     */
+
     private static ProductsListLocation locateProductsList(String content) throws Exception {
         ProductLexer lexer = new ProductLexer(CharStreams.fromString(content));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -455,13 +441,9 @@ public class MainPipeline {
             return new ProductsListLocation(startLineIndex, endLineIndex, current);
         }
 
-        throw new IOException("ما لقيت قائمة 'products' بملف app.py");
+        throw new IOException("لا يوجد قائمة 'products' بملف app.py");
     }
 
-    /**
-     * يدور من أول سطر "products = [" عن سطر القوس "]" المطابق، بعدّ الأقواس على
-     * النص الخام (بدون الدخول جوا string literals، تجنبًا لأي "[" أو "]" جوا نص).
-     */
     private static int findMatchingBracketLine(String content, int startLineIndex) {
         String[] lines = content.split("\n", -1);
         int depth = 0;
@@ -500,7 +482,6 @@ public class MainPipeline {
         return String.valueOf(value);
     }
 
-    /** يبني نص Python صحيح لقائمة products كاملة، بتنسيق موحّد بغض النظر عن التنسيق الأصلي. */
     private static String serializeProductsBlock(List<Map<String, Object>> products) {
         StringBuilder sb = new StringBuilder();
         sb.append("products = [\n");
@@ -520,7 +501,6 @@ public class MainPipeline {
         return sb.toString();
     }
 
-    /** يستبدل مدى الأسطر [startLineIndex, endLineIndex] بمحتوى products الجديد. */
     private static void replaceProductsBlock(Path pythonFile, ProductsListLocation loc,
                                              List<Map<String, Object>> newProducts) throws IOException {
         List<String> lines = Files.readAllLines(pythonFile, StandardCharsets.UTF_8);
