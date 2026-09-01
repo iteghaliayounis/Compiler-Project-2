@@ -1,6 +1,6 @@
 ===== Python Generator Log =====
 [EXTRACT] المتغير 'products' من سطر 4 — القيمة: [{id=1, name=Laptop, price=750, image=laptop.jpg, description=High performanc...
-[EXTRACT] المتغير 'app' من سطر 28 — القيمة: null
+[EXTRACT] المتغير 'app' من سطر 10 — القيمة: null
 [ROUTE] 'products_page' → /
 [ROUTE] 'product_detail' → /product/<int:pid>
 [ROUTE] 'add_product' → /add

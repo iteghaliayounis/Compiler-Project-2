@@ -2,27 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, abort
 
 # تعريف مصفوفة المنتجات
 products = [
-    {
-        "id": 1,
-        "name": "Laptop",
-        "price": 750,
-        "image": "laptop.jpg",
-        "description": "High performance laptop."
-    },
-    {
-        "id": 2,
-        "name": "Dress",
-        "price": 20,
-        "image": "dress.jpg",
-        "description": "Dress Baby Red."
-    },
-    {
-            "id": 3,
-            "name": "phone",
-            "price": 4590,
-            "image": "phone.jpg",
-            "description": "fpon Baby Red."
-    }
+    {"id": 1, "name": "Laptop", "price": 750, "image": "laptop.jpg", "description": "High performance laptop."},
+    {"id": 2, "name": "Dress", "price": 20, "image": "dress.jpg", "description": "Dress Baby Red."},
+    {"id": 3, "name": "phone", "price": 4590, "image": "phone.jpg", "description": "fpon Baby Red."}
 ]
 
 app = Flask(__name__)

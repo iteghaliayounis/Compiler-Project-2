@@ -1284,125 +1284,80 @@
                                   {
                                     "type": "ElementNode",
                                     "line": 31,
-                                    "label": "[line=31] (<button>)",
+                                    "label": "[line=31] (<form>)",
                                     "children": [
                                       {
                                         "type": "AttributeNode",
                                         "line": 31,
-                                        "label": "[line=31] type=\"button\"",
+                                        "label": "[line=31] action={{ url_for(\"delete_product\", pid=p.id) }}",
+                                        "children": [
+                                          {
+                                            "type": "CallNode",
+                                            "line": 31,
+                                            "label": "[line=31]",
+                                            "children": [
+                                              {
+                                                "type": "VariableNode",
+                                                "line": 31,
+                                                "label": "[line=31] (url_for)",
+                                                "children": []
+                                              },
+                                              {
+                                                "type": "StringLiteral",
+                                                "line": 31,
+                                                "label": "[line=31] (\"delete_product\")",
+                                                "children": []
+                                              },
+                                              {
+                                                "type": "AttributeAccessNode",
+                                                "line": 31,
+                                                "label": "[line=31] (.id)",
+                                                "children": [
+                                                  {
+                                                    "type": "VariableNode",
+                                                    "line": 31,
+                                                    "label": "[line=31] (p)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "AttributeNode",
+                                        "line": 31,
+                                        "label": "[line=31] method=\"POST\"",
                                         "children": []
                                       },
                                       {
                                         "type": "StyleAttributeNode",
-                                        "line": 32,
-                                        "label": "[line=32] (\"padding: 6px 12px; border: none; border-radius: 6px; background: #ef4444; color: white; cursor: pointer; margin-top: 8px; display: inline-block\")",
+                                        "line": 31,
+                                        "label": "[line=31] (\"display: inline-block; margin-top: 8px\")",
                                         "children": [
                                           {
                                             "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (padding: 6px 12px)",
-                                            "children": [
-                                              {
-                                                "type": "CssNumberValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (6px)",
-                                                "children": []
-                                              },
-                                              {
-                                                "type": "CssNumberValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (12px)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (border: none)",
+                                            "line": 31,
+                                            "label": "[line=31] (display: inline-block)",
                                             "children": [
                                               {
                                                 "type": "CssIdentValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (none)",
+                                                "line": 31,
+                                                "label": "[line=31] (inline-block)",
                                                 "children": []
                                               }
                                             ]
                                           },
                                           {
                                             "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (border-radius: 6px)",
+                                            "line": 31,
+                                            "label": "[line=31] (margin-top: 8px)",
                                             "children": [
                                               {
                                                 "type": "CssNumberValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (6px)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (background: #ef4444)",
-                                            "children": [
-                                              {
-                                                "type": "CssHashValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (#ef4444 color)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (color: white)",
-                                            "children": [
-                                              {
-                                                "type": "CssIdentValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (white)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (cursor: pointer)",
-                                            "children": [
-                                              {
-                                                "type": "CssIdentValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (pointer)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (margin-top: 8px)",
-                                            "children": [
-                                              {
-                                                "type": "CssNumberValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (8px)",
-                                                "children": []
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "type": "CssDeclarationNode",
-                                            "line": 32,
-                                            "label": "[line=32] (display: inline-block)",
-                                            "children": [
-                                              {
-                                                "type": "CssIdentValueNode",
-                                                "line": 32,
-                                                "label": "[line=32] (inline-block)",
+                                                "line": 31,
+                                                "label": "[line=31] (8px)",
                                                 "children": []
                                               }
                                             ]
@@ -1411,40 +1366,156 @@
                                       },
                                       {
                                         "type": "TextNode",
+                                        "line": 31,
+                                        "label": "[line=31] (\"\")",
+                                        "children": []
+                                      },
+                                      {
+                                        "type": "ElementNode",
                                         "line": 32,
-                                        "label": "[line=32] (\"delete\")",
+                                        "label": "[line=32] (<button>)",
+                                        "children": [
+                                          {
+                                            "type": "AttributeNode",
+                                            "line": 32,
+                                            "label": "[line=32] type=\"submit\"",
+                                            "children": []
+                                          },
+                                          {
+                                            "type": "StyleAttributeNode",
+                                            "line": 33,
+                                            "label": "[line=33] (\"padding: 6px 12px; border: none; border-radius: 6px; background: #ef4444; color: white; cursor: pointer\")",
+                                            "children": [
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (padding: 6px 12px)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssNumberValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (6px)",
+                                                    "children": []
+                                                  },
+                                                  {
+                                                    "type": "CssNumberValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (12px)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (border: none)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssIdentValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (none)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (border-radius: 6px)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssNumberValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (6px)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (background: #ef4444)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssHashValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (#ef4444 color)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (color: white)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssIdentValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (white)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "CssDeclarationNode",
+                                                "line": 33,
+                                                "label": "[line=33] (cursor: pointer)",
+                                                "children": [
+                                                  {
+                                                    "type": "CssIdentValueNode",
+                                                    "line": 33,
+                                                    "label": "[line=33] (pointer)",
+                                                    "children": []
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "type": "TextNode",
+                                            "line": 33,
+                                            "label": "[line=33] (\"delete\")",
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "TextNode",
+                                        "line": 35,
+                                        "label": "[line=35] (\"\")",
                                         "children": []
                                       }
                                     ]
                                   },
                                   {
                                     "type": "TextNode",
-                                    "line": 34,
-                                    "label": "[line=34] (\"\")",
+                                    "line": 36,
+                                    "label": "[line=36] (\"\")",
                                     "children": []
                                   }
                                 ]
                               },
                               {
                                 "type": "TextNode",
-                                "line": 36,
-                                "label": "[line=36] (\"\")",
+                                "line": 38,
+                                "label": "[line=38] (\"\")",
                                 "children": []
                               }
                             ]
                           },
                           {
                             "type": "TextNode",
-                            "line": 37,
-                            "label": "[line=37] (\"\")",
+                            "line": 39,
+                            "label": "[line=39] (\"\")",
                             "children": []
                           }
                         ]
                       },
                       {
                         "type": "TextNode",
-                        "line": 39,
-                        "label": "[line=39] (\"\")",
+                        "line": 41,
+                        "label": "[line=41] (\"\")",
                         "children": []
                       }
                     ]
