@@ -77,6 +77,20 @@ public class MissingFlaskVariableChecker {
                 }
             }
         }
+          if (!matched) {
+                System.out.println(
+                        "  [Flask Linker]  Template Name Mismatch:"
+                );
+                System.out.println(
+                        "                 → Python render_template : " + py.name
+                );
+                System.out.println(
+                        "                 → Jinja template         : not found"
+                );
+                System.out.println(
+                        "                 → Cannot link templates, so Missing Flask Variable check was skipped."
+                );
+            }
 
         int newErrors = handler.getErrors().size() - errorsBefore;
         if (newErrors == 0) {
