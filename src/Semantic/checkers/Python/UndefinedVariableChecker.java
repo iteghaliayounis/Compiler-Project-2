@@ -43,6 +43,8 @@ public class UndefinedVariableChecker {
             "global" , "nonlocal" , "input", "abort"
     ));
 
+    private Set<String> currentFunctionNames = new HashSet<>();
+
     public UndefinedVariableChecker(SymbolTable symbolTable,
                                     SemanticErrorHandler handler) {
         this.symbolTable = symbolTable;
@@ -106,7 +108,69 @@ public class UndefinedVariableChecker {
             }
             if (d.args != null) checkArgList(d.args);
         }
+
+   
+        Set<String> outerFunctionNames = currentFunctionNames;
+        currentFunctionNames = new HashSet<>();
+        if (node.parameters != null && node.parameters.names != null) {
+            currentFunctionNames.addAll(node.parameters.names);
+        }
+        currentFunctionNames.addAll(collectAssignedNames(node.body));
+
         for (ASTNode stmt : node.body) checkNode(stmt);
+
+        currentFunctionNames = outerFunctionNames;
+    }
+
+    private Set<String> collectAssignedNames(java.util.List<ASTNode> body) {
+        Set<String> names = new HashSet<>();
+        collectAssignedNamesInList(body, names);
+        return names;
+    }
+
+    private void collectAssignedNamesInList(java.util.List<ASTNode> stmts, Set<String> names) {
+        if (stmts == null) return;
+        for (ASTNode stmt : stmts) collectAssignedNamesInNode(stmt, names);
+    }
+
+    private void collectAssignedNamesInNode(ASTNode node, Set<String> names) {
+        if (node == null) return;
+
+        if (node instanceof FuncDef) {
+            String nestedName = ((FuncDef) node).name;
+            if (nestedName != null) names.add(nestedName);
+            return;
+        }
+        if (node instanceof SimpleStmt) {
+            collectAssignedNamesInNode(((SimpleStmt) node).smallStmt, names);
+            return;
+        }
+        if (node instanceof ExprStmt) {
+            ExprStmt es = (ExprStmt) node;
+            if (es.target instanceof TargetID) {
+                names.add(((TargetID) es.target).name);
+            }
+            return;
+        }
+        if (node instanceof IfStmt) {
+            collectAssignedNamesInList(((IfStmt) node).body, names);
+            return;
+        }
+        if (node instanceof ForStmt) {
+            ForStmt fs = (ForStmt) node;
+            if (fs.var != null) names.add(fs.var);
+            collectAssignedNamesInList(fs.body, names);
+            return;
+        }
+        if (node instanceof TryStmt) {
+            TryStmt t = (TryStmt) node;
+            collectAssignedNamesInList(t.tryBlock, names);
+            for (TryStmt.CatchBlock cb : t.catches) {
+                if (cb.exceptionName != null) names.add(cb.exceptionName);
+                collectAssignedNamesInList(cb.body, names);
+            }
+            collectAssignedNamesInList(t.finallyBlock, names);
+        }
     }
 
     private void checkExprStmt(ExprStmt node) {
@@ -151,7 +215,14 @@ public class UndefinedVariableChecker {
     private void checkIdentifier(Identifier node) {
         String name = node.name;
         if (BUILTINS.contains(name)) return;
-        if (symbolTable.lookupInAllScopes(name) == null) {
+
+        SymbolTable.Symbol sym = symbolTable.lookupInAllScopes(name);
+        if (sym == null) {
+            handler.report(new UndefinedVarError(name, node.getLineNumber(), "PYTHON"));
+            return;
+        }
+
+        if (sym.getScopeLevel() != 0 && !currentFunctionNames.contains(name)) {
             handler.report(new UndefinedVarError(name, node.getLineNumber(), "PYTHON"));
         }
     }

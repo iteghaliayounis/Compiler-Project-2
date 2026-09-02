@@ -1,3 +1,39 @@
-===== Semantic Analysis Report =====
 
-لا يوجد أخطاء دلالية.
+═════════════════════════════════════════════════════════════════════════════════════
+  SEMANTIC ERRORS
+═════════════════════════════════════════════════════════════════════════════════════
+  ✖ [PYTHON] NameError: name 'username' is not defined (line 11)
+  ✖ [PYTHON] NameError: name 'price' is not defined (line 22)
+  ✖ [PYTHON] NameError: name 'tax' is not defined (line 22)
+  ✖ [PYTHON] NameError: name 'is_admin' is not defined (line 33)
+  ✖ [PYTHON] NameError: name 'items' is not defined (line 45)
+  ✖ [PYTHON] NameError: name 'data' is not defined (line 57)
+  ✖ [PYTHON] NameError: name 'first_value' is not defined (line 67)
+  ✖ [PYTHON] NameError: name 'second_value' is not defined (line 67)
+  ✖ [PYTHON] NameError: name 'third_value' is not defined (line 67)
+  ✖ [PYTHON] NameError: name 'user_name' is not defined (line 78)
+  ✖ [PYTHON] NameError: name 'user_age' is not defined (line 79)
+  ✖ [PYTHON] NameError: name 'display_name' is not defined (line 89)
+  ✖ [PYTHON] NameError: name 'username' is not defined (line 98)
+  ✖ [PYTHON] NameError: name 'city' is not defined (line 98)
+  ✖ [PYTHON] NameError: name 'country' is not defined (line 98)
+  ✖ [PYTHON] NameError: name 'age' is not defined (line 106)
+  ✖ [PYTHON] NameError: name 'users' is not defined (line 111)
+  ✖ [PYTHON] NameError: name 'process_data' is not defined (line 118)
+  ✖ [PYTHON] NameError: name 'data' is not defined (line 118)
+  ✖ [JINJA] NameError: name 'username' is not defined (line 13)
+  ✖ [JINJA] NameError: name 'price' is not defined (line 17)
+  ✖ [JINJA] NameError: name 'tax' is not defined (line 17)
+  ✖ [JINJA] NameError: name 'is_admin' is not defined (line 21)
+  ✖ [JINJA] NameError: name 'products' is not defined (line 27)
+  ✖ [JINJA] NameError: name 'data' is not defined (line 33)
+  ✖ [JINJA] NameError: name 'display_name' is not defined (line 37)
+  ✖ [JINJA] NameError: name 'country' is not defined (line 41)
+  ✖ [JINJA] NameError: name 'city' is not defined (line 42)
+  ✖ [JINJA] NameError: name 'email' is not defined (line 43)
+  ✖ [JINJA] NameError: name 'user' is not defined (line 47)
+  ✖ [JINJA] NameError: name 'user_active' is not defined (line 51)
+  ✖ [JINJA] NameError: name 'first_value' is not defined (line 57)
+  ✖ [JINJA] NameError: name 'second_value' is not defined (line 57)
+  ✖ [JINJA] AttributeError: 'dict' object has no attribute 'name' (line 47)
+═════════════════════════════════════════════════════════════════════════════════════

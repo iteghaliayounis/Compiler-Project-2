@@ -14,24 +14,12 @@ import SymbolTable.SymbolTable;
 
 import java.util.List;
 
-/**
- * PythonTypeInference — أداة استنتاج نوع التعابير في Python AST
- *
- * تعطي نوع التعبير كـ String بأحد الأشكال التالية (مطابقاً لـ Python Symbol Table):
- *   "INT", "FLOAT", "STRING", "BOOL", "LIST", "DICT", "NONE", "FUNCTION", "UNKNOWN"
- *
- * ملاحظة: عند عدم التأكد نرجع "UNKNOWN" ولا نُبلغ عن خطأ (القاعدة الذهبية في Compilers:
- * "False Positive أسوأ من False Negative").
- *
- * ⚠️ ملاحظة عن الـ Parser: يدعم + و - فقط (لا يدعم * / % **)
- */
+
 public class PythonTypeInference {
 
     private PythonTypeInference() {} // utility class
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  الدالة الرئيسية — تستقبل أي ASTNode وترجع نوعه
-    // ═══════════════════════════════════════════════════════════════════
+
     public static String inferType(ASTNode node, SymbolTable st) {
         if (node == null) return "UNKNOWN";
 
@@ -74,10 +62,7 @@ public class PythonTypeInference {
         return inferFromClassName(className);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  استنتاج نوع الـ ArithExpr (+, -)
-    //  نستخدم operators الفعلي لتمييز + عن -
-    // ═══════════════════════════════════════════════════════════════════
+
     private static String inferArithType(ArithExpr node, SymbolTable st) {
         if (node.terms == null || node.terms.isEmpty()) return "UNKNOWN";
 
@@ -98,10 +83,7 @@ public class PythonTypeInference {
         return resultType;
     }
 
-    /**
-     * استنتاج نوع زوج من المعاملات في ArithExpr
-     * الـ Parser يدعم + و - فقط
-     */
+ 
     private static String inferArithPair(String leftType, String op, String rightType) {
         String lt = normalizeType(leftType);
         String rt = normalizeType(rightType);
@@ -131,9 +113,6 @@ public class PythonTypeInference {
         return "UNKNOWN";
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  Helper: هل النوع رقمي؟
-    // ═══════════════════════════════════════════════════════════════════
     private static boolean isNumeric(String type) {
         String t = normalizeType(type);
         return "INT".equals(t) || "FLOAT".equals(t);
@@ -212,9 +191,7 @@ public class PythonTypeInference {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  استنتاج النوع من اسم الكلاس (للـ Literals)
-    // ═══════════════════════════════════════════════════════════════════
+
     private static String inferFromClassName(String className) {
         if (className == null || className.isEmpty()) return "UNKNOWN";
         String lower = className.toLowerCase();
@@ -231,9 +208,7 @@ public class PythonTypeInference {
         return "UNKNOWN";
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  تطبيع الأنواع — توحيد صيغة النوع
-    // ═══════════════════════════════════════════════════════════════════
+
     public static String normalizeType(String type) {
         if (type == null) return "UNKNOWN";
         String upper = type.toUpperCase().trim();

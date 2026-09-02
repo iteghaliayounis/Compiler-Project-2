@@ -4,86 +4,52 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * TypeCompatibility — مصفوفة توافق الأنواع للعمليات المختلفة
- *
- * تحدد ما إذا كان نوعان متوافقان لعملية معينة (+, -, *, /, <, >, ...).
- *
- * القاعدة: نُبلغ عن الخطأ فقط عندما نكون متأكدين 100% أن النوعين غير متوافقين.
- * إذا كان أحد النوعين UNKNOWN → لا نُبلغ (تجنب False Positives).
- */
+
 public class TypeCompatibility {
 
     private TypeCompatibility() {} // utility class
 
-    // الأنواع القابلة للتكرار (iterable)
     private static final Set<String> ITERABLE_TYPES = new HashSet<>(Arrays.asList(
             "STRING", "LIST", "DICT", "TUPLE", "SET", "RANGE"
     ));
 
-    // الأنواع القابلة للفهرسة (subscriptable)
     private static final Set<String> SUBSCRIPTABLE_TYPES = new HashSet<>(Arrays.asList(
             "STRING", "LIST", "DICT", "TUPLE"
     ));
 
-    // الأنواع التي لها طول (تدعم len())
     private static final Set<String> HAS_LEN_TYPES = new HashSet<>(Arrays.asList(
             "STRING", "LIST", "DICT", "TUPLE", "SET", "RANGE"
     ));
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  فحوصات النوع
-    // ═══════════════════════════════════════════════════════════════════
 
-    /** هل النوع قابل للتكرار؟ */
     public static boolean isIterable(String type) {
         return ITERABLE_TYPES.contains(PythonTypeInference.normalizeType(type));
     }
 
-    /** هل النوع قابل للفهرسة؟ */
     public static boolean isSubscriptable(String type) {
         return SUBSCRIPTABLE_TYPES.contains(PythonTypeInference.normalizeType(type));
     }
 
-    /** هل النوع يدعم len()؟ */
     public static boolean hasLen(String type) {
         return HAS_LEN_TYPES.contains(PythonTypeInference.normalizeType(type));
     }
 
-    /** هل النوع رقمي (int أو float)؟ */
     public static boolean isNumeric(String type) {
         String t = PythonTypeInference.normalizeType(type);
         return "INT".equals(t) || "FLOAT".equals(t) || "BOOL".equals(t);
     }
 
-    /** هل النوع None؟ */
     public static boolean isNone(String type) {
         return "NONE".equals(PythonTypeInference.normalizeType(type));
     }
 
-    /** هل كلا النوعين معروف (ليس UNKNOWN)؟ */
     public static boolean bothKnown(String type1, String type2) {
         String t1 = PythonTypeInference.normalizeType(type1);
         String t2 = PythonTypeInference.normalizeType(type2);
         return !"UNKNOWN".equals(t1) && !"UNKNOWN".equals(t2);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  توافق العمليات الحسابية
-    // ═══════════════════════════════════════════════════════════════════
-
-    /**
-     * هل النوعان متوافقان لعملية الجمع (+)؟
-     * في Python:
-     *   - int + int → OK
-     *   - float + float → OK
-     *   - int + float → OK
-     *   - str + str → OK (concatenation)
-     *   - list + list → OK
-     *   - str + int → خطأ (can only concatenate str (not "int") to str)
-     *   - list + int → خطأ
-     *   - None + أي شيء → خطأ
-     */
+  
     public static boolean isAddCompatible(String leftType, String rightType) {
         if (!bothKnown(leftType, rightType)) return true; // لا نعرف → لا نبلغ
 
